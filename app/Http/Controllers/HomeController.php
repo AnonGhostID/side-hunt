@@ -60,4 +60,9 @@ class HomeController extends Controller
 
         return view('admin.AdminDashboard', compact('sidejob','transaksi', 'user', 'pelamar', 'user_count', 'job_count', 'pelamar_count','transaksi_count'));
     }
+
+    public function management()
+    {
+        return view('management');
+    }
 }

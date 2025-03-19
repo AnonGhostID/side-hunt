@@ -20,6 +20,8 @@ Route::get('/job/{id}', [SideJobController::class, 'show'])->name('sidejob.detai
 
 Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
 
+Route::get('/management', [HomeController::class, 'management'])->name('management');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/lamaran', [UsersController::class, 'pelamaran'])->name('user.history');
     Route::get('/sidejob', [SideJobController::class, 'index'])->name('sidejob.index');
@@ -51,4 +53,3 @@ Route::middleware(['isAdmin'])->group(function(){
     Route::get('/admin/transaksi/setujui/{kode}', [TransaksiController::class, 'setujuiTransaksi'])->name('admin.transaksi.setuju');
     Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
 });
-
