@@ -2,14 +2,15 @@
 
 @section('content')
 <div class="container">
+    @if (Auth::check())
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Management') }}</div>
+                <div class="card-header">{{ __('Management Dashboard') }}</div>
 
                 <div class="card-body">
-                    <h1>Management</h1>
-                    <p>Welcome to the management page. Here you can find information about our management practices and policies.</p>
+                    <h1>Management Dashboard</h1>
+                    <p>Welcome to the management dashboard. Here you can find information about our management practices and policies.</p>
                     <h2>Our Management Team</h2>
                     <p>Our management team is composed of experienced professionals who are dedicated to ensuring the success of our organization.</p>
                     <h2>Our Policies</h2>
@@ -20,5 +21,18 @@
             </div>
         </div>
     </div>
+    @else
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">{{ __('Management Dashboard') }}</div>
+
+                <div class="card-body">
+                    <p>You must be logged in to view this page.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
