@@ -53,9 +53,11 @@
                         <li class="nav-item">
                             <a class="nav-link" aria-current="page" href="#">Cari Pekerjaan</a>
                         </li>
+                        @auth
                         <li class="nav-item">
                             <a class="nav-link" aria-current="page" href="{{ url('/management') }}">Management</a>
                         </li>
+                        @endauth
                         <!-- Authentication Links -->
                         @guest
                         @if (Route::has('login'))
