@@ -5,6 +5,7 @@ use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\ManagementController;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -38,13 +39,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
 });
 
-Route::middleware(['isAdmin'])->group(function(){
+Route::middleware(['auth', 'isAdmin'])->group(function(){
     Route::get('/admin', [HomeController::class, 'admin'])->name('admin.index'); // Index
     Route::get('/admin/user/{id}/edit',[UsersController::class,'showAdmin'])->name('admin.show.profile');
     Route::match(['get','put'],'/admin/user/{id}',[UsersController::class,'update'])->name('admin.update.profile');
     Route::get('/admin/user/edit/{id}',[UsersController::class,'edit'])->name('admin.edit.profile');
     Route::get('/admin/user/delete/{id}',[UsersController::class,'delete'])->name('admin.delete.profile');
 
+    
     //Sidejob
     Route::get('/sidejob/{id}', [SideJobController::class, 'showAdmin'])->name('admin.sidejob.show');
     Route::get('/sidejob/edit/{id}', [SideJobController::class, 'editAdmin'])->name('admin.sidejob.edit');

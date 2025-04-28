@@ -43,6 +43,7 @@ class LoginController extends Controller
      *
      * @return void
      */
+    /*
     protected function authenticated()
     {
         if (Auth::check() && Auth::user()->isAdmin != 1) {
@@ -50,4 +51,5 @@ class LoginController extends Controller
             return redirect('/')->withErrors(['message' => 'You do not have access to the management page.']);
         }
     }
+    */
 }
