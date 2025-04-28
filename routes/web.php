@@ -21,7 +21,7 @@ Route::get('/job/{id}', [SideJobController::class, 'show'])->name('sidejob.detai
 Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/management', [HomeController::class, 'management'])->name('management');
+    Route::get('/management', [HomeController::class, 'management'])->name('management')->middleware('isAdmin');
     Route::get('/user/lamaran', [UsersController::class, 'pelamaran'])->name('user.history');
     Route::get('/sidejob', [SideJobController::class, 'index'])->name('sidejob.index');
     Route::get('/sidejob/create', [SideJobController::class, 'create'])->name('sidejob.create');

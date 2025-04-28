@@ -20,7 +20,7 @@ class IsAdmin
             return $next($request);
         }
         else{
-            return redirect('/');
+            return redirect('/')->withErrors(['message' => 'You do not have access to the management page.']);
         }
     }
 }

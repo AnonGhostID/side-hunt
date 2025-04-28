@@ -54,9 +54,11 @@
                             <a class="nav-link" aria-current="page" href="#">Cari Pekerjaan</a>
                         </li>
                         @auth
+                        @if (Auth::user()->isAdmin == 1)
                         <li class="nav-item">
                             <a class="nav-link" aria-current="page" href="{{ url('/management') }}">Management</a>
                         </li>
+                        @endif
                         @endauth
                         <!-- Authentication Links -->
                         @guest
