@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -24,6 +25,19 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
+
+        // Insert a default user
+        DB::table('users')->insert([
+            'nama' => 'admin',
+            'email' => 'admin@example.com',
+            'alamat' => 'Jakarta Pusat',
+            'telpon' => '081234567890',
+            'dompet' => 20000,
+            'isAdmin' => 1,
+            'password' => bcrypt('admin1234'), // Use bcrypt for hashing
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
