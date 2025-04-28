@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -35,5 +36,18 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Ensure the user is an admin before allowing access to the management page.
+     *
+     * @return void
+     */
+    protected function authenticated()
+    {
+        if (Auth::check() && Auth::user()->isAdmin != 1) {
+            Auth::logout();
+            return redirect('/')->withErrors(['message' => 'You do not have access to the management page.']);
+        }
     }
 }
