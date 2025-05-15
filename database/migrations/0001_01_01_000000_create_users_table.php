@@ -39,6 +39,78 @@ return new class extends Migration
             'updated_at' => now(),
         ]);
 
+        DB::table('users')->insert([
+            'nama' => 'johndoe',
+            'email' => 'orang1@example.com',
+            'alamat' => 'Bandung',
+            'telpon' => '081298765432',
+            'dompet' => 15000,
+            'isAdmin' => 0,
+            'password' => bcrypt('orang1234'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'nama' => 'janesmith',
+            'email' => 'orang2@example.com',
+            'alamat' => 'Surabaya',
+            'telpon' => '082112345678',
+            'dompet' => 5000,
+            'isAdmin' => 0,
+            'password' => bcrypt('orang1234'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'nama' => 'aguspratama',
+            'email' => 'orang3@example.com',
+            'alamat' => 'Yogyakarta',
+            'telpon' => '083145678901',
+            'dompet' => 30000,
+            'isAdmin' => 0,
+            'password' => bcrypt('orang1234'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'nama' => 'owner1',
+            'email' => 'owner1@example.com',
+            'alamat' => 'Semarang',
+            'telpon' => '083200000001',
+            'dompet' => 10000,
+            'isAdmin' => 0,
+            'password' => bcrypt('owner1234'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'nama' => 'owner2',
+            'email' => 'owner2@example.com',
+            'alamat' => 'Malang',
+            'telpon' => '083200000002',
+            'dompet' => 12000,
+            'isAdmin' => 0,
+            'password' => bcrypt('owner1234'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'nama' => 'owner3',
+            'email' => 'owner3@example.com',
+            'alamat' => 'Medan',
+            'telpon' => '083200000003',
+            'dompet' => 14000,
+            'isAdmin' => 0,
+            'password' => bcrypt('owner1234'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
