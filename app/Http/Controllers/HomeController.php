@@ -64,6 +64,6 @@ class HomeController extends Controller
     public function management()
     {
         $this->middleware('isAdmin');
-        return view('manajemen/management-dashboard');
+        return view('manajemen/dashboard');
     }
 }

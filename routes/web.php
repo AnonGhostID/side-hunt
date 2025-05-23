@@ -5,7 +5,7 @@ use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\ManagementController;
+use App\Http\Controllers\ManagementPageController;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -53,4 +53,43 @@ Route::middleware(['auth', 'isAdmin'])->group(function(){
 
     Route::get('/admin/transaksi/setujui/{kode}', [TransaksiController::class, 'setujuiTransaksi'])->name('admin.transaksi.setuju');
     Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
+});
+
+Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(function () {
+    Route::get('/', [ManagementPageController::class, 'dashboard'])->name('dashboard');
+
+    // Pekerjaan
+    Route::get('/pekerjaan-berlangsung', [ManagementPageController::class, 'pekerjaanBerlangsung'])->name('pekerjaan.berlangsung');
+    Route::get('/upload-laporan', [ManagementPageController::class, 'uploadLaporan'])->name('laporan.upload');
+    Route::get('/riwayat-pekerjaan', [ManagementPageController::class, 'riwayatPekerjaan'])->name('pekerjaan.riwayat');
+
+    // Keuangan
+    Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
+    Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
+    Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
+    Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
+
+    // Pelaporan & Bantuan
+    Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuan'])->name('pelaporan.penipuan');
+    Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
+
+    // Fitur Lainnya
+    Route::get('/notifikasi-pekerjaan', [ManagementPageController::class, 'notifikasiStatusPekerjaan'])->name('notifikasi.pekerjaan');
+    Route::get('/notifikasi-pelamaran', [ManagementPageController::class, 'notifikasiStatusPelamaran'])->name('notifikasi.pelamaran');
+    Route::get('/chat', [ManagementPageController::class, 'chatPengguna'])->name('chat');
+    Route::get('/rating-user', [ManagementPageController::class, 'ratingUser'])->name('rating.user');
+    Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
+
+
+    // Rute Khusus Admin (Contoh) - Anda bisa menambahkan middleware admin di sini
+    Route::prefix('admin')->name('admin.')->middleware(['admin']) // Buat middleware 'admin' jika belum ada
+    ->group(function () {
+        Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
+        Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
+        Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
+        // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
+        // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
+        // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
+        // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
+    });
 });
