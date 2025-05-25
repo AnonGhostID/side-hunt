@@ -112,10 +112,10 @@
                     <i class="fas fa-receipt"></i>
                     <span>Riwayat Transaksi</span>
                 </a>
-                <a href="{{ route('manajemen.dana.refund') }}" class="sidebar-link {{ request()->routeIs('manajemen.dana.refund') ? 'active' : '' }}">
+                <!-- <a href="{{ route('manajemen.dana.refund') }}" class="sidebar-link {{ request()->routeIs('manajemen.dana.refund') ? 'active' : '' }}">
                     <i class="fas fa-undo-alt"></i>
                     <span>Refund Dana</span>
-                </a>
+                </a> -->
                 <a href="{{ route('manajemen.keuangan.laporan') }}" class="sidebar-link {{ request()->routeIs('manajemen.keuangan.laporan') ? 'active' : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span>Laporan Keuangan</span>
@@ -187,9 +187,9 @@
             <div class="p-4 border-t border-gray-200">
                 @auth
                 <div class="flex items-center mb-3">
-                    <img src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=User' }}" alt="User Avatar" class="w-10 h-10 rounded-full mr-3 object-cover">
+                    <img src="https://i.ibb.co/WN1c98WM/illustration-progress-text-buffered-white-background-progress-text-buffered-107545180.png" class="w-10 h-10 rounded-full mr-3 object-cover">
                     <div>
-                        <p class="text-sm font-medium text-gray-700">{{ Auth::user()->name }}</p>
+                        <p class="text-sm font-medium text-gray-700">{{ Auth::user()->nama }}</p>
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
                     </div>
                 </div>
