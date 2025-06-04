@@ -14,68 +14,93 @@ class SideJobSeeder extends Seeder
      */
     public function run(): void
     {
-        $faker = Faker::create('id_ID'); // Indonesian locale for realistic data
-        
-        // Configuration - you can modify these values
-        $numberOfJobs = 323; // Change this to generate more or fewer jobs
-        $userIds = [7, 6, 5]; // Array of user IDs that can create jobs
-        // $userIds = 5; 
+        $faker = Faker::create('id_ID');
 
-        // Job categories with Indonesian context
-        $jobCategories = [
-            'technology' => [
-                'Web Developer',
-                'Mobile App Developer', 
-                'UI/UX Designer',
-                'Data Analyst',
-                'System Administrator',
-                'DevOps Engineer',
-                'Frontend Developer',
-                'Backend Developer',
-                'Full Stack Developer',
-                'Software Tester',
-                'Database Administrator',
-                'Cybersecurity Specialist'
-            ],
-            'design' => [
-                'Graphic Designer',
-                'Logo Designer',
-                'Social Media Designer',
-                'Video Editor',
-                'Motion Graphics Designer',
-                'Illustrator',
-                'Product Designer',
-                'Brand Designer',
-                '3D Designer',
-                'Interior Designer'
-            ],
-            'marketing' => [
-                'Content Writer',
-                'Copywriter',
-                'Social Media Specialist',
-                'Digital Marketing Specialist',
-                'SEO Specialist',
-                'Marketing Consultant',
-                'Email Marketing Specialist',
-                'Influencer Marketing',
-                'Brand Strategist',
-                'Marketing Analyst'
-            ],
-            'other' => [
-                'Virtual Assistant',
-                'Translator',
-                'Data Entry Specialist',
-                'Customer Service',
-                'Online Tutor',
-                'Photographer',
-                'Event Organizer',
-                'Accountant',
-                'Legal Consultant',
-                'Project Manager'
-            ]
+        $numberOfJobs = 413;
+        $userIds = [7, 6, 5];
+
+        // Expanded onsite, physical, daily job types
+        $jobTypes = [
+            'Pekerja Bangunan',
+            'Tukang Kebun',
+            'Pengangkat Barang',
+            'Kuli Panggul',
+            'Pembersih Rumah',
+            'Office Boy',
+            'Tukang Parkir',
+            'Tukang Cat',
+            'Petugas Kebersihan',
+            'Tukang Angkut',
+            'Tenaga Pindahan',
+            'Helper Gudang',
+            'Kurir Motor Harian',
+            'Tukang Kayu Lepas',
+            'Asisten Rumah Tangga Harian',
+            'Tukang Servis AC (panggilan)',
+            'Tukang Listrik Lepas',
+            'Montir Panggilan',
+            'Pramusaji Acara Harian',
+            'Penjaga Stand Bazaar',
+            'Pekerja Bongkar Muat',
+            'Petugas Parkir Sementara',
+            'Tukang Cuci Mobil Keliling',
+            'Penjaga Warung Sementara',
+            'Kuli Pasar Harian',
+            'Tukang Servis Elektronik Panggilan',
+            'Penjaga Gudang Sementara',
+            'Tukang Las Harian',
+            'Tenaga Kebersihan Acara',
+            'Crew Pindahan Rumah',
+            'Penjaga Area Parkir Event',
+            'Anggota Security Lepas',
+            'Petugas Set Up Dekorasi',
+            'Pekerja Renovasi Rumah',
+            'Crew Catering Harian',
+            'Penjaga Taman Sementara',
+            'Tukang Gali Parit',
+            'Tukang Pasang Banner',
+            'Tukang Cuci Tangki Air',
+            'Crew Produksi UMKM',
+            'Tukang Angkat Galon',
+            'Petugas Pembersih Saluran Air',
+            'Crew Loading Barang Pameran',
+            'Tukang Semprot Disinfektan',
+            'Tukang Pengecat Marka Jalan',
+            'Penjaga Tiket Masuk Event',
+            'Tukang Pindah Barang Kantor',
+            'Crew Maintenance Gedung Harian',
+            'Asisten Pedagang Kaki Lima',
+            'Tukang Bersih Karpet Rumah',
+            'Petugas Jaga Stand Pameran',
+            'Tukang Isi Ulang Air Mineral',
+            'Crew Set Up Panggung Acara',
+            'Asisten Tukang Jahit Lepas',
+            'Penjaga Barang Titipan Sementara',
+            'Tukang Cuci Motor Keliling',
+            'Petugas Distribusi Brosur',
+            'Crew Pembongkaran Dekorasi',
+            'Tukang Servis Kulkas Panggilan',
+            'Asisten Fotografer Wedding',
+            'Petugas Cleaning Service Harian',
+            'Tukang Pasang Wallpaper',
+            'Crew Catering Hajatan',
+            'Penjaga Konter HP Sementara',
+            'Tukang Potong Rumput',
+            'Asisten Montir Sepeda Motor',
+            'Petugas Jaga Parkir Rumah Sakit',
+            'Tukang Rakit Furniture',
+            'Crew Pemindahan Pameran',
+            'Asisten Tukang Roti Harian',
+            'Petugas Sortir Barang Bekas',
+            'Tukang Cuci Jendela Gedung',
+            'Crew Setup Sound System',
+            'Asisten Pedagang Pasar Malam',
+            'Petugas Jaga Toilet Umum Event',
+            'Tukang Bersih Kolam Renang',
+            'Crew Distribusi Paket Harian',
+            'Asisten Tukang Pijat Panggilan'
         ];
-        
-        // Indonesian cities with coordinates
+
         $cities = [
             ['name' => 'Jakarta Selatan, DKI Jakarta', 'lat' => -6.2615, 'lng' => 106.8106],
             ['name' => 'Jakarta Utara, DKI Jakarta', 'lat' => -6.1389, 'lng' => 106.8636],
@@ -89,42 +114,29 @@ class SideJobSeeder extends Seeder
             ['name' => 'Medan, Sumatera Utara', 'lat' => 3.5952, 'lng' => 98.6722],
             ['name' => 'Makassar, Sulawesi Selatan', 'lat' => -5.1477, 'lng' => 119.4327],
             ['name' => 'Denpasar, Bali', 'lat' => -8.6500, 'lng' => 115.2167],
-            ['name' => 'Palembang, Sumatera Selatan', 'lat' => -2.9761, 'lng' => 104.7754],
-            ['name' => 'Samarinda, Kalimantan Timur', 'lat' => -0.5017, 'lng' => 117.1536],
-            ['name' => 'Banjarmasin, Kalimantan Selatan', 'lat' => -3.3194, 'lng' => 114.5906],
-            ['name' => 'Pekanbaru, Riau', 'lat' => 0.5071, 'lng' => 101.4478],
             ['name' => 'Tangerang, Banten', 'lat' => -6.1783, 'lng' => 106.6319],
             ['name' => 'Bekasi, Jawa Barat', 'lat' => -6.2383, 'lng' => 106.9756],
             ['name' => 'Depok, Jawa Barat', 'lat' => -6.4058, 'lng' => 106.8142],
             ['name' => 'Malang, Jawa Timur', 'lat' => -7.9797, 'lng' => 112.6304]
         ];
-        
+
         $sideJobs = [];
-        
+
         for ($i = 0; $i < $numberOfJobs; $i++) {
-            // Select random category and job type
-            $category = $faker->randomElement(array_keys($jobCategories));
-            $jobType = $faker->randomElement($jobCategories[$category]);
-            
-            // Select random city
+            $jobType = $faker->randomElement($jobTypes);
             $city = $faker->randomElement($cities);
-            
-            // Generate salary range
-            $baseMinSalary = $faker->numberBetween(500000, 3000000);
-            $maxSalary = $baseMinSalary + $faker->numberBetween(500000, 5000000);
-            
-            // Generate random date in the past 30 days
+
+            $baseMinSalary = $faker->numberBetween(100000, 500000);
+            $maxSalary = $baseMinSalary + $faker->numberBetween(50000, 300000);
+
             $createdDate = $faker->dateTimeBetween('-30 days', 'now');
             $jobDate = $faker->dateTimeBetween($createdDate, '+7 days');
-            
-            // Generate max workers and applicants
+
             $maxWorkers = $faker->numberBetween(1, 10);
             $acceptedApplicants = $faker->numberBetween(0, min($maxWorkers, $faker->numberBetween(0, $maxWorkers + 2)));
-            
-            // Generate job description based on category
-            $descriptions = $this->getJobDescriptions($category, $jobType);
-            $description = $faker->randomElement($descriptions);
-            
+
+            $description = $faker->sentence(10);
+
             $sideJobs[] = [
                 'nama' => $jobType,
                 'deskripsi' => $description,
@@ -140,64 +152,12 @@ class SideJobSeeder extends Seeder
                 'updated_at' => $createdDate,
             ];
         }
-        
-        // Insert in chunks to avoid memory issues with large datasets
+
         $chunks = array_chunk($sideJobs, 100);
         foreach ($chunks as $chunk) {
             DB::table('side_jobs')->insert($chunk);
         }
-        
-        $this->command->info("Successfully created {$numberOfJobs} side jobs!");
-    }
-    
-    /**
-     * Get job descriptions based on category
-     */
-    private function getJobDescriptions($category, $jobType): array
-    {
-        $descriptions = [
-            'technology' => [
-                'Mencari developer berpengalaman untuk mengembangkan aplikasi web modern dengan teknologi terkini',
-                'Dibutuhkan programmer untuk membuat sistem informasi dengan database yang kompleks',
-                'Proyek pengembangan aplikasi mobile dengan fitur real-time dan integrasi API',
-                'Membangun website e-commerce dengan sistem pembayaran yang aman dan terintegrasi',
-                'Mengembangkan dashboard analitik untuk monitoring data bisnis secara real-time',
-                'Membuat aplikasi inventory management dengan teknologi cloud computing',
-                'Proyek migrasi sistem legacy ke teknologi modern dan scalable',
-                'Pengembangan API RESTful untuk integrasi dengan berbagai platform'
-            ],
-            'design' => [
-                'Desain logo dan brand identity untuk startup teknologi yang sedang berkembang',
-                'Membuat desain UI/UX yang menarik dan user-friendly untuk aplikasi mobile',
-                'Proyek desain grafis untuk kampanye marketing digital yang kreatif dan engaging',
-                'Desain website company profile dengan konsep modern dan responsive',
-                'Membuat motion graphics dan animasi untuk video promosi produk',
-                'Desain packaging produk dengan konsep yang unik dan eye-catching',
-                'Ilustrasi digital untuk buku anak-anak dengan gaya yang colorful dan menarik',
-                'Desain booth pameran dan material promosi untuk event trade show'
-            ],
-            'marketing' => [
-                'Menulis konten artikel blog yang SEO-friendly dan engaging untuk website',
-                'Mengelola social media dengan strategi content marketing yang efektif',
-                'Membuat campaign digital marketing untuk meningkatkan brand awareness',
-                'Copywriting untuk landing page dan email marketing campaign',
-                'Strategi SEO untuk meningkatkan organic traffic website secara sustainable',
-                'Influencer marketing campaign untuk target audience millennial dan gen-z',
-                'Content creation untuk berbagai platform social media dengan konsep yang viral',
-                'Marketing automation setup untuk lead nurturing dan customer retention'
-            ],
-            'other' => [
-                'Virtual assistant untuk mengelola administrative tasks dan customer support',
-                'Translate dokumen bisnis dari bahasa Indonesia ke bahasa Inggris',
-                'Data entry untuk database customer dengan tingkat akurasi yang tinggi',
-                'Online tutoring untuk mata pelajaran programming dan teknologi',
-                'Photography dan videography untuk dokumentasi event corporate',
-                'Event planning dan organizing untuk acara launching produk',
-                'Accounting dan bookkeeping untuk small business dan startup',
-                'Konsultasi legal untuk contract review dan business compliance'
-            ]
-        ];
-        
-        return $descriptions[$category] ?? ['Deskripsi pekerjaan yang menarik dan detail'];
+
+        $this->command->info("Successfully created {$numberOfJobs} physical, onsite daily jobs!");
     }
 }
