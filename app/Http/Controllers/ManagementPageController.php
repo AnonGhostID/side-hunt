@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
+use App\Models\Transaksi;
 
 class ManagementPageController extends Controller
 {
@@ -39,7 +40,12 @@ class ManagementPageController extends Controller
 
     public function riwayatTransaksi()
     {
-        return view('manajemen.keuangan.riwayat_transaksi');
+        $user = Auth::user();
+        $transaksi = Transaksi::where('pembuat_id', $user->id)
+            ->orWhere('pekerja_id', $user->id)
+            ->paginate(10);
+
+        return view('manajemen.keuangan.riwayat_transaksi', compact('user', 'transaksi'));
     }
 
     public function refundDana()
@@ -49,7 +55,7 @@ class ManagementPageController extends Controller
 
     public function laporanKeuangan()
     {
-        return view('manajemen.keuangan.laporan_bulanan');
+        return view('manajemen.keuangan.laporan_keuangan');
     }
 
     public function laporPenipuan()
