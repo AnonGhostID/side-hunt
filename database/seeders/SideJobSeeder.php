@@ -16,7 +16,7 @@ class SideJobSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        $numberOfJobs = 413;
+        $numberOfJobs = 10;
         $userIds = [7, 6, 5];
 
         // Expanded onsite, physical, daily job types
@@ -133,7 +133,7 @@ class SideJobSeeder extends Seeder
             $jobDate = $faker->dateTimeBetween($createdDate, '+7 days');
 
             $maxWorkers = $faker->numberBetween(1, 10);
-            $acceptedApplicants = $faker->numberBetween(0, min($maxWorkers, $faker->numberBetween(0, $maxWorkers + 2)));
+            $acceptedApplicants = 0;
 
             $description = $faker->sentence(10);
 
