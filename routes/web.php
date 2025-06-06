@@ -64,7 +64,8 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     Route::get('/riwayat-pekerjaan', [ManagementPageController::class, 'riwayatPekerjaan'])->name('pekerjaan.riwayat');
 
     // Keuangan
-    Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
+    // Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
+    Route::get('/Top-Up', [ManagementPageController::class, 'topUp'])->name('topUp');
     Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
     Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
     Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');

@@ -38,9 +38,9 @@ class ManagementPageController extends Controller
         return view('manajemen.laporan.upload');
     }
 
-    public function gatewayPembayaran()
+    public function topUp()
     {
-        return view('manajemen.keuangan.gateway_pembayaran');
+        return view('manajemen.keuangan.topUp');
     }
 
     public function riwayatTransaksi()
