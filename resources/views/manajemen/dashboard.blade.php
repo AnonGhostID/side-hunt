@@ -5,39 +5,51 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-500 text-white mr-4">
-                    <i class="fas fa-briefcase fa-2x"></i>
+                <div class="p-2 rounded-full bg-blue-500 text-white mr-3">
+                    <i class="fas fa-briefcase fa-lg"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Pekerjaan Terdaftar</p>
-                    <p class="text-3xl font-bold text-gray-800">{{ $totalSideJobs }}</p>
+                    <p class="text-xs text-gray-500">Pekerjaan Terdaftar</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $totalSideJobs }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-500 text-white mr-4">
-                    <i class="fas fa-users fa-2x"></i>
+                <div class="p-2 rounded-full bg-green-500 text-white mr-3">
+                    <i class="fas fa-users fa-lg"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Total Pekerja Terdaftar</p>
-                    <p class="text-3xl font-bold text-gray-800">{{ $totalPekerja }}</p>
+                    <p class="text-xs text-gray-500">Total Pekerja</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $totalPekerja }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-500 text-white mr-4">
-                    <i class="fas fa-dollar-sign fa-2x"></i>
+                <div class="p-2 rounded-full bg-purple-500 text-white mr-3">
+                    <i class="fas fa-handshake fa-lg"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Total Transaksi (Bulan Ini)</p>
-                    <p class="text-3xl font-bold text-gray-800">Rp 5.000.000</p> {{-- Ganti dengan data dinamis --}}
+                    <p class="text-xs text-gray-500">Proyek Selesai</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $totalCompleted ?? 0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center">
+                <div class="p-2 rounded-full bg-yellow-500 text-white mr-3">
+                    <i class="fas fa-dollar-sign fa-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Transaksi Bulan Ini</p>
+                    <p class="text-xl font-bold text-gray-800">Rp 5M</p>
                 </div>
             </div>
         </div>
