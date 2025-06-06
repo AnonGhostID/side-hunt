@@ -19,11 +19,11 @@ class ManagementPageController extends Controller
 
     public function dashboard()
     {
-
+        $user = Auth::user();
         $totalSideJobs = SideJob::count();
         $totalPekerja = User::where('isAdmin', 0)->count();
         
-        return view('manajemen.dashboard', compact('totalSideJobs', 'totalPekerja'));
+        return view('manajemen.dashboard', compact('user', 'totalSideJobs', 'totalPekerja'));
     }
 
     // --- Fitur Manajemen Utama ---

@@ -48,8 +48,8 @@
                     <i class="fas fa-dollar-sign fa-lg"></i>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500">Transaksi Bulan Ini</p>
-                    <p class="text-xl font-bold text-gray-800">Rp 5M</p>
+                    <p class="text-xs text-gray-500">Total saldo Anda</p>
+                    <p class="text-xl font-bold text-gray-800">Rp {{ number_format($user->dompet, 0, ',', '.') }}</p>
                 </div>
             </div>
         </div>
