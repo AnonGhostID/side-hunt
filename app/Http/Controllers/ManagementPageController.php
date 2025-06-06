@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
 use App\Models\Transaksi;
+use App\Models\SideJob;
+use App\Models\User;
 
 class ManagementPageController extends Controller
 {
@@ -17,8 +19,11 @@ class ManagementPageController extends Controller
 
     public function dashboard()
     {
-        // Logika untuk mengambil data dashboard jika ada
-        return view('manajemen.dashboard');
+
+        $totalSideJobs = SideJob::count();
+        $totalPekerja = User::where('isAdmin', 0)->count();
+        
+        return view('manajemen.dashboard', compact('totalSideJobs', 'totalPekerja'));
     }
 
     // --- Fitur Manajemen Utama ---
@@ -101,8 +106,7 @@ class ManagementPageController extends Controller
 
     public function chatPengguna()
     {
-        // Mungkin redirect ke halaman chatify atau view khusus
-        // return redirect()->route('chatify'); // Jika menggunakan package Chatify
+
         return view('manajemen.chat.panel');
     }
     
@@ -121,7 +125,4 @@ class ManagementPageController extends Controller
         return view('manajemen.pelamar.track_record');
     }
 
-
-    // Tambahkan method lain untuk setiap fitur yang Anda butuhkan
-    // Pastikan untuk membuat file view yang sesuai untuk setiap method
 }

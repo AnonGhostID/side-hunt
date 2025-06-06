@@ -12,8 +12,8 @@
                     <i class="fas fa-briefcase fa-2x"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Pekerjaan Aktif</p>
-                    <p class="text-3xl font-bold text-gray-800">12</p> {{-- Ganti dengan data dinamis --}}
+                    <p class="text-sm text-gray-500">Pekerjaan Terdaftar</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ $totalSideJobs }}</p>
                 </div>
             </div>
         </div>
@@ -24,8 +24,8 @@
                     <i class="fas fa-users fa-2x"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Total Pengguna</p>
-                    <p class="text-3xl font-bold text-gray-800">150</p> {{-- Ganti dengan data dinamis --}}
+                    <p class="text-sm text-gray-500">Total Pekerja Terdaftar</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ $totalPekerja }}</p>
                 </div>
             </div>
         </div>

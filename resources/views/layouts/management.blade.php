@@ -106,7 +106,7 @@
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
                 <a href="{{ route('manajemen.pembayaran.gateway') }}" class="sidebar-link {{ request()->routeIs('manajemen.pembayaran.gateway') ? 'active' : '' }}">
                     <i class="fas fa-credit-card"></i>
-                    <span>Gateway Pembayaran</span>
+                    <span>Top Up Saldo</span>
                 </a>
                 <a href="{{ route('manajemen.transaksi.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.transaksi.riwayat') ? 'active' : '' }}">
                     <i class="fas fa-receipt"></i>
