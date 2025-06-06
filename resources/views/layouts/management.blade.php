@@ -12,6 +12,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -41,6 +46,23 @@
         .sidebar-link.active i {
             color: white;
         }
+        html.dark .sidebar-link {
+            color: #d1d5db;
+        }
+        html.dark .sidebar-link:hover {
+            background-color: #374151;
+            color: #f9fafb;
+        }
+        html.dark .sidebar-link.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        html.dark .sidebar-link i {
+            color: #9ca3af;
+        }
+        html.dark .sidebar-link.active i {
+            color: white;
+        }
         .sidebar-link i {
             margin-right: 0.75rem;
             width: 1.25rem; /* w-5 */
@@ -66,17 +88,34 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        html.dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        html.dark ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+        html.dark ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
     </style>
 </head>
-<body class="bg-gray-100 antialiased">
-    <div x-data="{ sidebarOpen: false }" class="flex h-screen bg-gray-100">
+<body x-data="{ sidebarOpen: false, dark: localStorage.getItem('theme') === 'dark' }"
+      x-init="$watch('dark', val => localStorage.setItem('theme', val ? 'dark' : 'light'))"
+      :class="{ 'dark': dark }"
+      class="bg-gray-100 dark:bg-gray-900 antialiased">
+    <div class="flex h-screen bg-gray-100 dark:bg-gray-900">
         <aside
-            class="fixed inset-y-0 left-0 z-30 flex flex-col h-full w-64 transform transition-transform duration-300 ease-in-out bg-white border-r border-gray-200 shadow-lg lg:translate-x-0 lg:static lg:inset-0"
+            class="fixed inset-y-0 left-0 z-30 flex flex-col h-full w-64 transform transition-transform duration-300 ease-in-out bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg lg:translate-x-0 lg:static lg:inset-0"
             :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
-            <div class="flex items-center justify-between p-4 h-16 border-b border-gray-200">
-                <a href="{{ route('manajemen.dashboard') }}" class="text-2xl font-bold text-blue-600">
-                    {{ config('app.name', 'SideHunt') }}
-                </a>
+            <div class="flex items-center justify-between p-4 h-16 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center space-x-2">
+                    <a href="{{ route('manajemen.dashboard') }}" class="text-2xl font-bold text-blue-600">
+                        {{ config('app.name', 'SideHunt') }}
+                    </a>
+                    <button @click="dark = !dark" class="text-gray-500 dark:text-gray-300 focus:outline-none">
+                        <i :class="dark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                    </button>
+                </div>
                 <button @click="sidebarOpen = false" class="text-gray-500 lg:hidden">
                     <i class="fas fa-times"></i>
                 </button>
@@ -207,11 +246,11 @@
         </aside>
 
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between p-4 h-16 bg-white border-b border-gray-200 shadow-sm">
+            <header class="flex items-center justify-between p-4 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <button @click="sidebarOpen = true" class="text-gray-500 focus:outline-none lg:hidden">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="text-xl font-semibold text-gray-700">@yield('page-title', 'Dashboard')</div>
+                <div class="text-xl font-semibold text-gray-700 dark:text-gray-100">@yield('page-title', 'Dashboard')</div>
                 <div>
                     {{-- Additional navbar items can go here --}}
                     <a href="{{ url('/') }}" class="text-blue-500 hover:text-blue-700">
@@ -220,7 +259,7 @@
                 </div>
             </header>
 
-            <main class="flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-100">
+            <main class="flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900">
                 @if (session('success'))
                     <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md" role="alert">
                         {{ session('success') }}
