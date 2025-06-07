@@ -24,28 +24,31 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Metode Pembayaran</label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <label class="flex items-center space-x-2">
-                        <input type="radio" name="metode" value="QRIS" class="form-radio text-blue-600" required>
-                        <span>QRIS</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="radio" name="metode" value="DANA" class="form-radio text-blue-600" required>
-                        <span>DANA</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="radio" name="metode" value="GoPay" class="form-radio text-blue-600" required>
-                        <span>GoPay</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="radio" name="metode" value="BNI" class="form-radio text-blue-600" required>
-                        <span>BNI</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="radio" name="metode" value="BCA" class="form-radio text-blue-600" required>
-                        <span>BCA</span>
-                    </label>
+                <label for="custom_amount" class="block text-sm font-medium text-gray-700 mb-1">Atau Masukkan Jumlah Custom</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
+                    <input 
+                        type="text" 
+                        id="custom_amount" 
+                        name="custom_amount" 
+                        data-min="20000" 
+                        data-step="5000"
+                        class="mt-1 block w-full pl-9 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                        placeholder="Minimal Rp 20.000"
+                    >
+                    <input type="hidden" id="custom_amount_raw" name="custom_amount_raw">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Minimum top up adalah Rp 20.000</p>
+            </div>
+            <div class="mb-4">
+                <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div class="flex items-center">
+                        <img src="https://xendit.co/wp-content/uploads/2020/11/xendit-logo.png" alt="Xendit" class="h-6 w-auto mr-3">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">Payment Gateway</span>
+                            <p class="text-xs text-gray-500">Powered by Xendit - Secure Payment</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="flex justify-end pt-4">
@@ -60,6 +63,89 @@
 
 @push('scripts')
 <script>
-    console.log('Halaman Top Up dimuat.');
+    document.addEventListener('DOMContentLoaded', function() {
+        const nominalSelect = document.getElementById('nominal');
+        const customAmountInput = document.getElementById('custom_amount');
+        const customAmountRaw = document.getElementById('custom_amount_raw');
+        const form = document.querySelector('form');
+        
+        // Function to format number with thousands separator
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+        
+        // Function to remove formatting and get raw number
+        function getRawNumber(formattedNum) {
+            return formattedNum.replace(/\./g, '');
+        }
+        
+        // Clear custom amount when selecting from dropdown
+        nominalSelect.addEventListener('change', function() {
+            if (this.value) {
+                customAmountInput.value = '';
+                customAmountRaw.value = '';
+            }
+        });
+        
+        // Clear dropdown when typing custom amount
+        customAmountInput.addEventListener('input', function() {
+            if (this.value) {
+                nominalSelect.value = '';
+            }
+            
+            // Remove all non-numeric characters
+            let rawValue = this.value.replace(/[^0-9]/g, '');
+            
+            // Format with thousands separator
+            if (rawValue) {
+                this.value = formatNumber(rawValue);
+                customAmountRaw.value = rawValue;
+            } else {
+                this.value = '';
+                customAmountRaw.value = '';
+            }
+        });
+        
+        // Handle keypress to only allow numbers
+        customAmountInput.addEventListener('keypress', function(e) {
+            // Allow backspace, delete, tab, escape, enter
+            if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                (e.keyCode === 65 && e.ctrlKey === true) ||
+                (e.keyCode === 67 && e.ctrlKey === true) ||
+                (e.keyCode === 86 && e.ctrlKey === true) ||
+                (e.keyCode === 88 && e.ctrlKey === true)) {
+                return;
+            }
+            // Ensure that it is a number and stop the keypress
+            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                e.preventDefault();
+            }
+        });
+        
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            const selectedNominal = nominalSelect.value;
+            const customAmount = customAmountRaw.value;
+            
+            if (!selectedNominal && !customAmount) {
+                e.preventDefault();
+                alert('Silakan pilih nominal atau masukkan jumlah custom untuk top up.');
+                return;
+            }
+            
+            if (customAmount && parseInt(customAmount) < 20000) {
+                e.preventDefault();
+                alert('Jumlah minimum top up adalah Rp 20.000');
+                return;
+            }
+            
+            // Set the raw value for form submission
+            if (customAmount) {
+                customAmountInput.name = '';
+                customAmountRaw.name = 'custom_amount';
+            }
+        });
+    });
 </script>
 @endpush
