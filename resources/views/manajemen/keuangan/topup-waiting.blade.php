@@ -9,8 +9,8 @@
         <!-- Header -->
         <div class="text-center mb-6">
             <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Menunggu Pembayaran</h2>
-            <p class="text-gray-600">Silakan lakukan pembayaran untuk melanjutkan</p>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Invoice telah dibuat!</h2>
+            <p class="text-gray-600">Silakan klik "Bayar Sekarang" untuk melakukan pembayaran</p>
         </div>
 
         <!-- Payment Details -->

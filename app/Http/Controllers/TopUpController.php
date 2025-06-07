@@ -96,12 +96,14 @@ class TopUpController extends Controller
             
             if (!empty($result)) {
                 $xenditStatus = strtolower($result[0]['status']);
+                $previousStatus = $payment->status;
                 
                 // Update payment status
                 $payment->update(['status' => $xenditStatus]);
                 
-                // If payment is successful, update user wallet
-                if ($xenditStatus === 'paid' || $xenditStatus === 'settled') {
+                // If payment is successful and status changed from unpaid to paid, update user wallet
+                if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
+                    ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
                     $user = $payment->user;
                     $user->increment('dompet', $payment->amount);
                     
@@ -171,9 +173,13 @@ class TopUpController extends Controller
             
             if (!empty($result)) {
                 $xenditStatus = strtolower($result[0]['status']);
+                $previousStatus = $payment->status;
+                
                 $payment->update(['status' => $xenditStatus]);
                 
-                if ($xenditStatus === 'paid' || $xenditStatus === 'settled') {
+                // Only increment wallet if status changed from unpaid to paid
+                if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
+                    ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
                     $user = $payment->user;
                     $user->increment('dompet', $payment->amount);
                 }

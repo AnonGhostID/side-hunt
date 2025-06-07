@@ -55,18 +55,16 @@
                 <p class="text-xs text-gray-500 mt-1">Minimum top up adalah Rp 20.000</p>
             </div>
             <div class="mb-4">
-                <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <div class="flex items-center">
-                        <img src="https://xendit.co/wp-content/uploads/2020/11/xendit-logo.png" alt="Xendit" class="h-6 w-auto mr-3">
-                        <div>
-                            <span class="text-sm font-medium text-gray-700">Payment Gateway</span>
-                            <p class="text-xs text-gray-500">Powered by Xendit - Secure Payment</p>
-                        </div>
+                <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                    <img src="{{ asset('xenditblue.png') }}" alt="Xendit" class="h-12 w-auto mx-auto mb-2">
+                    <div>
+                        <span class="text-sm font-medium text-gray-700">Payment Gateway</span>
+                        <p class="text-xs text-gray-500">Anda akan dialihkan menuju Payment Gateway</p>
                     </div>
                 </div>
             </div>
             <div class="flex justify-end pt-4">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                <button type="submit" id="topup-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400">
                     <i class="fas fa-wallet mr-2"></i> Top Up Sekarang
                 </button>
             </div>
@@ -81,6 +79,7 @@
         const nominalSelect = document.getElementById('nominal');
         const customAmountInput = document.getElementById('custom_amount');
         const customAmountRaw = document.getElementById('custom_amount_raw');
+        const topupButton = document.getElementById('topup-button');
         const form = document.querySelector('form');
         
         // Function to format number with thousands separator
@@ -93,12 +92,25 @@
             return formattedNum.replace(/\./g, '');
         }
         
+        // Function to check button state
+        function checkButtonState() {
+            const selectedNominal = nominalSelect.value;
+            const customAmount = parseInt(customAmountRaw.value) || 0;
+            
+            if (selectedNominal || (customAmount >= 20000)) {
+                topupButton.disabled = false;
+            } else {
+                topupButton.disabled = true;
+            }
+        }
+        
         // Clear custom amount when selecting from dropdown
         nominalSelect.addEventListener('change', function() {
             if (this.value) {
                 customAmountInput.value = '';
                 customAmountRaw.value = '';
             }
+            checkButtonState();
         });
         
         // Clear dropdown when typing custom amount
@@ -118,6 +130,8 @@
                 this.value = '';
                 customAmountRaw.value = '';
             }
+            
+            checkButtonState();
         });
         
         // Handle keypress to only allow numbers
@@ -160,6 +174,9 @@
                 customAmountRaw.name = 'custom_amount';
             }
         });
+        
+        // Initial button state check
+        checkButtonState();
     });
 </script>
 @endpush
