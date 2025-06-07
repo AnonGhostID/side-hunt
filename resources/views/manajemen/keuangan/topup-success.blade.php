@@ -28,10 +28,9 @@
                     <span class="text-sm text-gray-500">Status:</span>
                     <p class="font-semibold text-green-600">{{ ucfirst($payment->status) }}</p>
                 </div>
-            </div>
-            <div class="mt-4">
+            </div>            <div class="mt-4">
                 <span class="text-sm text-gray-500">Tanggal:</span>
-                <p class="font-semibold">{{ $payment->updated_at->format('d/m/Y H:i:s') }}</p>
+                <p class="font-semibold">{{ $payment->updated_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i:s') }}</p>
             </div>
         </div>
 

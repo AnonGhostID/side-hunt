@@ -87,8 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function startCountdown() {
-    const createdAt = new Date('{{ $payment->created_at }}').getTime();
-    const expiryTime = createdAt + (24 * 60 * 60 * 1000); // 24 hours
+    // Convert Laravel timestamp to proper timezone-aware JavaScript date
+    const createdAtUTC = new Date('{{ $payment->created_at->toISOString() }}').getTime();
+    const expiryTime = createdAtUTC + (24 * 60 * 60 * 1000); // 24 hours
     
     countdownInterval = setInterval(function() {
         const now = new Date().getTime();
