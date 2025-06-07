@@ -16,9 +16,11 @@
             <div class="mb-4">
                 <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Pilih Nominal Top Up</label>
                 <select id="nominal" name="nominal" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    @for ($i = 50000; $i <= 1000000; $i += 50000)
+                    @for ($i = 50000; $i <= 300000; $i += 50000)
                         <option value="{{ $i }}">Rp {{ number_format($i, 0, ',', '.') }}</option>
                     @endfor
+                    <option value="500000">Rp {{ number_format(500000, 0, ',', '.') }}</option>
+                    <option value="1000000">Rp {{ number_format(1000000, 0, ',', '.') }}</option>
                 </select>
             </div>
             <div class="mb-4">
