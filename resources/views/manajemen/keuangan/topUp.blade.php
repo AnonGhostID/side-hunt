@@ -7,15 +7,29 @@
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Isi Saldo Dompet</h2>
+        
+        @if (session('error'))
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                {{ session('error') }}
+            </div>
+        @endif
+        
+        @if (session('success'))
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                {{ session('success') }}
+            </div>
+        @endif
+        
         <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
             <span class="text-gray-700">Saldo Dompet Saat Ini:</span>
             <span class="font-semibold">Rp {{ number_format($user->dompet, 0, ',', '.') }}</span>
         </div>
-        <form action="#" method="POST">
+        <form action="{{ route('manajemen.topup.store') }}" method="POST">
             @csrf
             <div class="mb-4">
                 <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Pilih Nominal Top Up</label>
                 <select id="nominal" name="nominal" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <option value="">-- Pilih Nominal --</option>
                     @for ($i = 50000; $i <= 300000; $i += 50000)
                         <option value="{{ $i }}">Rp {{ number_format($i, 0, ',', '.') }}</option>
                     @endfor

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\TopUpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/payment', [PaymentController::class, 'store']);
 Route::post('/payment/notification', [PaymentController::class, 'notification']);
+Route::post('/payment/cleanup-expired', [TopUpController::class, 'cleanupExpiredPayments']);

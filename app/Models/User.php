@@ -55,6 +55,10 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'pelamars');
     }
 
+    public function payments(){
+        return $this->hasMany(Payment::class);
+    }
+
     /**
      * Check if the user is an admin.
      *

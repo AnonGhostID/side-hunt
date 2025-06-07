@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Illuminate\Support\Str;
@@ -31,9 +32,12 @@ class PaymentController extends Controller
             
             //saveDB
             $payment = new Payment();
+            $payment->user_id = $request->user_id ?? null;
             $payment->status = $result->getStatus();
             $payment->checkout_link = $result['invoice_url'];
             $payment->external_id = $createInvoiceRequest['external_id'];
+            $payment->amount = $request->amount;
+            $payment->description = $request->description;
             $payment->save();
 
             return response()->json($payment);
@@ -41,19 +45,48 @@ class PaymentController extends Controller
 
         public function notification(Request $request)
         {
-            $result = $this->apiInstance->getInvoices(null, $request->external_id);
-
-            // Get data
-            $payment = Payment::where('external_id', $request->external_id)->firstOrFail();
-
-            if ($payment->status == 'settled') {
-                return response()->json('Payment anda telah di proses');
+            $external_id = $request->external_id;
+            
+            if (!$external_id) {
+                return response()->json(['error' => 'External ID is required'], 400);
             }
 
-            // Update status
-            $payment->status = strtolower($result[0]['status']);
-            $payment->save();
+            try {
+                $result = $this->apiInstance->getInvoices(null, $external_id);
 
-            return response()->json('Success');
+                // Get payment data
+                $payment = Payment::where('external_id', $external_id)->first();
+                
+                if (!$payment) {
+                    return response()->json(['error' => 'Payment not found'], 404);
+                }
+
+                if ($payment->status == 'settled' || $payment->status == 'paid') {
+                    return response()->json(['message' => 'Payment already processed']);
+                }
+
+                if (!empty($result)) {
+                    $xenditStatus = strtolower($result[0]['status']);
+                    
+                    // Update payment status
+                    $payment->update(['status' => $xenditStatus]);
+                    
+                    // If payment is successful and it's a top-up, update user wallet
+                    if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && $payment->user_id) {
+                        $user = $payment->user;
+                        if ($user) {
+                            $user->increment('dompet', $payment->amount);
+                        }
+                    }
+                    
+                    return response()->json(['message' => 'Payment status updated successfully']);
+                }
+
+                return response()->json(['error' => 'No payment data found'], 404);
+                
+            } catch (\Exception $e) {
+                Log::error('Payment notification error: ' . $e->getMessage());
+                return response()->json(['error' => 'Internal server error'], 500);
+            }
         }
 }

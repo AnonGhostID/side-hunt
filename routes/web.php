@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ManagementPageController;
+use App\Http\Controllers\TopUpController;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -66,6 +67,12 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     // Keuangan
     // Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
     Route::get('/Top-Up', [ManagementPageController::class, 'topUp'])->name('topUp');
+    Route::post('/Top-Up', [TopUpController::class, 'store'])->name('topup.store');
+    Route::get('/Top-Up/waiting/{external_id}', [TopUpController::class, 'waiting'])->name('topup.waiting');
+    Route::post('/Top-Up/check-status', [TopUpController::class, 'checkStatus'])->name('topup.check-status');
+    Route::get('/Top-Up/success/{external_id}', [TopUpController::class, 'success'])->name('topup.success');
+    Route::get('/Top-Up/failed/{external_id}', [TopUpController::class, 'failed'])->name('topup.failed');
+    Route::get('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topup.cancel');
     Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
     Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
     Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
