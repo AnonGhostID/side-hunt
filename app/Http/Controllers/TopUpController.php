@@ -26,11 +26,14 @@ class TopUpController extends Controller
     {
         $request->validate([
             'nominal' => 'nullable|numeric|min:20000',
-            'custom_amount' => 'nullable|numeric|min:20000'
+            // 'custom_amount' => 'nullable|string',
+            'custom_amount_raw' => 'nullable|numeric|min:20000'
         ]);
 
         $user = Auth::user();
-        $amount = $request->nominal ?: ($request->custom_amount ?: $request->custom_amount_raw);
+        
+        // Get amount from the appropriate field
+        $amount = !empty($request->nominal) ? $request->nominal : (!empty($request->custom_amount_raw) ? $request->custom_amount_raw : null);
 
         if (!$amount || $amount < 20000) {
             return back()->with('error', 'Minimum top up adalah Rp 20.000');
