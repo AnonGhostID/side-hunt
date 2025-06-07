@@ -108,6 +108,10 @@
                     <i class="fas fa-credit-card"></i>
                     <span>Top Up Saldo</span>
                 </a>
+                 <a href="{{ route('manajemen.tarik_saldo') }}" class="sidebar-link {{ request()->routeIs('manajemen.tarik_saldo') ? 'active' : '' }}">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Tarik Saldo</span>
+                </a>
                 <a href="{{ route('manajemen.transaksi.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.transaksi.riwayat') ? 'active' : '' }}">
                     <i class="fas fa-receipt"></i>
                     <span>Riwayat Transaksi</span>

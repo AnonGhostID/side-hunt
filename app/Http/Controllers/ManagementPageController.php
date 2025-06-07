@@ -44,6 +44,11 @@ class ManagementPageController extends Controller
         return view('manajemen.keuangan.topUp', compact('user'));
     }
 
+    public function tarikSaldo()
+    {
+        return view('manajemen.keuangan.tarik_saldo');
+    }
+
     public function riwayatTransaksi()
     {
         $user = Auth::user();

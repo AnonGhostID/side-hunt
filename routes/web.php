@@ -73,6 +73,7 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     Route::get('/Top-Up/success/{external_id}', [TopUpController::class, 'success'])->name('topup.success');
     Route::get('/Top-Up/failed/{external_id}', [TopUpController::class, 'failed'])->name('topup.failed');
     Route::get('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topup.cancel');
+    Route::get('/tarik-saldo', [ManagementPageController::class, 'tarikSaldo'])->name('tarik_saldo');
     Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
     Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
     Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
