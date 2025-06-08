@@ -90,7 +90,7 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
 
 
-    // Rute Khusus Admin (Contoh) - Anda bisa menambahkan middleware admin di sini
+    // Rute Khusus Admin (Contoh)
     Route::prefix('admin')->name('admin.')->middleware(['admin']) // Buat middleware 'admin' jika belum ada
     ->group(function () {
         Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');

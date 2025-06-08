@@ -48,14 +48,14 @@ class TopUpController extends Controller
             $external_id = 'topup_' . Str::random(32);
             
             // Set expiry date to 24 hours from now
-            $expiryDate = now()->addHours(24)->toISOString();
+            // $expiryDate = now()->addHours(24)->toISOString();
             
             $createInvoiceRequest = new \Xendit\Invoice\CreateInvoiceRequest([
                 'external_id' => $external_id,
                 'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
                 'amount' => $amount,
                 'payer_email' => $user->email,
-                'expiry_date' => $expiryDate,
+                'invoice_duration' => 360, 
                 'success_redirect_url' => route('manajemen.topup.success', ['external_id' => $external_id]),
                 'failure_redirect_url' => route('manajemen.topup.failed', ['external_id' => $external_id]),
             ]);
@@ -97,7 +97,9 @@ class TopUpController extends Controller
             case 'settled':
                 return redirect()->route('manajemen.topup.success', $external_id);
             case 'failed':
+                return redirect()->route('manajemen.topup.failed', $external_id);
             case 'expired':
+                return redirect()->route('manajemen.topup.failed', $external_id);
             case 'cancelled':
                 return redirect()->route('manajemen.topup.failed', $external_id);
             case 'pending':
@@ -117,6 +119,8 @@ class TopUpController extends Controller
         $payment = Payment::where('external_id', $external_id)
                          ->where('user_id', Auth::id())
                          ->firstOrFail();
+
+        $payment->refresh();
 
         try {
             $result = $this->apiInstance->getInvoices(null, $external_id);
@@ -207,7 +211,9 @@ class TopUpController extends Controller
                     return redirect()->route('manajemen.topup.waiting', $external_id)
                                    ->with('error', 'Pembayaran masih dalam proses. Silakan tunggu konfirmasi pembayaran.');
                 case 'expired':
+                    return redirect()->route('manajemen.topup.failed', $external_id);
                 case 'cancelled':
+                    return redirect()->route('manajemen.topup.failed', $external_id);
                 case 'failed':
                     return redirect()->route('manajemen.topup.failed', $external_id)
                                    ->with('error', 'Pembayaran tidak berhasil.');
@@ -258,9 +264,24 @@ class TopUpController extends Controller
                          ->where('status', 'pending')
                          ->firstOrFail();
 
-        $payment->update(['status' => 'cancelled']);
-
-        return redirect()->route('manajemen.topUp')->with('success', 'Pembayaran telah dibatalkan.');
+        try {
+            $result = $this->apiInstance->getInvoices(null, $external_id);
+            
+            if (!empty($result)) {
+                $invoiceId = $result[0]['id'];
+                $expiredInvoice = $this->apiInstance->expireInvoice($invoiceId);
+                $payment->update(['status' => 'expired']);
+                
+                return redirect()->route('manajemen.topUp')->with('error', 'Pembayaran telah dibatalkan dan invoice telah dihapus!.');
+            } else {
+                $payment->update(['status' => 'cancelled']);
+                return redirect()->route('manajemen.topUp')->with('error', 'Pembayaran telah dibatalkan.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal hapus invoice Xendit: ' . $e->getMessage());
+            $payment->update(['status' => 'cancelled']);
+            return redirect()->route('manajemen.topUp')->with('error', 'Pembayaran telah dibatalkan (offline).');
+        }
     }
 
     private function updatePaymentStatus(Payment $payment)
@@ -273,12 +294,11 @@ class TopUpController extends Controller
                 $previousStatus = $payment->status;
                 
                 // Log the full Xendit response to see available fields
-                Log::info('Xendit Invoice Response', [
-                    'external_id' => $payment->external_id,
-                    'response' => $result[0]
-                ]);
+                // Log::info('Xendit Invoice Response', [
+                //     'external_id' => $payment->external_id,
+                //     'response' => $result[0]
+                // ]);
                 
-                // Extract payment method if available
                 $paymentMethod = null;
                 
                 // Check various possible fields for payment method information

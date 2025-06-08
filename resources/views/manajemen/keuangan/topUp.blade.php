@@ -8,7 +8,7 @@
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Isi Saldo Dompet</h2>
         
-        @if (session('error'))
+        <!-- @if (session('error'))
             <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
                 {{ session('error') }}
             </div>
@@ -18,7 +18,7 @@
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
                 {{ session('success') }}
             </div>
-        @endif
+        @endif -->
         
         <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
             <span class="text-gray-700">Saldo Dompet Saat Ini:</span>
