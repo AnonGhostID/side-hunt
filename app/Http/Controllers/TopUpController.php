@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Xendit\Configuration;
@@ -99,55 +100,55 @@ class TopUpController extends Controller
             
             if (!empty($result)) {
                 $xenditStatus = strtolower($result[0]['status']);
-                $previousStatus = $payment->status;
                 
-                // // Log the full Xendit response to see available fields
-                // Log::info('Xendit Invoice Response in checkStatus', [
-                //     'external_id' => $external_id,
-                //     'response' => $result[0]
-                // ]);
-                
-                // // Extract payment method if available
-                // $paymentMethod = null;
-                
-                // // Check various possible fields for payment method information
-                // if (isset($result[0]['payment_method'])) {
-                //     $paymentMethod = $result[0]['payment_method'];
-                // } elseif (isset($result[0]['payment_channel'])) {
-                //     $paymentMethod = $result[0]['payment_channel'];
-                // } elseif (isset($result[0]['payment_destination'])) {
-                //     $paymentMethod = $result[0]['payment_destination'];
-                // } elseif (isset($result[0]['bank_code'])) {
-                //     $paymentMethod = $result[0]['bank_code'];
-                // } elseif (isset($result[0]['payment_details']['payment_method'])) {
-                //     $paymentMethod = $result[0]['payment_details']['payment_method'];
-                // }
-                
-                // // Update payment status and method
-                // $updateData = ['status' => $xenditStatus];
-                // if ($paymentMethod) {
-                //     $updateData['method'] = $paymentMethod;
-                // }
-                
-                // $payment->update($updateData);
-                
-                // If payment is successful and status changed from unpaid to paid, update user wallet
-                if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
-                    ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
-                    $user = $payment->user;
-                    $user->increment('dompet', $payment->amount);
+                // Use database transaction with row locking to prevent race conditions
+                return DB::transaction(function () use ($payment, $xenditStatus, $result) {
+                    // Lock the payment row for update to prevent concurrent processing
+                    $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
+                    $previousStatus = $lockedPayment->status;
+                    
+                    // Extract payment method if available
+                    $paymentMethod = null;
+                    
+                    // Check various possible fields for payment method information
+                    if (isset($result[0]['payment_method'])) {
+                        $paymentMethod = $result[0]['payment_method'];
+                    } elseif (isset($result[0]['payment_channel'])) {
+                        $paymentMethod = $result[0]['payment_channel'];
+                    } elseif (isset($result[0]['payment_destination'])) {
+                        $paymentMethod = $result[0]['payment_destination'];
+                    } elseif (isset($result[0]['bank_code'])) {
+                        $paymentMethod = $result[0]['bank_code'];
+                    } elseif (isset($result[0]['payment_details']['payment_method'])) {
+                        $paymentMethod = $result[0]['payment_details']['payment_method'];
+                    }
+                    
+                    // Update payment status and method first
+                    $updateData = ['status' => $xenditStatus];
+                    if ($paymentMethod) {
+                        $updateData['method'] = $paymentMethod;
+                    }
+                    
+                    $lockedPayment->update($updateData);
+                    
+                    // If payment is successful and status changed from unpaid to paid, update user wallet
+                    if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
+                        ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
+                        $user = $lockedPayment->user;
+                        $user->increment('dompet', $lockedPayment->amount);
+                        
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Pembayaran berhasil! Saldo Anda telah ditambahkan.',
+                            'new_balance' => $user->fresh()->dompet
+                        ]);
+                    }
                     
                     return response()->json([
-                        'status' => 'success',
-                        'message' => 'Pembayaran berhasil! Saldo Anda telah ditambahkan.',
-                        'new_balance' => $user->fresh()->dompet
+                        'status' => $xenditStatus,
+                        'message' => $this->getStatusMessage($xenditStatus)
                     ]);
-                }
-                
-                return response()->json([
-                    'status' => $xenditStatus,
-                    'message' => $this->getStatusMessage($xenditStatus)
-                ]);
+                });
             }
             
         } catch (\Exception $e) {

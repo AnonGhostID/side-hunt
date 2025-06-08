@@ -80,10 +80,22 @@
 let countdownInterval;
 let autoCheckInterval;
 let paymentCompleted = false;
+let isTabActive = true;
+let checkingStatus = false; // Prevent multiple simultaneous requests
 
 document.addEventListener('DOMContentLoaded', function() {
     startCountdown();
     startAutoCheck();
+    
+    // Listen for tab visibility changes to prevent unnecessary API calls
+    document.addEventListener('visibilitychange', function() {
+        isTabActive = !document.hidden;
+        
+        if (isTabActive && !paymentCompleted) {
+            // Tab became active, check payment status immediately
+            checkPaymentStatus(false);
+        }
+    });
 });
 
 function startCountdown() {
@@ -118,16 +130,18 @@ function startCountdown() {
 }
 
 function startAutoCheck() {
-    // Check every 3 seconds
+    // Check every 3 seconds, but only if tab is active
     autoCheckInterval = setInterval(function() {
-        if (!paymentCompleted) {
+        if (!paymentCompleted && isTabActive) {
             checkPaymentStatus(false);
         }
     }, 3000);
 }
 
 function checkPaymentStatus(manual = true) {
-    if (paymentCompleted) return;
+    if (paymentCompleted || checkingStatus) return;
+    
+    checkingStatus = true; // Set flag to prevent multiple simultaneous requests
     
     fetch('{{ route("manajemen.topup.check-status") }}', {
         method: 'POST',
@@ -141,6 +155,8 @@ function checkPaymentStatus(manual = true) {
     })
     .then(response => response.json())
     .then(data => {
+        checkingStatus = false; // Reset flag
+        
         if (data.status === 'success') {
             paymentCompleted = true;
             clearInterval(countdownInterval);
@@ -180,6 +196,7 @@ function checkPaymentStatus(manual = true) {
         }
     })
     .catch(error => {
+        checkingStatus = false; // Reset flag on error
         if (manual) {
             showMessage('error', 'Terjadi kesalahan saat mengecek status pembayaran');
         }
