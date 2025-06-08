@@ -1,30 +1,293 @@
 @extends('layouts.management')
 
-@section('title', 'Top Up Saldo')
-@section('page-title', 'Top Up Saldo')
+@section('title')
+    @if(isset($view_type))
+        @if($view_type === 'waiting')
+            Menunggu Pembayaran
+        @elseif($view_type === 'success')
+            Pembayaran Berhasil
+        @elseif($view_type === 'failed')
+            Pembayaran Gagal
+        @endif
+    @else
+        Top Up Saldo
+    @endif
+@endsection
+
+@section('page-title')
+    @if(isset($view_type))
+        @if($view_type === 'waiting')
+            Menunggu Pembayaran
+        @elseif($view_type === 'success')
+            Pembayaran Berhasil
+        @elseif($view_type === 'failed')
+            Pembayaran Gagal
+        @endif
+    @else
+        Top Up Saldo
+    @endif
+@endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Isi Saldo Dompet</h2>
-        
-        <!-- @if (session('error'))
-            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
-                {{ session('error') }}
+{{-- Handle different payment states based on view_type --}}
+@if(isset($view_type) && $view_type === 'waiting')
+    {{-- WAITING STATE --}}
+    {{-- Security: This should only be accessible for pending payments --}}
+    @if($payment->status !== 'pending')
+        <script>
+            alert('Akses tidak diizinkan: Status pembayaran tidak sesuai');
+            window.location.href = '{{ route("manajemen.topUp") }}';
+        </script>
+    @else
+        <div class="container mx-auto px-4 py-8">
+            <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Invoice telah dibuat!</h2>
+                    <p class="text-gray-600">Silakan klik "Bayar Sekarang" untuk melakukan pembayaran</p>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-sm text-gray-500">Jumlah Top Up:</span>
+                            <p class="font-semibold text-lg">Rp {{ number_format($payment->amount, 0, ',', '.') }}</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Status:</span>
+                            <p id="payment-status" class="font-semibold text-lg text-yellow-600">Menunggu Pembayaran</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">ID Transaksi:</span>
+                        <p class="font-mono text-sm">{{ $payment->external_id }}</p>
+                    </div>
+                </div>
+
+                <!-- Countdown Timer -->
+                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                        <span class="text-sm">Pembayaran akan kedaluwarsa dalam: </span>
+                        <span id="countdown" class="font-semibold text-yellow-800 ml-2">24:00:00</span>
+                    </div>
+                </div>
+
+                <!-- Payment Link -->
+                <div class="text-center mb-6">
+                    <a href="{{ $payment->checkout_link }}" target="_blank" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-300 inline-block">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Bayar Sekarang
+                    </a>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="checkPaymentStatus()" 
+                            class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-refresh mr-2"></i>
+                        Cek Status Sekarang
+                    </button>
+                    <form action="{{ route('manajemen.topup.cancel', $payment->external_id) }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" onclick="return confirm('Apakah Anda yakin ingin membatalkan pembayaran ini?')"
+                                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                            <i class="fas fa-times mr-2"></i>
+                            Batalkan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Success/Error Messages -->
+                <div id="message-container" class="mt-6 hidden">
+                    <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded hidden">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span id="success-text"></span>
+                    </div>
+                    <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span id="error-text"></span>
+                    </div>
+                </div>
             </div>
-        @endif
-        
-        @if (session('success'))
-            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
-                {{ session('success') }}
-            </div>
-        @endif -->
-        
-        <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
-            <span class="text-gray-700">Saldo Dompet Saat Ini:</span>
-            <span class="font-semibold">Rp {{ number_format($user->dompet, 0, ',', '.') }}</span>
         </div>
-        <form action="{{ route('manajemen.topup.store') }}" method="POST">
+    @endif
+
+@elseif(isset($view_type) && $view_type === 'success')
+    {{-- SUCCESS STATE --}}
+    {{-- Security: This should only be accessible for paid/settled payments --}}
+    @if(!in_array($payment->status, ['paid', 'settled']))
+        <script>
+            alert('Akses tidak diizinkan: Pembayaran belum berhasil');
+            window.location.href = '{{ route("manajemen.topUp") }}';
+        </script>
+    @else
+        <div class="container mx-auto px-4 py-8">
+            <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center">
+                <!-- Success Icon -->
+                <div class="mb-6">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
+                        <i class="fas fa-check text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pembayaran Berhasil!</h2>
+                <p class="text-gray-600 mb-6">Top up saldo Anda telah berhasil diproses.</p>
+
+                <!-- Payment Details -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-left">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-sm text-gray-500">Jumlah Top Up:</span>
+                            <p class="font-semibold">Rp {{ number_format($payment->amount, 0, ',', '.') }}</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Status:</span>
+                            <p class="font-semibold text-green-600">{{ ucfirst($payment->status) }}</p>
+                        </div>
+                    </div>
+                    @if($payment->method)
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Metode Pembayaran:</span>
+                        <p class="font-semibold">{{ strtoupper($payment->method) }}</p>
+                    </div>
+                    @endif
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">Tanggal:</span>
+                        <p class="font-semibold">{{ $payment->updated_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i:s') }}</p>
+                    </div>
+                </div>
+
+                <!-- Current Balance -->
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
+                    <span class="text-sm text-blue-600">Saldo Dompet Saat Ini:</span>
+                    <p class="text-xl font-bold text-blue-800">Rp {{ number_format(Auth::user()->dompet, 0, ',', '.') }}</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{{ route('manajemen.topUp') }}" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-plus mr-2"></i>
+                        Top Up Lagi
+                    </a>
+                    
+                    <a href="{{ route('manajemen.transaksi.riwayat') }}" 
+                       class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-history mr-2"></i>
+                        Lihat Riwayat
+                    </a>
+                    
+                    <a href="{{ route('manajemen.dashboard') }}" 
+                       class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-home mr-2"></i>
+                        Kembali ke Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
+
+@elseif(isset($view_type) && $view_type === 'failed')
+    {{-- FAILED STATE --}}
+    {{-- Security: This should only be accessible for failed/expired/cancelled payments --}}
+    @if(!in_array($payment->status, ['failed', 'expired', 'cancelled']))
+        <script>
+            alert('Akses tidak diizinkan: Halaman ini hanya untuk pembayaran yang gagal');
+            window.location.href = '{{ route("manajemen.topUp") }}';
+        </script>
+    @else
+        <div class="container mx-auto px-4 py-8">
+            <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center">
+                <!-- Error Icon -->
+                <div class="mb-6">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
+                        <i class="fas fa-times text-red-600 text-2xl"></i>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pembayaran Gagal</h2>
+                <p class="text-gray-600 mb-6">Maaf, pembayaran Anda tidak dapat diproses. Silakan coba lagi.</p>
+
+                <!-- Payment Details -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-left">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-sm text-gray-500">Jumlah Top Up:</span>
+                            <p class="font-semibold">Rp {{ number_format($payment->amount, 0, ',', '.') }}</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Status:</span>
+                            <p class="font-semibold text-red-600">{{ ucfirst($payment->status) }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-sm text-gray-500">ID Transaksi:</span>
+                        <p class="font-mono text-sm">{{ $payment->external_id }}</p>
+                    </div>
+                </div>
+
+                <!-- Possible Reasons -->
+                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6 text-left">
+                    <h4 class="font-semibold text-yellow-800 mb-2">Kemungkinan Penyebab:</h4>
+                    <ul class="text-sm text-yellow-700 list-disc list-inside space-y-1">
+                        <li>Saldo tidak mencukupi</li>
+                        <li>Pembayaran dibatalkan</li>
+                        <li>Koneksi internet terputus</li>
+                        <li>Timeout pembayaran</li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{{ route('manajemen.topUp') }}" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-redo mr-2"></i>
+                        Coba Lagi
+                    </a>
+                    
+                    <a href="{{ route('manajemen.transaksi.riwayat') }}" 
+                       class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-history mr-2"></i>
+                        Lihat Riwayat
+                    </a>
+                    
+                    <a href="{{ route('manajemen.dashboard') }}" 
+                       class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                        <i class="fas fa-home mr-2"></i>
+                        Kembali ke Dashboard
+                    </a>
+                </div>
+
+                <!-- Help Section -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-500 mb-2">Butuh bantuan?</p>
+                    <a href="{{ route('manajemen.bantuan.panel') }}" class="text-blue-500 hover:text-blue-700 text-sm">
+                        <i class="fas fa-question-circle mr-1"></i>
+                        Hubungi Customer Service
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
+
+@else
+    {{-- DEFAULT TOP UP FORM STATE --}}
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Isi Saldo Dompet</h2>
+            
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
+                <span class="text-gray-700">Saldo Dompet Saat Ini:</span>
+                <span class="font-semibold">Rp {{ number_format(Auth::user()->dompet, 0, ',', '.') }}</span>
+            </div>
+            
+            <form action="{{ route('manajemen.topup.store') }}" method="POST">
             @csrf
             <div class="mb-4">
                 <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Pilih Nominal Top Up</label>
@@ -68,11 +331,171 @@
                     <i class="fas fa-wallet mr-2"></i> Top Up Sekarang
                 </button>
             </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
+@endif
 @endsection
 
+{{-- JavaScript for waiting state --}}
+@if(isset($view_type) && $view_type === 'waiting')
+@push('scripts')
+<script>
+let countdownInterval;
+let autoCheckInterval;
+let paymentCompleted = false;
+let isTabActive = true;
+let checkingStatus = false; // Prevent multiple simultaneous requests
+
+document.addEventListener('DOMContentLoaded', function() {
+    startCountdown();
+    startAutoCheck();
+    
+    // Listen for tab visibility changes to prevent unnecessary API calls
+    document.addEventListener('visibilitychange', function() {
+        isTabActive = !document.hidden;
+        
+        if (isTabActive && !paymentCompleted) {
+            // Tab became active, check payment status immediately
+            checkPaymentStatus(false);
+        }
+    });
+});
+
+function startCountdown() {
+    const expiryTime = new Date('{{ $payment->created_at }}').getTime() + (24 * 60 * 60 * 1000); // 24 hours from creation
+    
+    countdownInterval = setInterval(function() {
+        const now = new Date().getTime();
+        const distance = expiryTime - now;
+        
+        if (distance > 0) {
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = 'Kedaluwarsa';
+            showMessage('error', 'Pembayaran telah kedaluwarsa. Silakan buat invoice baru.');
+        }
+    }, 1000);
+}
+
+function startAutoCheck() {
+    // Check every 30 seconds automatically, but only if tab is active
+    autoCheckInterval = setInterval(function() {
+        if (isTabActive && !paymentCompleted) {
+            checkPaymentStatus(true);
+        }
+    }, 30000);
+}
+
+function checkPaymentStatus(isAutomatic = false) {
+    if (checkingStatus || paymentCompleted) return;
+    
+    checkingStatus = true;
+    
+    if (!isAutomatic) {
+        showMessage('info', 'Mengecek status pembayaran...');
+    }
+    
+    fetch('{{ route("manajemen.topup.check-status") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            external_id: '{{ $payment->external_id }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        checkingStatus = false; // Reset flag
+        
+        if (data.status === 'success') {
+            paymentCompleted = true;
+            clearInterval(countdownInterval);
+            clearInterval(autoCheckInterval);
+            
+            document.getElementById('payment-status').innerHTML = "Berhasil";
+            document.getElementById('payment-status').className = "font-semibold text-lg text-green-600";
+            
+            showMessage('success', data.message + ' Saldo baru: Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance));
+            // Redirect to same route with new status after 3 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else if (data.status === 'failed') {
+            paymentCompleted = true;
+            clearInterval(countdownInterval);
+            clearInterval(autoCheckInterval);
+            
+            document.getElementById('payment-status').innerHTML = "Gagal";
+            document.getElementById('payment-status').className = "font-semibold text-lg text-red-600";
+            
+            showMessage('error', data.message);
+            // Redirect to same route with new status after 3 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else if (data.status === 'pending') {
+            if (!isAutomatic) {
+                showMessage('info', 'Pembayaran masih dalam proses. Akan dicek otomatis setiap 30 detik.');
+            }
+        } else {
+            showMessage('error', data.message || 'Terjadi kesalahan saat mengecek status pembayaran.');
+        }
+    })
+    .catch(error => {
+        checkingStatus = false; // Reset flag
+        console.error('Error:', error);
+        if (!isAutomatic) {
+            showMessage('error', 'Gagal mengecek status pembayaran. Silakan coba lagi.');
+        }
+    });
+}
+
+function showMessage(type, text) {
+    const messageContainer = document.getElementById('message-container');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    const successText = document.getElementById('success-text');
+    const errorText = document.getElementById('error-text');
+    
+    // Hide all messages first
+    successMessage.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+    
+    if (type === 'success') {
+        successText.textContent = text;
+        successMessage.classList.remove('hidden');
+    } else if (type === 'error') {
+        errorText.textContent = text;
+        errorMessage.classList.remove('hidden');
+    } else if (type === 'info') {
+        successText.textContent = text;
+        successMessage.classList.remove('hidden');
+    }
+    
+    messageContainer.classList.remove('hidden');
+    
+    // Auto hide after 5 seconds for info/success messages
+    if (type !== 'error') {
+        setTimeout(() => {
+            messageContainer.classList.add('hidden');
+        }, 5000);
+    }
+}
+</script>
+@endpush
+@endif
+
+{{-- JavaScript for default form state --}}
+@if(!isset($view_type))
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -180,3 +603,4 @@
     });
 </script>
 @endpush
+@endif

@@ -55,9 +55,9 @@ class TopUpController extends Controller
                 'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
                 'amount' => $amount,
                 'payer_email' => $user->email,
-                'invoice_duration' => 360, 
-                'success_redirect_url' => route('manajemen.topup.success', ['external_id' => $external_id]),
-                'failure_redirect_url' => route('manajemen.topup.failed', ['external_id' => $external_id]),
+                'invoice_duration' => 300, 
+                'success_redirect_url' => route('manajemen.topup.payment', ['external_id' => $external_id]),
+                'failure_redirect_url' => route('manajemen.topup.payment', ['external_id' => $external_id]),
             ]);
             
             $result = $this->apiInstance->createInvoice($createInvoiceRequest);
@@ -72,14 +72,14 @@ class TopUpController extends Controller
                 'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
             ]);
 
-            return redirect()->route('manajemen.topup.waiting', ['external_id' => $external_id]);
+            return redirect()->route('manajemen.topup.payment', ['external_id' => $external_id]);
             
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membuat invoice: ' . $e->getMessage());
         }
     }
 
-    public function waiting($external_id)
+    public function payment($external_id)
     {
         $payment = Payment::where('external_id', $external_id)
                          ->where('user_id', Auth::id())
@@ -91,26 +91,24 @@ class TopUpController extends Controller
         // Reload the payment to get the updated status
         $payment->refresh();
 
-        // Redirect if payment is no longer pending
+        // Determine which view to show based on payment status
         switch ($payment->status) {
+            case 'pending':
+                return view('manajemen.keuangan.topup', compact('payment'))->with(['view_type' => 'waiting']);
+            
             case 'paid':
             case 'settled':
-                return redirect()->route('manajemen.topup.success', $external_id);
+                return view('manajemen.keuangan.topup', compact('payment'))->with(['view_type' => 'success']);
+            
             case 'failed':
-                return redirect()->route('manajemen.topup.failed', $external_id);
             case 'expired':
-                return redirect()->route('manajemen.topup.failed', $external_id);
             case 'cancelled':
-                return redirect()->route('manajemen.topup.failed', $external_id);
-            case 'pending':
-                // Continue to show waiting page
-                break;
+                return view('manajemen.keuangan.topup', compact('payment'))->with(['view_type' => 'failed']);
+            
             default:
                 return redirect()->route('manajemen.topUp')
                                ->with('error', 'Status pembayaran tidak valid.');
         }
-
-        return view('manajemen.keuangan.topup-waiting', compact('payment'));
     }
 
     public function checkStatus(Request $request)
@@ -191,73 +189,7 @@ class TopUpController extends Controller
         ]);
     }
 
-    public function success($external_id)
-    {
-        $payment = Payment::where('external_id', $external_id)
-                         ->where('user_id', Auth::id())
-                         ->firstOrFail();
-
-        // Check and update payment status
-        $this->updatePaymentStatus($payment);
-
-        // Reload the payment to get the updated status
-        $payment->refresh();
-
-        // Only allow access to success page if payment is actually successful
-        if (!in_array($payment->status, ['paid', 'settled'])) {
-            // Redirect based on current status
-            switch ($payment->status) {
-                case 'pending':
-                    return redirect()->route('manajemen.topup.waiting', $external_id)
-                                   ->with('error', 'Pembayaran masih dalam proses. Silakan tunggu konfirmasi pembayaran.');
-                case 'expired':
-                    return redirect()->route('manajemen.topup.failed', $external_id);
-                case 'cancelled':
-                    return redirect()->route('manajemen.topup.failed', $external_id);
-                case 'failed':
-                    return redirect()->route('manajemen.topup.failed', $external_id)
-                                   ->with('error', 'Pembayaran tidak berhasil.');
-                default:
-                    return redirect()->route('manajemen.topUp')
-                                   ->with('error', 'Status pembayaran tidak valid.');
-            }
-        }
-
-        return view('manajemen.keuangan.topup-success', compact('payment'));
-    }
-
-    public function failed($external_id)
-    {
-        $payment = Payment::where('external_id', $external_id)
-                         ->where('user_id', Auth::id())
-                         ->firstOrFail();
-
-        // Check and update payment status
-        $this->updatePaymentStatus($payment);
-
-        // Reload the payment to get the updated status
-        $payment->refresh();
-
-        // Only allow access to failed page if payment is actually failed/expired/cancelled
-        if (!in_array($payment->status, ['failed', 'expired', 'cancelled'])) {
-            // Redirect based on current status
-            switch ($payment->status) {
-                case 'pending':
-                    return redirect()->route('manajemen.topup.waiting', $external_id)
-                                   ->with('info', 'Pembayaran masih dalam proses.');
-                case 'paid':
-                case 'settled':
-                    return redirect()->route('manajemen.topup.success', $external_id);
-                default:
-                    return redirect()->route('manajemen.topUp')
-                                   ->with('error', 'Status pembayaran tidak valid.');
-            }
-        }
-
-        return view('manajemen.keuangan.topup-failed', compact('payment'));
-    }
-
-    public function cancel($external_id)
+    public function cancel(Request $request, $external_id)
     {
         $payment = Payment::where('external_id', $external_id)
                          ->where('user_id', Auth::id())
