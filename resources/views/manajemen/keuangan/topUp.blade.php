@@ -41,14 +41,12 @@
     @else
         <div class="container mx-auto px-4 py-8">
             <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-                <!-- Header -->
                 <div class="text-center mb-6">
-                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Invoice telah dibuat!</h2>
-                    <p class="text-gray-600">Silakan klik "Bayar Sekarang" untuk melakukan pembayaran</p>
+                    <div id="payment-icon" class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <h2 id="payment-title" class="text-2xl font-semibold text-gray-800 mb-2">Invoice telah dibuat!</h2>
+                    <p id="payment-subtitle" class="text-gray-600">Silakan klik "Bayar Sekarang" untuk melakukan pembayaran</p>
                 </div>
 
-                <!-- Payment Details -->
                 <div class="bg-gray-50 p-4 rounded-lg mb-6">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -66,7 +64,6 @@
                     </div>
                 </div>
 
-                <!-- Countdown Timer -->
                 <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
                     <div class="flex items-center">
                         <i class="fas fa-clock text-yellow-600 mr-2"></i>
@@ -75,7 +72,6 @@
                     </div>
                 </div>
 
-                <!-- Payment Link -->
                 <div class="text-center mb-6">
                     <a href="{{ $payment->checkout_link }}" target="_blank" 
                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-300 inline-block">
@@ -84,7 +80,6 @@
                     </a>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <button onclick="checkPaymentStatus()" 
                             class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
@@ -93,7 +88,7 @@
                     </button>
                     <form action="{{ route('manajemen.topup.cancel', $payment->external_id) }}" method="POST" style="display: inline;">
                         @csrf
-                        <button type="submit" onclick="return confirm('Apakah Anda yakin ingin membatalkan pembayaran ini?')"
+                        <button type="submit" onclick="return confirmCancel()"
                                 class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
                             <i class="fas fa-times mr-2"></i>
                             Batalkan
@@ -101,7 +96,6 @@
                     </form>
                 </div>
 
-                <!-- Success/Error Messages -->
                 <div id="message-container" class="mt-6 hidden">
                     <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded hidden">
                         <i class="fas fa-check-circle mr-2"></i>
@@ -127,18 +121,15 @@
     @else
         <div class="container mx-auto px-4 py-8">
             <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center">
-                <!-- Success Icon -->
                 <div class="mb-6">
                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
                         <i class="fas fa-check text-green-600 text-2xl"></i>
                     </div>
                 </div>
 
-                <!-- Success Message -->
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pembayaran Berhasil!</h2>
                 <p class="text-gray-600 mb-6">Top up saldo Anda telah berhasil diproses.</p>
 
-                <!-- Payment Details -->
                 <div class="bg-gray-50 p-4 rounded-lg mb-6 text-left">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -162,13 +153,11 @@
                     </div>
                 </div>
 
-                <!-- Current Balance -->
                 <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
                     <span class="text-sm text-blue-600">Saldo Dompet Saat Ini:</span>
                     <p class="text-xl font-bold text-blue-800">Rp {{ number_format(Auth::user()->dompet, 0, ',', '.') }}</p>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="{{ route('manajemen.topUp') }}" 
                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
@@ -203,18 +192,15 @@
     @else
         <div class="container mx-auto px-4 py-8">
             <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center">
-                <!-- Error Icon -->
                 <div class="mb-6">
                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
-                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        <i class="fas fa-times text-red-600 text-2xl"></i>
                     </div>
                 </div>
 
-                <!-- Error Message -->
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pembayaran Gagal</h2>
                 <p class="text-gray-600 mb-6">Maaf, pembayaran Anda tidak dapat diproses. Silakan coba lagi.</p>
 
-                <!-- Payment Details -->
                 <div class="bg-gray-50 p-4 rounded-lg mb-6 text-left">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -232,7 +218,6 @@
                     </div>
                 </div>
 
-                <!-- Possible Reasons -->
                 <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6 text-left">
                     <h4 class="font-semibold text-yellow-800 mb-2">Kemungkinan Penyebab:</h4>
                     <ul class="text-sm text-yellow-700 list-disc list-inside space-y-1">
@@ -243,7 +228,6 @@
                     </ul>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="{{ route('manajemen.topUp') }}" 
                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
@@ -264,7 +248,6 @@
                     </a>
                 </div>
 
-                <!-- Help Section -->
                 <div class="mt-8 pt-6 border-t border-gray-200">
                     <p class="text-sm text-gray-500 mb-2">Butuh bantuan?</p>
                     <a href="{{ route('manajemen.bantuan.panel') }}" class="text-blue-500 hover:text-blue-700 text-sm">
@@ -381,6 +364,15 @@ function startCountdown() {
             clearInterval(autoCheckInterval);
             paymentCompleted = true;
             
+            // Change icon to exclamation triangle
+            const paymentIcon = document.getElementById('payment-icon');
+            paymentIcon.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4";
+            paymentIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>';
+            
+            // Update title and subtitle
+            document.getElementById('payment-title').textContent = 'Pembayaran Kedaluwarsa';
+            document.getElementById('payment-subtitle').textContent = 'Waktu pembayaran telah habis. Silakan buat transaksi baru.';
+            
             document.getElementById('countdown').textContent = 'Kedaluwarsa';
             document.getElementById('payment-status').innerHTML = "Kedaluwarsa";
             document.getElementById('payment-status').className = "font-semibold text-lg text-red-600";
@@ -392,7 +384,6 @@ function startCountdown() {
 }
 
 function startAutoCheck() {
-    // Check every 5 seconds automatically
     autoCheckInterval = setInterval(function() {
         if (!paymentCompleted) {
             checkPaymentStatus(true);
@@ -432,16 +423,34 @@ function checkPaymentStatus(isAutomatic = false, isTimeoutCheck = false) {
             document.getElementById('payment-status').className = "font-semibold text-lg text-green-600";
             
             showMessage('success', data.message + ' Saldo baru: Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance));
-            // Redirect to same route with new status after 3 seconds
             setTimeout(() => {
                 window.location.href = window.location.href;
             }, 5000);
-        } else if (data.status === 'failed' || data.status === 'expired' || isTimeoutCheck) {
+        } else if (data.status === 'failed' || data.status === 'expired' || data.status === 'cancelled' || isTimeoutCheck) {
             paymentCompleted = true;
             clearInterval(countdownInterval);
             clearInterval(autoCheckInterval);
+
+            const paymentIcon = document.getElementById('payment-icon');
+            paymentIcon.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4";
+            paymentIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>';
             
-            document.getElementById('payment-status').innerHTML = data.status === 'expired' || isTimeoutCheck ? "Kedaluwarsa" : "Gagal";
+            if (data.status === 'expired' || isTimeoutCheck) {
+                document.getElementById('payment-title').textContent = 'Pembayaran Kedaluwarsa';
+                document.getElementById('payment-subtitle').textContent = 'Waktu pembayaran telah habis. Silakan buat transaksi baru.';
+            } else if (data.status === 'failed') {
+                document.getElementById('payment-title').textContent = 'Pembayaran Gagal';
+                document.getElementById('payment-subtitle').textContent = 'Pembayaran tidak dapat diproses. Silakan coba lagi.';
+            } else if (data.status === 'cancelled') {
+                document.getElementById('payment-title').textContent = 'Pembayaran Dibatalkan';
+                document.getElementById('payment-subtitle').textContent = 'Pembayaran telah dibatalkan.';
+            }
+            
+            let statusText = 'Gagal';
+            if (data.status === 'expired' || isTimeoutCheck) statusText = 'Kedaluwarsa';
+            else if (data.status === 'cancelled') statusText = 'Dibatalkan';
+            
+            document.getElementById('payment-status').innerHTML = statusText;
             document.getElementById('payment-status').className = "font-semibold text-lg text-red-600";
             
             if (isTimeoutCheck) {
@@ -455,7 +464,7 @@ function checkPaymentStatus(isAutomatic = false, isTimeoutCheck = false) {
             }, isTimeoutCheck ? 1000 : 3000);
         } else if (data.status === 'pending') {
             if (!isAutomatic) {
-                showMessage('info', 'Pembayaran masih dalam proses. Akan dicek otomatis setiap 5 detik.');
+                showMessage('info', 'Transaksi sedang berlangsung! Akan dicek otomatis setiap 5 detik.');
             }
         } else {
             if (!isAutomatic && !isTimeoutCheck) {
@@ -474,7 +483,6 @@ function checkPaymentStatus(isAutomatic = false, isTimeoutCheck = false) {
         console.error('Error:', error);
         
         if (isTimeoutCheck) {
-            // If timeout check fails, still refresh the page
             showMessage('error', 'Pembayaran telah kedaluwarsa. Halaman akan dimuat ulang...');
             setTimeout(() => {
                 window.location.href = window.location.href;
@@ -518,6 +526,27 @@ function expireInvoiceOnTimeout() {
     });
 }
 
+function confirmCancel() {
+    if (confirm('Apakah Anda yakin ingin membatalkan pembayaran ini?')) {
+        // Change icon immediately when cancel is confirmed
+        const paymentIcon = document.getElementById('payment-icon');
+        paymentIcon.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4";
+        paymentIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>';
+        
+        // Update title and subtitle
+        document.getElementById('payment-title').textContent = 'Pembayaran Dibatalkan';
+        document.getElementById('payment-subtitle').textContent = 'Anda telah membatalkan pembayaran ini.';
+        
+        // Clear intervals
+        clearInterval(countdownInterval);
+        clearInterval(autoCheckInterval);
+        paymentCompleted = true;
+        
+        return true;
+    }
+    return false;
+}
+
 function showMessage(type, text) {
     const messageContainer = document.getElementById('message-container');
     const successMessage = document.getElementById('success-message');
@@ -525,7 +554,6 @@ function showMessage(type, text) {
     const successText = document.getElementById('success-text');
     const errorText = document.getElementById('error-text');
     
-    // Hide all messages first
     successMessage.classList.add('hidden');
     errorMessage.classList.add('hidden');
     
@@ -542,7 +570,6 @@ function showMessage(type, text) {
     
     messageContainer.classList.remove('hidden');
     
-    // Auto hide after 5 seconds for info/success messages
     if (type !== 'error') {
         setTimeout(() => {
             messageContainer.classList.add('hidden');
@@ -564,17 +591,14 @@ function showMessage(type, text) {
         const topupButton = document.getElementById('topup-button');
         const form = document.querySelector('form');
         
-        // Function to format number with thousands separator
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
         
-        // Function to remove formatting and get raw number
         function getRawNumber(formattedNum) {
             return formattedNum.replace(/\./g, '');
         }
         
-        // Function to check button state
         function checkButtonState() {
             const selectedNominal = nominalSelect.value;
             const customAmount = parseInt(customAmountRaw.value) || 0;
@@ -586,7 +610,6 @@ function showMessage(type, text) {
             }
         }
         
-        // Clear custom amount when selecting from dropdown
         nominalSelect.addEventListener('change', function() {
             if (this.value) {
                 customAmountInput.value = '';
@@ -595,7 +618,6 @@ function showMessage(type, text) {
             checkButtonState();
         });
         
-        // Clear dropdown when typing custom amount
         customAmountInput.addEventListener('input', function() {
             if (this.value) {
                 nominalSelect.value = '';
@@ -633,7 +655,7 @@ function showMessage(type, text) {
             }
         });
         
-        // Form validation
+        // Cek validasi form
         form.addEventListener('submit', function(e) {
             const selectedNominal = nominalSelect.value;
             const customAmount = customAmountRaw.value;
@@ -650,7 +672,6 @@ function showMessage(type, text) {
                 return;
             }
             
-            // Set the raw value for form submission
             if (customAmount) {
                 customAmountInput.name = '';
                 customAmountRaw.name = 'custom_amount';
