@@ -71,7 +71,7 @@
                     <div class="flex items-center">
                         <i class="fas fa-clock text-yellow-600 mr-2"></i>
                         <span class="text-sm">Pembayaran akan kedaluwarsa dalam: </span>
-                        <span id="countdown" class="font-semibold text-yellow-800 ml-2">24:00:00</span>
+                        <span id="countdown" class="font-semibold text-yellow-800 ml-2">00:00</span>
                     </div>
                 </div>
 
@@ -363,19 +363,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function startCountdown() {
-    const expiryTime = new Date('{{ $payment->created_at }}').getTime() + (24 * 60 * 60 * 1000); // 24 hours from creation
-    
+    const expiryTime = new Date('{{ $payment->created_at }}').getTime() + ({{ session('invoice_duration', 300) }} * 1000);
+
     countdownInterval = setInterval(function() {
         const now = new Date().getTime();
         const distance = expiryTime - now;
         
         if (distance > 0) {
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            // const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             
             document.getElementById('countdown').textContent = 
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         } else {
             clearInterval(countdownInterval);
             document.getElementById('countdown').textContent = 'Kedaluwarsa';
@@ -385,12 +385,12 @@ function startCountdown() {
 }
 
 function startAutoCheck() {
-    // Check every 30 seconds automatically, but only if tab is active
+    // Check every 5 seconds automatically
     autoCheckInterval = setInterval(function() {
-        if (isTabActive && !paymentCompleted) {
+        if (!paymentCompleted) {
             checkPaymentStatus(true);
         }
-    }, 30000);
+    }, 5000);
 }
 
 function checkPaymentStatus(isAutomatic = false) {

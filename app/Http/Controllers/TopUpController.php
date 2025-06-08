@@ -58,7 +58,9 @@ class TopUpController extends Controller
                 'invoice_duration' => 300, 
                 'success_redirect_url' => route('manajemen.topup.payment', ['external_id' => $external_id]),
                 'failure_redirect_url' => route('manajemen.topup.payment', ['external_id' => $external_id]),
+                
             ]);
+            
             
             $result = $this->apiInstance->createInvoice($createInvoiceRequest);
             
@@ -71,14 +73,17 @@ class TopUpController extends Controller
                 'amount' => $amount,
                 'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
             ]);
-
-            return redirect()->route('manajemen.topup.payment', ['external_id' => $external_id]);
+            
+            
+            return redirect()
+                    ->route('manajemen.topup.payment', ['external_id' => $external_id])
+                    ->with('invoice_duration', 300);
             
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membuat invoice: ' . $e->getMessage());
         }
     }
-
+    
     public function payment($external_id)
     {
         $payment = Payment::where('external_id', $external_id)
