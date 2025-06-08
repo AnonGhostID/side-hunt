@@ -206,7 +206,7 @@
                 <!-- Error Icon -->
                 <div class="mb-6">
                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
-                        <i class="fas fa-times text-red-600 text-2xl"></i>
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
                     </div>
                 </div>
 
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function startCountdown() {
-    const expiryTime = new Date('{{ $payment->created_at }}').getTime() + ({{ session('invoice_duration', 300) }} * 1000);
+    const expiryTime = new Date('{{ $payment->created_at }}').getTime() + ({{ session('invoice_duration') }} * 1000);
 
     countdownInterval = setInterval(function() {
         const now = new Date().getTime();
@@ -378,8 +378,15 @@ function startCountdown() {
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         } else {
             clearInterval(countdownInterval);
+            clearInterval(autoCheckInterval);
+            paymentCompleted = true;
+            
             document.getElementById('countdown').textContent = 'Kedaluwarsa';
-            showMessage('error', 'Pembayaran telah kedaluwarsa. Silakan buat invoice baru.');
+            document.getElementById('payment-status').innerHTML = "Kedaluwarsa";
+            document.getElementById('payment-status').className = "font-semibold text-lg text-red-600";
+            
+            showMessage('error', 'Pembayaran telah kedaluwarsa!');
+            expireInvoiceOnTimeout();
         }
     }, 1000);
 }
@@ -393,12 +400,12 @@ function startAutoCheck() {
     }, 5000);
 }
 
-function checkPaymentStatus(isAutomatic = false) {
+function checkPaymentStatus(isAutomatic = false, isTimeoutCheck = false) {
     if (checkingStatus || paymentCompleted) return;
     
     checkingStatus = true;
     
-    if (!isAutomatic) {
+    if (!isAutomatic && !isTimeoutCheck) {
         showMessage('info', 'Mengecek status pembayaran...');
     }
     
@@ -427,35 +434,87 @@ function checkPaymentStatus(isAutomatic = false) {
             showMessage('success', data.message + ' Saldo baru: Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance));
             // Redirect to same route with new status after 3 seconds
             setTimeout(() => {
-                window.location.reload();
-            }, 3000);
-        } else if (data.status === 'failed') {
+                window.location.href = window.location.href;
+            }, 5000);
+        } else if (data.status === 'failed' || data.status === 'expired' || isTimeoutCheck) {
             paymentCompleted = true;
             clearInterval(countdownInterval);
             clearInterval(autoCheckInterval);
             
-            document.getElementById('payment-status').innerHTML = "Gagal";
+            document.getElementById('payment-status').innerHTML = data.status === 'expired' || isTimeoutCheck ? "Kedaluwarsa" : "Gagal";
             document.getElementById('payment-status').className = "font-semibold text-lg text-red-600";
             
-            showMessage('error', data.message);
-            // Redirect to same route with new status after 3 seconds
+            if (isTimeoutCheck) {
+                showMessage('error', 'Pembayaran telah kedaluwarsa. Halaman akan dimuat ulang...');
+            } else {
+                showMessage('error', data.message);
+            }
+            
             setTimeout(() => {
-                window.location.reload();
-            }, 3000);
+                window.location.href = window.location.href;
+            }, isTimeoutCheck ? 1000 : 3000);
         } else if (data.status === 'pending') {
             if (!isAutomatic) {
-                showMessage('info', 'Pembayaran masih dalam proses. Akan dicek otomatis setiap 30 detik.');
+                showMessage('info', 'Pembayaran masih dalam proses. Akan dicek otomatis setiap 5 detik.');
             }
         } else {
-            showMessage('error', data.message || 'Terjadi kesalahan saat mengecek status pembayaran.');
+            if (!isAutomatic && !isTimeoutCheck) {
+                showMessage('error', data.message || 'Terjadi kesalahan saat mengecek status pembayaran.');
+            }
+            
+            if (isTimeoutCheck) {
+                setTimeout(() => {
+                    window.location.href = window.location.href;
+                }, 1000);
+            }
         }
     })
     .catch(error => {
         checkingStatus = false; // Reset flag
         console.error('Error:', error);
-        if (!isAutomatic) {
+        
+        if (isTimeoutCheck) {
+            // If timeout check fails, still refresh the page
+            showMessage('error', 'Pembayaran telah kedaluwarsa. Halaman akan dimuat ulang...');
+            setTimeout(() => {
+                window.location.href = window.location.href;
+            }, 1000);
+        } else if (!isAutomatic) {
             showMessage('error', 'Gagal mengecek status pembayaran. Silakan coba lagi.');
         }
+    });
+}
+
+function expireInvoiceOnTimeout() {
+    showMessage('info', 'Invoice telah kedaluwarsa!');
+    
+    fetch('{{ route("manajemen.topup.expire-timeout") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            external_id: '{{ $payment->external_id }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'expired') {
+            showMessage('error', 'Pembayaran telah kedaluwarsa dan invoice telah dihapus. Halaman akan dimuat ulang...');
+        } else {
+            showMessage('error', 'Pembayaran telah berubah status: ' + data.message + '. Halaman akan dimuat ulang...');
+        }
+        setTimeout(() => {
+            window.location.href = window.location.href;
+        }, 3000);
+    })
+    .catch(error => {
+        console.error('Error expiring invoice:', error);
+        showMessage('error', 'Gagal menghapus invoice, namun pembayaran telah kedaluwarsa. Halaman akan dimuat ulang...');
+        setTimeout(() => {
+            window.location.href = window.location.href;
+        }, 3000);
     });
 }
 

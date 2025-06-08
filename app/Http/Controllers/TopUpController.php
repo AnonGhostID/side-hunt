@@ -55,7 +55,7 @@ class TopUpController extends Controller
                 'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
                 'amount' => $amount,
                 'payer_email' => $user->email,
-                'invoice_duration' => 300, 
+                'invoice_duration' => 20, 
                 'success_redirect_url' => route('manajemen.topup.payment', ['external_id' => $external_id]),
                 'failure_redirect_url' => route('manajemen.topup.payment', ['external_id' => $external_id]),
                 
@@ -77,7 +77,7 @@ class TopUpController extends Controller
             
             return redirect()
                     ->route('manajemen.topup.payment', ['external_id' => $external_id])
-                    ->with('invoice_duration', 300);
+                    ->with('invoice_duration', 20);
             
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membuat invoice: ' . $e->getMessage());
@@ -294,6 +294,69 @@ class TopUpController extends Controller
         }
 
         return response()->json(['message' => 'Expired payments cleaned up']);
+    }
+
+    public function expireOnTimeout(Request $request)
+    {
+        $external_id = $request->external_id;
+        $payment = Payment::where('external_id', $external_id)
+                         ->where('user_id', Auth::id())
+                         ->where('status', 'pending')
+                         ->first();
+
+        if (!$payment) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Pembayaran tidak ditemukan atau sudah tidak pending.'
+            ], 404);
+        }
+
+        try {
+            // Get invoice from Xendit
+            $result = $this->apiInstance->getInvoices(null, $external_id);
+            
+            if (!empty($result)) {
+                $invoiceId = $result[0]['id'];
+                $xenditStatus = strtolower($result[0]['status']);
+                
+                // If still pending in Xendit, expire it
+                if ($xenditStatus === 'pending') {
+                    $this->apiInstance->expireInvoice($invoiceId);
+                    $payment->update(['status' => 'expired']);
+                    
+                    return response()->json([
+                        'status' => 'expired',
+                        'message' => 'Invoice telah kedaluwarsa dan dihapus dari Xendit.'
+                    ]);
+                } else {
+                    // Update local status to match Xendit
+                    $payment->update(['status' => $xenditStatus]);
+                    
+                    return response()->json([
+                        'status' => $xenditStatus,
+                        'message' => $this->getStatusMessage($xenditStatus)
+                    ]);
+                }
+            } else {
+                // Invoice not found in Xendit, mark as expired locally
+                $payment->update(['status' => 'expired']);
+                
+                return response()->json([
+                    'status' => 'expired',
+                    'message' => 'Invoice tidak ditemukan di Xendit, ditandai sebagai kedaluwarsa.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal expire invoice otomatis: ' . $e->getMessage());
+            
+            // Even if Xendit call fails, mark as expired locally
+            $payment->update(['status' => 'expired']);
+            
+            return response()->json([
+                'status' => 'expired',
+                'message' => 'Invoice telah kedaluwarsa (offline).'
+            ]);
+        }
     }
 
 }
