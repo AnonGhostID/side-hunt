@@ -11,7 +11,7 @@
             Berikut adalah daftar transaksi yang pernah dilakukan. Anda dapat memeriksa detail status pembayaran di sini.
         </p>
         <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
-            <span class="text-gray-700">Saldo Dompet Saat Ini:</span>
+            <span class="text-gray-700">Saldo Anda Saat Ini:</span>
             <span class="font-semibold">Rp {{ number_format($user->dompet, 0, ',', '.') }}</span>
         </div>
 
@@ -28,10 +28,11 @@
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
-                        <th class="px-5 py-3 border-b-2 border-gray-200">ID Transaksi</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Tanggal</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200">ID Transaksi</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Deskripsi</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Jumlah</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200">Metode</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Status</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Aksi</th>
                     </tr>

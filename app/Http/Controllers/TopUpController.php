@@ -52,7 +52,7 @@ class TopUpController extends Controller
             
             $createInvoiceRequest = new \Xendit\Invoice\CreateInvoiceRequest([
                 'external_id' => $external_id,
-                'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->email,
+                'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
                 'amount' => $amount,
                 'payer_email' => $user->email,
                 'expiry_date' => $expiryDate,
@@ -69,7 +69,7 @@ class TopUpController extends Controller
                 'checkout_link' => $result['invoice_url'],
                 'external_id' => $external_id,
                 'amount' => $amount,
-                'description' => 'Top Up Saldo - ' . $user->nama
+                'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->nama,
             ]);
 
             return redirect()->route('manajemen.topup.waiting', ['external_id' => $external_id]);
