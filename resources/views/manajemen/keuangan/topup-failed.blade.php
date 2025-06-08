@@ -4,6 +4,13 @@
 @section('page-title', 'Pembayaran Gagal')
 
 @section('content')
+{{-- Security: This page should only be accessible for failed/expired/cancelled payments --}}
+@if(!in_array($payment->status, ['failed', 'expired', 'cancelled']))
+    <script>
+        alert('Akses tidak diizinkan: Halaman ini hanya untuk pembayaran yang gagal');
+        window.location.href = '{{ route("manajemen.topUp") }}';
+    </script>
+@else
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center">
         <!-- Error Icon -->
@@ -72,9 +79,9 @@
             <p class="text-sm text-gray-500 mb-2">Butuh bantuan?</p>
             <a href="{{ route('manajemen.bantuan.panel') }}" class="text-blue-500 hover:text-blue-700 text-sm">
                 <i class="fas fa-question-circle mr-1"></i>
-                Hubungi Customer Service
-            </a>
+                Hubungi Customer Service            </a>
         </div>
     </div>
 </div>
+@endif
 @endsection

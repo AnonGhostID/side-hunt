@@ -4,6 +4,13 @@
 @section('page-title', 'Pembayaran Berhasil')
 
 @section('content')
+{{-- Security: This page should only be accessible for paid/settled payments --}}
+@if(!in_array($payment->status, ['paid', 'settled']))
+    <script>
+        alert('Akses tidak diizinkan: Pembayaran belum berhasil');
+        window.location.href = '{{ route("manajemen.topUp") }}';
+    </script>
+@else
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg text-center">
         <!-- Success Icon -->
@@ -63,8 +70,8 @@
                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
                 <i class="fas fa-home mr-2"></i>
                 Kembali ke Dashboard
-            </a>
-        </div>
+            </a>        </div>
     </div>
 </div>
+@endif
 @endsection
