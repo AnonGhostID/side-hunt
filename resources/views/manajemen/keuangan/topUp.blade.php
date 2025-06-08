@@ -528,16 +528,12 @@ function expireInvoiceOnTimeout() {
 
 function confirmCancel() {
     if (confirm('Apakah Anda yakin ingin membatalkan pembayaran ini?')) {
-        // Change icon immediately when cancel is confirmed
+
         const paymentIcon = document.getElementById('payment-icon');
         paymentIcon.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4";
         paymentIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>';
-        
-        // Update title and subtitle
         document.getElementById('payment-title').textContent = 'Pembayaran Dibatalkan';
         document.getElementById('payment-subtitle').textContent = 'Anda telah membatalkan pembayaran ini.';
-        
-        // Clear intervals
         clearInterval(countdownInterval);
         clearInterval(autoCheckInterval);
         paymentCompleted = true;
