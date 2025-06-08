@@ -51,7 +51,7 @@ class TopUpController extends Controller
             
             $createInvoiceRequest = new \Xendit\Invoice\CreateInvoiceRequest([
                 'external_id' => $external_id,
-                'description' => 'Top Up Saldo - ' . $user->email,
+                'description' => "Top Up Saldo - Rp " . number_format($amount, 0, ',', '.') . " - " . $user->email,
                 'amount' => $amount,
                 'payer_email' => $user->email,
                 'expiry_date' => $expiryDate,
@@ -101,8 +101,35 @@ class TopUpController extends Controller
                 $xenditStatus = strtolower($result[0]['status']);
                 $previousStatus = $payment->status;
                 
-                // Update payment status
-                $payment->update(['status' => $xenditStatus]);
+                // // Log the full Xendit response to see available fields
+                // Log::info('Xendit Invoice Response in checkStatus', [
+                //     'external_id' => $external_id,
+                //     'response' => $result[0]
+                // ]);
+                
+                // // Extract payment method if available
+                // $paymentMethod = null;
+                
+                // // Check various possible fields for payment method information
+                // if (isset($result[0]['payment_method'])) {
+                //     $paymentMethod = $result[0]['payment_method'];
+                // } elseif (isset($result[0]['payment_channel'])) {
+                //     $paymentMethod = $result[0]['payment_channel'];
+                // } elseif (isset($result[0]['payment_destination'])) {
+                //     $paymentMethod = $result[0]['payment_destination'];
+                // } elseif (isset($result[0]['bank_code'])) {
+                //     $paymentMethod = $result[0]['bank_code'];
+                // } elseif (isset($result[0]['payment_details']['payment_method'])) {
+                //     $paymentMethod = $result[0]['payment_details']['payment_method'];
+                // }
+                
+                // // Update payment status and method
+                // $updateData = ['status' => $xenditStatus];
+                // if ($paymentMethod) {
+                //     $updateData['method'] = $paymentMethod;
+                // }
+                
+                // $payment->update($updateData);
                 
                 // If payment is successful and status changed from unpaid to paid, update user wallet
                 if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
@@ -178,7 +205,35 @@ class TopUpController extends Controller
                 $xenditStatus = strtolower($result[0]['status']);
                 $previousStatus = $payment->status;
                 
-                $payment->update(['status' => $xenditStatus]);
+                // Log the full Xendit response to see available fields
+                Log::info('Xendit Invoice Response', [
+                    'external_id' => $payment->external_id,
+                    'response' => $result[0]
+                ]);
+                
+                // Extract payment method if available
+                $paymentMethod = null;
+                
+                // Check various possible fields for payment method information
+                if (isset($result[0]['payment_method'])) {
+                    $paymentMethod = $result[0]['payment_method'];
+                } elseif (isset($result[0]['payment_channel'])) {
+                    $paymentMethod = $result[0]['payment_channel'];
+                } elseif (isset($result[0]['payment_destination'])) {
+                    $paymentMethod = $result[0]['payment_destination'];
+                } elseif (isset($result[0]['bank_code'])) {
+                    $paymentMethod = $result[0]['bank_code'];
+                } elseif (isset($result[0]['payment_details']['payment_method'])) {
+                    $paymentMethod = $result[0]['payment_details']['payment_method'];
+                }
+                
+                // Update payment status and method
+                $updateData = ['status' => $xenditStatus];
+                if ($paymentMethod) {
+                    $updateData['method'] = $paymentMethod;
+                }
+                
+                $payment->update($updateData);
                 
                 // Only increment wallet if status changed from unpaid to paid
                 if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
@@ -216,4 +271,5 @@ class TopUpController extends Controller
 
         return response()->json(['message' => 'Expired payments cleaned up']);
     }
+
 }

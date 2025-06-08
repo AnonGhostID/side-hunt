@@ -68,8 +68,35 @@ class PaymentController extends Controller
                 if (!empty($result)) {
                     $xenditStatus = strtolower($result[0]['status']);
                     
-                    // Update payment status
-                    $payment->update(['status' => $xenditStatus]);
+                    // Log the full Xendit response to see available fields
+                    Log::info('Xendit Invoice Response in PaymentController', [
+                        'external_id' => $external_id,
+                        'response' => $result[0]
+                    ]);
+                    
+                    // Extract payment method if available
+                    $paymentMethod = null;
+                    
+                    // Check various possible fields for payment method information
+                    if (isset($result[0]['payment_method'])) {
+                        $paymentMethod = $result[0]['payment_method'];
+                    } elseif (isset($result[0]['payment_channel'])) {
+                        $paymentMethod = $result[0]['payment_channel'];
+                    } elseif (isset($result[0]['payment_destination'])) {
+                        $paymentMethod = $result[0]['payment_destination'];
+                    } elseif (isset($result[0]['bank_code'])) {
+                        $paymentMethod = $result[0]['bank_code'];
+                    } elseif (isset($result[0]['payment_details']['payment_method'])) {
+                        $paymentMethod = $result[0]['payment_details']['payment_method'];
+                    }
+                    
+                    // Update payment status and method
+                    $updateData = ['status' => $xenditStatus];
+                    if ($paymentMethod) {
+                        $updateData['method'] = $paymentMethod;
+                    }
+                    
+                    $payment->update($updateData);
                     
                     // If payment is successful and it's a top-up, update user wallet
                     if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && $payment->user_id) {

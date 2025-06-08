@@ -15,9 +15,7 @@
 
         <!-- Success Message -->
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pembayaran Berhasil!</h2>
-        <p class="text-gray-600 mb-6">Top up saldo Anda telah berhasil diproses.</p>
-
-        <!-- Payment Details -->
+        <p class="text-gray-600 mb-6">Top up saldo Anda telah berhasil diproses.</p>        <!-- Payment Details -->
         <div class="bg-gray-50 p-4 rounded-lg mb-6 text-left">
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -28,7 +26,14 @@
                     <span class="text-sm text-gray-500">Status:</span>
                     <p class="font-semibold text-green-600">{{ ucfirst($payment->status) }}</p>
                 </div>
-            </div>            <div class="mt-4">
+            </div>
+            @if($payment->method)
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Metode Pembayaran:</span>
+                <p class="font-semibold">{{ strtoupper($payment->method) }}</p>
+            </div>
+            @endif
+            <div class="mt-4">
                 <span class="text-sm text-gray-500">Tanggal:</span>
                 <p class="font-semibold">{{ $payment->updated_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i:s') }}</p>
             </div>

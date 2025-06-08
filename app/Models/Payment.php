@@ -12,6 +12,7 @@ class Payment extends Model
         'checkout_link',
         'external_id',
         'status',
+        'method',
         'amount',
         'description'
     ];
