@@ -228,21 +228,21 @@
                     </ul>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
                     <a href="{{ route('manajemen.topUp') }}" 
-                       class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
-                        <i class="fas fa-redo mr-2"></i>
+                       class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors duration-300 text-sm">
+                        <i class="fas fa-redo mr-1"></i>
                         Coba Lagi
                     </a>
                     
                     <a href="{{ route('manajemen.transaksi.riwayat') }}" 
-                       class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                       class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors duration-300 text-sm">
                         <i class="fas fa-history mr-2"></i>
                         Lihat Riwayat
                     </a>
                     
                     <a href="{{ route('manajemen.dashboard') }}" 
-                       class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                       class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors duration-300 text-sm">
                         <i class="fas fa-home mr-2"></i>
                         Kembali ke Dashboard
                     </a>
