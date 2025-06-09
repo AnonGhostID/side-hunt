@@ -88,15 +88,17 @@ class TopUpController extends Controller
     {
         $payment = Payment::where('external_id', $external_id)
                          ->where('user_id', Auth::id())
-                         ->firstOrFail();
+                         ->first();
 
-        // Check and update payment status
+        if (!$payment) {
+            return redirect()->route('manajemen.topUp')
+                           ->with('error', 'Invoice Tidak Ditemukan');
+        }
+
         $this->updatePaymentStatus($payment);
 
-        // Reload the payment to get the updated status
         $payment->refresh();
 
-        // Determine which view to show based on payment status
         switch ($payment->status) {
             case 'pending':
                 return view('manajemen.keuangan.topup', compact('payment'))->with(['view_type' => 'waiting']);
@@ -121,7 +123,15 @@ class TopUpController extends Controller
         $external_id = $request->external_id;
         $payment = Payment::where('external_id', $external_id)
                          ->where('user_id', Auth::id())
-                         ->firstOrFail();
+                         ->first();
+
+        // Check if payment exists for current user
+        if (!$payment) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invoice Tidak Ditemukan'
+            ], 404);
+        }
 
         $payment->refresh();
 
@@ -199,7 +209,12 @@ class TopUpController extends Controller
         $payment = Payment::where('external_id', $external_id)
                          ->where('user_id', Auth::id())
                          ->where('status', 'pending')
-                         ->firstOrFail();
+                         ->first();
+
+        if (!$payment) {
+            return redirect()->route('manajemen.topUp')
+                           ->with('error', 'Invoice Tidak Ditemukan');
+        }
 
         try {
             $result = $this->apiInstance->getInvoices(null, $external_id);
@@ -307,19 +322,18 @@ class TopUpController extends Controller
         if (!$payment) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Pembayaran tidak ditemukan atau sudah tidak pending.'
+                'message' => 'Invoice Tidak Ditemukan'
             ], 404);
         }
 
+        // Ambil data dr Xendit
         try {
-            // Get invoice from Xendit
             $result = $this->apiInstance->getInvoices(null, $external_id);
             
             if (!empty($result)) {
                 $invoiceId = $result[0]['id'];
                 $xenditStatus = strtolower($result[0]['status']);
                 
-                // If still pending in Xendit, expire it
                 if ($xenditStatus === 'pending') {
                     $this->apiInstance->expireInvoice($invoiceId);
                     $payment->update(['status' => 'expired']);
@@ -329,7 +343,6 @@ class TopUpController extends Controller
                         'message' => 'Invoice telah kedaluwarsa dan dihapus dari Xendit.'
                     ]);
                 } else {
-                    // Update local status to match Xendit
                     $payment->update(['status' => $xenditStatus]);
                     
                     return response()->json([
@@ -338,7 +351,6 @@ class TopUpController extends Controller
                     ]);
                 }
             } else {
-                // Invoice not found in Xendit, mark as expired locally
                 $payment->update(['status' => 'expired']);
                 
                 return response()->json([
@@ -348,8 +360,6 @@ class TopUpController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Gagal expire invoice otomatis: ' . $e->getMessage());
-            
-            // Even if Xendit call fails, mark as expired locally
             $payment->update(['status' => 'expired']);
             
             return response()->json([
