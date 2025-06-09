@@ -33,7 +33,6 @@ class TopUpController extends Controller
 
         $user = Auth::user();
         
-        // Get amount from the appropriate field
         $amount = !empty($request->nominal) ? $request->nominal : (!empty($request->custom_amount_raw) ? $request->custom_amount_raw : null);
 
         if (!$amount || $amount < 20000) {
@@ -86,9 +85,13 @@ class TopUpController extends Controller
     
     public function payment($external_id)
     {
-        $payment = Payment::where('external_id', $external_id)
-                         ->where('user_id', Auth::id())
-                         ->first();
+        $query = Payment::where('external_id', $external_id);
+        
+        if (Auth::user()->isAdmin != 1) {
+            $query->where('user_id', Auth::id());
+        }
+        
+        $payment = $query->first();
 
         if (!$payment) {
             return redirect()->route('manajemen.topUp')
@@ -121,11 +124,14 @@ class TopUpController extends Controller
     public function checkStatus(Request $request)
     {
         $external_id = $request->external_id;
-        $payment = Payment::where('external_id', $external_id)
-                         ->where('user_id', Auth::id())
-                         ->first();
+        $query = Payment::where('external_id', $external_id);
+        
+        if (Auth::user()->isAdmin != 1) {
+            $query->where('user_id', Auth::id());
+        }
+        
+        $payment = $query->first();
 
-        // Check if payment exists for current user
         if (!$payment) {
             return response()->json([
                 'status' => 'error',
@@ -135,22 +141,20 @@ class TopUpController extends Controller
 
         $payment->refresh();
 
+        // Fitur anti dobel input
         try {
             $result = $this->apiInstance->getInvoices(null, $external_id);
             
             if (!empty($result)) {
                 $xenditStatus = strtolower($result[0]['status']);
                 
-                // Use database transaction with row locking to prevent race conditions
                 return DB::transaction(function () use ($payment, $xenditStatus, $result) {
-                    // Lock the payment row for update to prevent concurrent processing
+
                     $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
                     $previousStatus = $lockedPayment->status;
                     
-                    // Extract payment method if available
                     $paymentMethod = null;
                     
-                    // Check various possible fields for payment method information
                     if (isset($result[0]['payment_method'])) {
                         $paymentMethod = $result[0]['payment_method'];
                     } elseif (isset($result[0]['payment_channel'])) {
@@ -163,7 +167,6 @@ class TopUpController extends Controller
                         $paymentMethod = $result[0]['payment_details']['payment_method'];
                     }
                     
-                    // Update payment status and method first
                     $updateData = ['status' => $xenditStatus];
                     if ($paymentMethod) {
                         $updateData['method'] = $paymentMethod;
@@ -171,7 +174,6 @@ class TopUpController extends Controller
                     
                     $lockedPayment->update($updateData);
                     
-                    // If payment is successful and status changed from unpaid to paid, update user wallet
                     if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
                         ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
                         $user = $lockedPayment->user;
@@ -206,10 +208,14 @@ class TopUpController extends Controller
 
     public function cancel(Request $request, $external_id)
     {
-        $payment = Payment::where('external_id', $external_id)
-                         ->where('user_id', Auth::id())
-                         ->where('status', 'pending')
-                         ->first();
+        $query = Payment::where('external_id', $external_id)
+                       ->where('status', 'pending');
+        
+        if (Auth::user()->isAdmin != 1) {
+            $query->where('user_id', Auth::id());
+        }
+        
+        $payment = $query->first();
 
         if (!$payment) {
             return redirect()->route('manajemen.topUp')
@@ -253,7 +259,6 @@ class TopUpController extends Controller
                 
                 $paymentMethod = null;
                 
-                // Check various possible fields for payment method information
                 if (isset($result[0]['payment_method'])) {
                     $paymentMethod = $result[0]['payment_method'];
                 } elseif (isset($result[0]['payment_channel'])) {
@@ -266,7 +271,6 @@ class TopUpController extends Controller
                     $paymentMethod = $result[0]['payment_details']['payment_method'];
                 }
                 
-                // Update payment status and method
                 $updateData = ['status' => $xenditStatus];
                 if ($paymentMethod) {
                     $updateData['method'] = $paymentMethod;
@@ -274,7 +278,6 @@ class TopUpController extends Controller
                 
                 $payment->update($updateData);
                 
-                // Only increment wallet if status changed from unpaid to paid
                 if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
                     ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
                     $user = $payment->user;
@@ -314,10 +317,14 @@ class TopUpController extends Controller
     public function expireOnTimeout(Request $request)
     {
         $external_id = $request->external_id;
-        $payment = Payment::where('external_id', $external_id)
-                         ->where('user_id', Auth::id())
-                         ->where('status', 'pending')
-                         ->first();
+        $query = Payment::where('external_id', $external_id)
+                       ->where('status', 'pending');
+        
+        if (Auth::user()->isAdmin != 1) {
+            $query->where('user_id', Auth::id());
+        }
+        
+        $payment = $query->first();
 
         if (!$payment) {
             return response()->json([
