@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
 use App\Models\Transaksi;
 use App\Models\SideJob;
 use App\Models\User;
+use App\Models\Payment; // add Payment import
 
 class ManagementPageController extends Controller
 {
@@ -52,11 +53,45 @@ class ManagementPageController extends Controller
     public function riwayatTransaksi()
     {
         $user = Auth::user();
-        $transaksi = Transaksi::where('pembuat_id', $user->id)
-            ->orWhere('pekerja_id', $user->id)
-            ->paginate(10);
+        // Fetch payments for logged-in user
+        $perPage = 10;
+        $transaksi = Payment::where('user_id', $user->id)
+            ->orderBy('updated_at', 'desc')
+            ->paginate($perPage);
 
         return view('manajemen.keuangan.riwayat_transaksi', compact('user', 'transaksi'));
+    }
+
+    /**
+     * AJAX endpoint to fetch riwayat transaksi data without page reload
+     */
+    public function riwayatTransaksiData(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->query('search', '');
+        $perPage = $request->query('per_page', 10);
+        // Determine per page count
+        if ($perPage === 'all') {
+            $perPage = Payment::where('user_id', $user->id)->count();
+        } else {
+            $perPage = (int) $perPage;
+        }
+        $query = Payment::where('user_id', $user->id);
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('external_id', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        $transaksi = $query->orderBy('updated_at', 'desc')
+            ->paginate($perPage)
+            ->appends(['search' => $search, 'per_page' => $request->query('per_page')]);
+
+        // Render partials
+        $rows = view('manajemen.keuangan.partials.riwayat_transaksi_rows', compact('transaksi'))->render();
+        $pagination = view('manajemen.keuangan.partials.riwayat_transaksi_pagination', compact('transaksi'))->render();
+
+        return response()->json(['table' => $rows, 'pagination' => $pagination]);
     }
 
     public function refundDana()

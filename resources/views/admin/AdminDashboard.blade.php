@@ -89,7 +89,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-                                    {{ $user->links() }}
+                                    {{ $user->links('pagination.custom') }}
                                 @endif
                             </div>
                         </div>
@@ -130,7 +130,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-                                    {{ $pelamar->links() }}
+                                    {{ $pelamar->links('pagination.custom') }}
                                 @endif
                             </div>
                         </div>
@@ -180,7 +180,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-                                    {{ $transaksi->links() }}
+                                    {{ $transaksi->links('pagination.custom') }}
                                 @endif
                             </div>
                         </div>
@@ -231,7 +231,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-                                    {{ $sidejob->links() }}
+                                    {{ $sidejob->links('pagination.custom') }}
                                 @endif
                             </div>
                         </div>

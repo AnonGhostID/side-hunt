@@ -76,6 +76,8 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     //
     Route::get('/tarik-saldo', [ManagementPageController::class, 'tarikSaldo'])->name('tarik_saldo');
     Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
+    // AJAX endpoint for fetching riwayat transaksi data without page reload
+    Route::get('/riwayat-transaksi/data', [ManagementPageController::class, 'riwayatTransaksiData'])->name('transaksi.riwayat.data');
     Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
     Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
 
