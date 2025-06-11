@@ -74,6 +74,22 @@ Side Hunt is a Laravel-based job marketplace application that connects job creat
 - `dibuat` - Transaction creation datetime
 - `created_at`, `updated_at` - Timestamps
 
+#### 5. Payments Table (Payment Gateway)
+**Primary Table**: `payments`
+- **Primary Key**: `id` (auto-increment)
+- **Purpose**: Handles payment gateway transactions for top-up and wallet management
+
+**Fields:**
+- `id` - Unique payment identifier
+- `user_id` - Foreign key to users (payment owner)
+- `checkout_link` - Payment gateway URL
+- `external_id` - External payment identifier for tracking
+- `status` - Payment status: ['pending', 'paid', 'settled', 'failed', 'expired', 'cancelled'] (default: 'pending')
+- `method` - Payment method used (e.g., 'bank_transfer', 'ewallet', etc.)
+- `amount` - Payment amount (decimal)
+- `description` - Payment description
+- `created_at`, `updated_at` - Timestamps
+
 ## Database Relationships
 
 ### 1. User Relationships
@@ -123,13 +139,27 @@ public function pekerja() {
 ```
 **Relationship**: Users can be involved in multiple transactions as either creator or worker.
 
+#### User → Payments (One-to-Many)
+```php
+// User Model
+public function payments() {
+    return $this->hasMany(Payment::class);
+}
+
+// Payment Model
+public function user() {
+    return $this->belongsTo(User::class);
+}
+```
+**Relationship**: Users can have multiple payment transactions for top-up and wallet management.
+
 ### 2. Side Job Relationships
 
 #### Side Job → Applications (One-to-Many)
 ```php
 // SideJob Model
 public function pelamar() {
-    return $this->belongsToMany(SideJob::class, 'pelamars', 'user_id', 'job_id');
+    return $this->belongsToMany(User::class, 'pelamars', 'job_id', 'user_id');
 }
 
 // Pelamar Model
@@ -160,6 +190,34 @@ public function job() {
 
 #### Transaction → Users (Many-to-One for Creator and Worker)
 **Relationship**: Each transaction involves two users - one as creator and one as worker.
+
+### 5. Payment Relationships
+
+#### Payment → User (Many-to-One)
+```php
+// Payment Model
+public function user() {
+    return $this->belongsTo(User::class);
+}
+```
+**Relationship**: Each payment belongs to one user.
+
+#### Payment Status Methods
+```php
+// Payment Model Helper Methods
+public function isPaid() {
+    return $this->status === 'paid' || $this->status === 'settled';
+}
+
+public function isPending() {
+    return $this->status === 'pending';
+}
+
+public function isExpired() {
+    return $this->isPending() && $this->created_at->diffInHours(now()) > 24;
+}
+```
+**Helper Methods**: Payment model includes useful status checking methods for business logic.
 
 ## Chat System Tables
 
@@ -208,6 +266,10 @@ FOREIGN KEY (pembuat_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE transaksis ADD CONSTRAINT 
 FOREIGN KEY (pekerja_id) REFERENCES users(id) ON DELETE CASCADE;
+
+-- Payments Table
+ALTER TABLE payments ADD CONSTRAINT 
+FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ```
 
 ## Laravel System Tables
@@ -232,7 +294,9 @@ Users (1) ──────────────────(M) Side Jobs
   │                              │
   │                              │
   └──(M) Transactions (M)────────┘
-       (pembuat_id/pekerja_id)
+  │    (pembuat_id/pekerja_id)
+  │
+  └──(1) Payments (M)
 
 Users (M)──────────(M) Chat Messages
   │                    (from_id/to_id)
@@ -247,12 +311,136 @@ Users (M)──────────(M) Chat Messages
 3. **Job Application**: Other users apply through `pelamars` pivot table
 4. **Application Management**: Job creators can accept/reject applications
 5. **Transaction Processing**: Accepted jobs generate transactions in `transaksis`
-6. **Communication**: Users communicate via chat system (`ch_messages`)
+6. **Payment Gateway Integration**: Users can top-up wallet balance through `payments` table using Xendit gateway
+7. **Wallet Management**: Enhanced wallet system with payment tracking and transaction history
+8. **Communication**: Users communicate via chat system (`ch_messages`)
+
+## Payment Gateway Integration
+
+### Xendit Integration
+The application integrates with Xendit payment gateway for secure payment processing:
+
+- **TopUp Functionality**: Users can add funds to their wallet through various payment methods
+- **Real-time Status Tracking**: Automatic payment status updates and synchronization
+- **Multiple Payment Methods**: Support for bank transfers, e-wallets, and other payment channels
+- **Security Features**: Secure external ID generation and payment validation
+- **Automatic Wallet Updates**: Successful payments automatically update user wallet balance
+
+### Payment States
+- `pending`: Payment created, waiting for user action
+- `paid`/`settled`: Payment completed successfully
+- `failed`: Payment processing failed
+- `expired`: Payment expired (24-hour timeout)
+- `cancelled`: Payment cancelled by user
+
+## Enhanced Features
+
+### Management Dashboard
+- **Financial Management**: Top-up, transaction history, and wallet management
+- **Job Management**: Enhanced job creation and application tracking
+- **Reporting System**: Comprehensive reporting and analytics
+- **Admin Controls**: Administrative functions for system management
+
+### Security Improvements
+- **Payment Validation**: Secure payment processing with external ID verification
+- **User Authentication**: Enhanced authentication with admin role management
+- **Data Integrity**: Comprehensive foreign key constraints and validation
+- **Transaction Locking**: Database locking for concurrent payment processing
 
 ## Data Integrity Features
 
-- **Cascading Deletes**: When users are deleted, their jobs, applications, and transactions are automatically removed
+- **Cascading Deletes**: When users are deleted, their jobs, applications, transactions, and payments are automatically removed
 - **Unique Constraints**: Email and phone numbers are unique across users
 - **Default Values**: Sensible defaults for wallet balance, admin status, and application status
-- **Enumerated Values**: Controlled vocabulary for application and transaction statuses
+- **Enumerated Values**: Controlled vocabulary for application, transaction, and payment statuses
 - **UUID Primary Keys**: Transactions use UUIDs for better security and distribution
+- **Payment Security**: External ID validation and secure payment processing
+- **Database Locking**: Prevents race conditions in payment processing and wallet updates
+
+## API Endpoints
+
+### Payment API
+- `POST /management/Top-Up` - Create new payment invoice
+- `GET /management/Top-Up/{external_id}` - View payment status page
+- `POST /management/Top-Up/check-status` - Check payment status via AJAX
+- `POST /management/Top-Up/cancel/{external_id}` - Cancel pending payment
+- `POST /api/payment/cleanup-expired` - Cleanup expired payments (scheduled task)
+
+### Management API
+- `GET /management/riwayat-transaksi/data` - Fetch transaction history data
+- Various management endpoints for financial and administrative functions
+
+## Recent Updates (June 2025)
+
+### Payment Gateway Implementation
+- **New Payments Table**: Complete payment gateway integration using Xendit
+- **TopUpController**: Comprehensive payment processing controller
+- **Real-time Status Updates**: AJAX-based payment status monitoring
+- **Multiple Payment Methods**: Support for various Indonesian payment channels
+
+### Enhanced User Experience
+- **Management Dashboard**: Centralized management interface for users
+- **Financial Controls**: Advanced wallet and transaction management
+- **Improved Security**: Enhanced payment validation and user authentication
+- **Responsive Design**: Mobile-friendly payment interfaces
+
+### Model Corrections
+- **Fixed SideJob Relationships**: Corrected pelamar relationship mapping
+- **Enhanced Payment Model**: Added status checking helper methods
+- **Improved Transaction Handling**: Better error handling and logging
+
+## Technical Implementation
+
+### Key Controllers
+
+#### TopUpController
+Handles payment gateway integration and wallet management:
+```php
+// Key features:
+- Payment invoice creation with Xendit API
+- Real-time payment status checking
+- Automatic wallet balance updates
+- Payment cancellation and expiry handling
+- Database transaction locking for consistency
+```
+
+#### ManagementPageController
+Provides centralized management functionality:
+```php
+// Key features:
+- Dashboard analytics and statistics
+- Financial transaction history with AJAX pagination
+- Payment management and reporting
+- User activity monitoring
+```
+
+#### TransaksiController
+Manages job-related financial transactions:
+```php
+// Key features:
+- Transaction creation between job creators and workers
+- Transaction status management (tertunda, sukses, gagal)
+- Admin approval workflow for transactions
+- Integration with user wallet system
+```
+
+### Database Architecture Principles
+
+#### ACID Compliance
+- **Atomicity**: Payment processing uses database transactions
+- **Consistency**: Foreign key constraints maintain data integrity
+- **Isolation**: Row-level locking prevents concurrent update conflicts
+- **Durability**: All financial transactions are permanently logged
+
+#### Scalability Considerations
+- **UUID Primary Keys**: Used for transactions to support distributed systems
+- **Indexed Columns**: Payment status and creation timestamps are indexed
+- **Pagination**: Large data sets use Laravel pagination for performance
+- **Caching Strategy**: Session-based caching for user data
+
+#### Security Architecture
+- **Input Validation**: Comprehensive validation for all financial operations
+- **CSRF Protection**: All forms include CSRF tokens
+- **Authentication Middleware**: Protected routes require authentication
+- **Admin Authorization**: Administrative functions require admin privileges
+- **Payment Verification**: External payment validation through Xendit API
