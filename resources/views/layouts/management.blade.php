@@ -191,7 +191,7 @@
             <div class="p-4 border-t border-gray-200">
                 @auth
                 <div class="flex items-center mb-3">
-                    <img src="https://i.ibb.co/WN1c98WM/illustration-progress-text-buffered-white-background-progress-text-buffered-107545180.png" class="w-10 h-10 rounded-full mr-3 object-cover">
+                    <img src="{{ asset('img/progress.png') }}"class="w-10 h-10 rounded-full mr-3 object-cover">
                     <div>
                         <p class="text-sm font-medium text-gray-700">{{ Auth::user()->nama }}</p>
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
