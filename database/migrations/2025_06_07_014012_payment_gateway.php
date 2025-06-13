@@ -13,10 +13,20 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->decimal('amount', 12, 2);
+            $table->string('description')->nullable();
             $table->string('checkout_link');
             $table->string('external_id');
-            $table->string('status');
+            $table->string('status')->default('pending');
+            $table->string('method')->nullable();
             $table->timestamps();
+            
+            // Add indexes
+            $table->index(['created_at', 'status']);
+            
+            // Add foreign key constraint
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
     /**
