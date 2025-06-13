@@ -92,7 +92,7 @@ class UserSeeder extends Seeder
             'email' => 'owner3@example.com',
             'alamat' => 'Medan',
             'telpon' => '083200000003',
-            'dompet' => 0,
+            'dompet' => 5000,
             'isAdmin' => 0,
             'password' => bcrypt('owner1234'),
             'created_at' => now(),
