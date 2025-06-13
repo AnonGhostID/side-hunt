@@ -95,6 +95,10 @@ For detailed information about database relationships, table structures, and for
    ```bash
    php artisan migrate --seed
    ```
+   - Fresh database command: 
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
 
 6. **Compile assets**
    ```bash

@@ -158,6 +158,6 @@ class SideJobSeeder extends Seeder
             DB::table('side_jobs')->insert($chunk);
         }
 
-        $this->command->info("Successfully created {$numberOfJobs} physical, onsite daily jobs!");
+        $this->command->info("Sukses tambahkan {$numberOfJobs} data pekerjaan sampingan!");
     }
 }
