@@ -82,7 +82,8 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
 
     // Pelaporan & Bantuan
-    Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuan'])->name('pelaporan.penipuan');
+    Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuanForm'])->name('pelaporan.penipuan.form');
+    Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
     Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
 
     // Fitur Lainnya
