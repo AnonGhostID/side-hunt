@@ -126,7 +126,7 @@
                 </a>
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pelaporan & Bantuan</h3>
-                 <a href="{{ route('manajemen.pelaporan.penipuan') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelaporan.penipuan') ? 'active' : '' }}">
+                 <a href="{{ route('manajemen.pelaporan.penipuan.form') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelaporan.penipuan.form') ? 'active' : '' }}">
                     <i class="fas fa-exclamation-triangle"></i>
                     <span>Lapor Indikasi Penipuan</span>
                 </a>

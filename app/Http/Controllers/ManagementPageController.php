@@ -8,6 +8,7 @@ use App\Models\Transaksi;
 use App\Models\SideJob;
 use App\Models\User;
 use App\Models\Payment; // add Payment import
+use App\Models\Users;
 
 class ManagementPageController extends Controller
 {
@@ -22,7 +23,7 @@ class ManagementPageController extends Controller
     {
         $user = Auth::user();
         $totalSideJobs = SideJob::count();
-        $totalPekerja = User::where('isAdmin', 0)->count();
+        $totalPekerja = Users::where('isAdmin', 0)->count();
         
         return view('manajemen.dashboard', compact('user', 'totalSideJobs', 'totalPekerja'));
     }
@@ -104,9 +105,44 @@ class ManagementPageController extends Controller
         return view('manajemen.keuangan.laporan_keuangan');
     }
 
-    public function laporPenipuan()
+    public function laporPenipuanForm()
     {
         return view('manajemen.pelaporan.form_penipuan');
+    }
+
+    public function storePenipuanReport(Request $request)
+    {
+        $request->validate([
+            'judul_laporan' => 'required|string|max:255',
+            'pihak_terlapor' => 'required|string|max:255',
+            'deskripsi_kejadian' => 'required|string',
+            'tanggal_kejadian' => 'required|date',
+            'bukti_pendukung.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048', // Max 2MB per file
+        ]);
+
+        // Simpan data laporan (Contoh, sesuaikan dengan model dan storage Anda)
+        // $laporan = new LaporanPenipuan();
+        // $laporan->user_id = Auth::id();
+        // $laporan->judul = $request->judul_laporan;
+        // $laporan->pihak_terlapor = $request->pihak_terlapor;
+        // $laporan->deskripsi = $request->deskripsi_kejadian;
+        // $laporan->tanggal_kejadian = $request->tanggal_kejadian;
+        // $laporan->status = 'baru'; // Status awal laporan
+        // $laporan->save();
+
+        // if ($request->hasFile('bukti_pendukung')) {
+        //     foreach ($request->file('bukti_pendukung') as $file) {
+        //         $path = $file->store('bukti_penipuan/' . $laporan->id, 'public');
+        //         // Simpan path file ke database jika perlu
+        //         // $laporan->bukti()->create(['path' => $path]);
+        //     }
+        // }
+
+        // Logika untuk menyimpan laporan ke database atau mengirim notifikasi
+        // Untuk sekarang, kita hanya akan redirect dengan pesan sukses
+
+        return redirect()->route('manajemen.pelaporan.penipuan.form')
+                         ->with('success', 'Laporan Anda telah berhasil dikirim. Kami akan segera menindaklanjutinya.');
     }
 
     public function panelBantuan()

@@ -124,7 +124,8 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
     Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
 
     // Pelaporan & Bantuan
-    Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuan'])->name('pelaporan.penipuan');
+    Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuanForm'])->name('pelaporan.penipuan.form');
+    Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
     Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
 
     // Fitur Lainnya
@@ -146,4 +147,13 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
             // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
             // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
         });
+    // ->group(function () {
+    //     Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
+    //     Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
+    //     Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
+        // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
+        // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
+        // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
+        // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
+    // });
 });
