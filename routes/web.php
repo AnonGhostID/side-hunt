@@ -1,18 +1,59 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ManagementPageController;
 use App\Http\Controllers\TopUpController;
+use App\Models\Users;
 use Illuminate\Support\Facades\Auth;
 
 
 // Route::get('/', function () {
 //     return view('welcome');
 // });
+
+//DEWA
+    Route::get('/', function () {
+        return redirect('/Index');
+    });
+
+    Route::get('/Logout', [UsersController::class, 'logout']);
+    // Route::get('/cek', [PekerjaanController::class, 'cosineSimilarityPercent']);
+
+    //Auth
+    Route::get('/Login', [HomeController::class, 'Login']);
+    Route::post('/Profile/Edit', [UsersController::class, 'Profile_Edit']);
+    Route::get('/Register', [HomeController::class, 'Register']);
+    Route::get('/Index', [HomeController::class, 'index'])->name('home');
+    Route::post('/Login_account', [UsersController::class, 'Login_Account']);
+    Route::post('/Register_account', action: [UsersController::class, 'create']);
+    Route::post('/kerja/add', action: [PekerjaanController::class, 'store']);
+    Route::get('/kerja/create', action: [PekerjaanController::class, 'create']);
+    Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
+    Route::get('/question-new-user', action: [HomeController::class, 'new_user']);
+    Route::post('/user/preferensi/save', action: [UsersController::class, 'save_preverensi']);
+    
+    
+
+
+    // Route::resource('kerja', PekerjaanController::class);
+    
+
+
+    //Only Admin
+    Route::middleware(['role:user|mitra'])->group(function () {
+    });
+    Route::get('/Profile', [UsersController::class, 'Profile']);
+
+
+    //Only Mitra
+    Route::middleware(['role:mitra'])->group(function () {});
+
+//End Dewa
 
 Auth::routes();
 
@@ -22,32 +63,33 @@ Route::get('/job/{id}', [SideJobController::class, 'show'])->name('sidejob.detai
 
 Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
 
+// Route::get('/management', [HomeController::class, 'management'])->name('management');
+// Route::get('/management', [HomeController::class, 'management'])->name('management')->middleware('isAdmin');
 Route::middleware(['auth'])->group(function () {
-    Route::get('/management', [HomeController::class, 'management'])->name('management')->middleware('isAdmin');
-    Route::get('/user/lamaran', [UsersController::class, 'pelamaran'])->name('user.history');
-    Route::get('/sidejob', [SideJobController::class, 'index'])->name('sidejob.index');
-    Route::get('/sidejob/create', [SideJobController::class, 'create'])->name('sidejob.create');
-    Route::post('/sidejob', [SideJobController::class, 'store'])->name('sidejob.store');
-    Route::get('/sidejob/{id}', [SideJobController::class, 'show'])->name('sidejob.show');
-    Route::get('/sidejob/{sidejob}/edit', [SideJobController::class, 'edit'])->name('sidejob.edit');
-    Route::put('/sidejob/{sidejob}', [SideJobController::class, 'update'])->name('sidejob.update');
-    Route::delete('/sidejob/{sidejob}', [SideJobController::class, 'destroy'])->name('sidejob.destroy');
-    Route::post('/sidejob/{sidejob}/buatPermintaan', [SideJobController::class, 'buatPermintaan'])->name('sidejob.buatPermintaan');
-    Route::patch('/pelamar/{pelamar}/terima', [SideJobController::class, 'terima'])->name('pelamar.terima');
-    Route::patch('/pelamar/{pelamar}/tolak', [SideJobController::class, 'tolak'])->name('pelamar.tolak');
+    // Route::get('/user/lamaran', [UsersController::class, 'pelamaran'])->name('user.history');
+    // Route::get('/sidejob', [SideJobController::class, 'index'])->name('sidejob.index');
+    // Route::get('/sidejob/create', [SideJobController::class, 'create'])->name('sidejob.create');
+    // Route::post('/sidejob', [SideJobController::class, 'store'])->name('sidejob.store');
+    // Route::get('/sidejob/{id}', [SideJobController::class, 'show'])->name('sidejob.show');
+    // Route::get('/sidejob/{sidejob}/edit', [SideJobController::class, 'edit'])->name('sidejob.edit');
+    // Route::put('/sidejob/{sidejob}', [SideJobController::class, 'update'])->name('sidejob.update');
+    // Route::delete('/sidejob/{sidejob}', [SideJobController::class, 'destroy'])->name('sidejob.destroy');
+    // Route::post('/sidejob/{sidejob}/buatPermintaan', [SideJobController::class, 'buatPermintaan'])->name('sidejob.buatPermintaan');
+    // Route::patch('/pelamar/{pelamar}/terima', [SideJobController::class, 'terima'])->name('pelamar.terima');
+    // Route::patch('/pelamar/{pelamar}/tolak', [SideJobController::class, 'tolak'])->name('pelamar.tolak');
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('user.transaksi');
 
     Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
 });
 
-Route::middleware(['auth', 'isAdmin'])->group(function(){
+Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/admin', [HomeController::class, 'admin'])->name('admin.index'); // Index
-    Route::get('/admin/user/{id}/edit',[UsersController::class,'showAdmin'])->name('admin.show.profile');
-    Route::match(['get','put'],'/admin/user/{id}',[UsersController::class,'update'])->name('admin.update.profile');
-    Route::get('/admin/user/edit/{id}',[UsersController::class,'edit'])->name('admin.edit.profile');
-    Route::get('/admin/user/delete/{id}',[UsersController::class,'delete'])->name('admin.delete.profile');
+    Route::get('/admin/user/{id}/edit', [UsersController::class, 'showAdmin'])->name('admin.show.profile');
+    Route::match(['get', 'put'], '/admin/user/{id}', [UsersController::class, 'update'])->name('admin.update.profile');
+    Route::get('/admin/user/edit/{id}', [UsersController::class, 'edit'])->name('admin.edit.profile');
+    Route::get('/admin/user/delete/{id}', [UsersController::class, 'delete'])->name('admin.delete.profile');
 
-    
+
     //Sidejob
     Route::get('/sidejob/{id}', [SideJobController::class, 'showAdmin'])->name('admin.sidejob.show');
     Route::get('/sidejob/edit/{id}', [SideJobController::class, 'editAdmin'])->name('admin.sidejob.edit');
@@ -95,13 +137,13 @@ Route::prefix('management')->name('manajemen.')->middleware(['auth'])->group(fun
 
     // Rute Khusus Admin (Contoh)
     Route::prefix('admin')->name('admin.')->middleware(['admin']) // Buat middleware 'admin' jika belum ada
-    ->group(function () {
-        Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
-        Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
-        Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
-        // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
-        // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
-        // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
-        // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
-    });
+        ->group(function () {
+            Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
+            Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
+            Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
+            // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
+            // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
+            // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
+            // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
+        });
 });

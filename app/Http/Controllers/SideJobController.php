@@ -155,15 +155,5 @@ class SideJobController extends Controller
         return redirect()->back();
     }
 
-    public function terima(Pelamar $pelamar)
-    {
-        $pelamar->update(['status' => 'diterima']);
-        return redirect()->back();
-    }
-
-    public function tolak(Pelamar $pelamar)
-    {
-        $pelamar->update(['status' => 'ditolak']);
-        return redirect()->back();
-    }
+    
 }

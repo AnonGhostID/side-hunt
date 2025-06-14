@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('side_jobs', function (Blueprint $table) {
+        Schema::create('pekerjaans', function (Blueprint $table) {
             $table->id()->restrictOnDelete()->autoIncrement();
             $table->string('nama');
             $table->string('deskripsi');
-            $table->date('tanggal_buat');
+            // $table->date('tanggal_buat');
             $table->string('alamat');
             $table->string('koordinat');
             $table->integer('min_gaji');
@@ -35,8 +35,11 @@ return new class extends Migration
 
             $table->bigInteger('pembuat')->unsigned();
             $table->timestamps();
+
+
+            $table->foreign('pembuat')->references('id')->on('users')->cascadeOnDelete();
+
         });
-        
     }
 
     /**
@@ -44,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('side_jobs');
+        Schema::dropIfExists('pekerjaans');
     }
 };

@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Users>
  */
-class UserFactory extends Factory
+class UsersFactory extends Factory
 {
     /**
      * The current password being used by the factory.
@@ -27,11 +27,12 @@ class UserFactory extends Factory
             'nama' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'alamat' => fake()->address(),
+            'role'=>fake()->randomElement(['admin', 'user','mitra']),
             'telpon' => fake()->unique()->phoneNumber(),
             'dompet' => fake()->numberBetween(1000, 50000),
             'isAdmin' => false,
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make('sideHunt1'),
             'remember_token' => Str::random(10),
         ];
     }

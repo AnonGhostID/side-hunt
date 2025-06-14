@@ -22,6 +22,9 @@ return new class extends Migration
             $table->enum('status', ['tertunda', 'sukses', 'gagal'])->default('tertunda');
             $table->dateTimeTz('dibuat');
             $table->timestamps();
+
+            $table->foreign('pembuat_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('pekerja_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

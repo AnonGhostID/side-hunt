@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class Users extends Authenticatable
 {
     use HasFactory, Notifiable;
 
@@ -16,12 +16,18 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        //dewa
         'nama',
         'email',
         'alamat',
         'telpon',
-        'isAdmin',
         'password',
+        'role',
+        'preferensi_user',
+        
+        //adam
+        'dompet',
+        'email_verified_at',
     ];
 
     /**
@@ -48,11 +54,11 @@ class User extends Authenticatable
     }
 
     public function pembuat(){
-        return $this->hasMany(SideJob::class,'pembuat');
+        return $this->hasMany(Pekerjaan::class,'pembuat');
     }
     
     public function pelamar(){
-        return $this->belongsToMany(User::class, 'pelamars');
+        return $this->belongsToMany(Users::class, 'pelamars');
     }
 
     public function payments(){

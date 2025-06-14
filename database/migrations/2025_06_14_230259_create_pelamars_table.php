@@ -19,7 +19,9 @@ return new class extends Migration
             $table->timestamps();
 
             // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            // $table->foreign('job_id')->references('id')->on('side_jobs')->onDelete('cascade');
+            // $table->foreign('job_id')->references('id')->on('pekerjaan')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('job_id')->references('id')->on('pekerjaans')->onDelete('cascade');
         });
     }
 
