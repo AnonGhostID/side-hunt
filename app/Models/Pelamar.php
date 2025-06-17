@@ -7,16 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pelamar extends Model
 {
+    /** @use HasFactory<\Database\Factories\PelamarFactory> */
     use HasFactory;
 
-    protected $fillable = ['user_id','job_id','status'];
+    protected $fillable = [
+        'user_id',
+        'job_id',
+        'status',
+    ];
 
     public function user()
     {
-        return $this->belongsTo(User::class);   
+        return $this->belongsTo(Users::class);
     }
-    
-    public function sidejob(){
-        return $this->belongsTo(SideJob::class,'job_id');
+
+    public function sidejob()
+    {
+        return $this->belongsTo(Pekerjaan::class, 'job_id');
     }
 }

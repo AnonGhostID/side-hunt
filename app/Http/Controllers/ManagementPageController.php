@@ -2,35 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pekerjaan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
 use App\Models\Transaksi;
-use App\Models\SideJob;
 use App\Models\User;
 use App\Models\Payment; // add Payment import
+use App\Models\Users;
 
 class ManagementPageController extends Controller
 {
     // Pastikan user terautentikasi untuk mengakses halaman manajemen
-    public function __construct()
-    {
-        $this->middleware('auth');
-        // Anda mungkin ingin menambahkan middleware admin untuk beberapa rute di sini atau di file rute
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth');
+    //     // Anda mungkin ingin menambahkan middleware admin untuk beberapa rute di sini atau di file rute
+    // }
 
     public function dashboard()
     {
-        $user = Auth::user();
-        $totalSideJobs = SideJob::count();
-        $totalPekerja = User::where('isAdmin', 0)->count();
+        $user = session('account');
+        $totalPekerjaans = Pekerjaan::where('pembuat', $user['id'])
+                  ->where('is_active', '1')
+                  ->count();
+        $totalPekerja = 20;
         
-        return view('manajemen.dashboard', compact('user', 'totalSideJobs', 'totalPekerja'));
+        // Get fresh user data from database to ensure balance is current
+        $currentUser = Users::find($user['id']);
+        
+        // Update session with fresh data if balance is different
+        if ($currentUser && $currentUser->dompet != $user->dompet) {
+            session(['account' => $currentUser]);
+            $user = $currentUser;
+        }
+        
+        return view('manajemen.dashboard', compact('totalPekerjaans','totalPekerja', 'user'));
     }
 
     // --- Fitur Manajemen Utama ---
     public function pekerjaanBerlangsung()
     {
-        // Logika untuk mengambil data pekerjaan yang sedang berlangsung
+        $pekerjaan_active = $users = Pekerjaan::where('status', '!=', 'Done')->get();
         return view('manajemen.pekerjaan.berlangsung'); // contoh path
     }
 
@@ -41,8 +53,7 @@ class ManagementPageController extends Controller
 
     public function topUp()
     {
-        $user = Auth::user();
-        return view('manajemen.keuangan.topUp', compact('user'));
+        return view('manajemen.keuangan.topUp');
     }
 
     public function tarikSaldo()
@@ -52,14 +63,13 @@ class ManagementPageController extends Controller
 
     public function riwayatTransaksi()
     {
-        $user = Auth::user();
         // Fetch payments for logged-in user
         $perPage = 10;
-        $transaksi = Payment::where('user_id', $user->id)
+        $transaksi = Payment::where('user_id', session('account')['id'])
             ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
-        return view('manajemen.keuangan.riwayat_transaksi', compact('user', 'transaksi'));
+        return view('manajemen.keuangan.riwayat_transaksi', compact('transaksi'));
     }
 
     /**
@@ -67,16 +77,16 @@ class ManagementPageController extends Controller
      */
     public function riwayatTransaksiData(Request $request)
     {
-        $user = Auth::user();
+        $user = session('account');
         $search = $request->query('search', '');
         $perPage = $request->query('per_page', 10);
         // Determine per page count
         if ($perPage === 'all') {
-            $perPage = Payment::where('user_id', $user->id)->count();
+            $perPage = Payment::where('user_id', $user['id'])->count();
         } else {
             $perPage = (int) $perPage;
         }
-        $query = Payment::where('user_id', $user->id);
+        $query = Payment::where('user_id', $user['id']);
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('external_id', 'like', "%{$search}%")

@@ -155,7 +155,7 @@
 
                 <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
                     <span class="text-sm text-blue-600">Saldo Dompet Saat Ini:</span>
-                    <p class="text-xl font-bold text-blue-800">Rp {{ number_format(Auth::user()->dompet, 0, ',', '.') }}</p>
+                    <p class="text-xl font-bold text-blue-800">Rp {{ number_format(session('account')['dompet'], 0, ',', '.') }}</p>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -267,7 +267,7 @@
             
             <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
                 <span class="text-gray-700">Saldo Dompet Saat Ini:</span>
-                <span class="font-semibold">Rp {{ number_format(Auth::user()->dompet, 0, ',', '.') }}</span>
+                <span class="font-semibold">Rp {{ number_format(session('account')['dompet'], 0, ',', '.') }}</span>
             </div>
             
             <form action="{{ route('manajemen.topup.store') }}" method="POST">

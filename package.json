@@ -3,22 +3,23 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "dev:host": "vite --host 0.0.0.0",
         "build": "vite build"
     },
     "devDependencies": {
-        "@popperjs/core": "^2.11.6",
         "autoprefixer": "^10.4.21",
         "axios": "^1.6.4",
-        "bootstrap": "^5.3.6",
-        "bootstrap-icons": "^1.11.3",
-        "laravel-vite-plugin": "^1.0",
+        "laravel-vite-plugin": "^1.0.0",
         "postcss": "^8.5.3",
-        "sass": "^1.89.0",
+        "sass": "^1.89.2",
+        "sass-embedded": "^1.89.0",
+        "sass-loader": "^16.0.5",
         "tailwindcss": "^4.1.7",
         "vite": "^6.3.5"
     },
     "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "bootstrap": "^5.3.6",
+        "bootstrap-icons": "^1.13.1",
         "@tailwindcss/vite": "^4.1.7"
     }
 }

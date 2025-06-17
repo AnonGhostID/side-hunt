@@ -197,15 +197,14 @@
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
                     </div>
                 </div>
-                <a href="{{ route('logout') }}"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                <a href="/Logout"
                    class="sidebar-link bg-red-50 hover:bg-red-100 text-red-600">
                     <i class="fas fa-sign-out-alt text-red-500"></i>
                     <span>Logout</span>
                 </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                <!-- <form id="logout-form" action="" method="POST" class="d-none">
                     @csrf
-                </form>
+                </form> -->
                 @endauth
             </div>
         </aside>
@@ -241,6 +240,7 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/balance-update.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

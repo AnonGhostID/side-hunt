@@ -23,7 +23,7 @@ body{
 input {
     border-radius: 20px !important;
     padding: 0px 20px 0px 20px;
-    /* font-size: 100px; */
+    font-size: 100px;
 }
 
 .input-search-hero {
@@ -51,3 +51,28 @@ input {
     border-radius: 15px;
     background: #1B4841
 }
+
+/* .navbar{
+    background-color: #545454;
+    max-height: 100px;
+    height: 100px;
+    
+    .container{
+        height: 100%;
+        
+        .navbar-brand{
+            height: 100%;
+            
+            .container-logo{
+                height: 100%;
+                width: fit-content;
+
+                svg{
+                    height: 100%;
+                    width: fit-content;
+                }
+            }
+        }
+    }
+    
+} */

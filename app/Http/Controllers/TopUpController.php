@@ -18,7 +18,7 @@ class TopUpController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
+        // $this->middleware('auth');
         Configuration::setXenditKey('xnd_development_7Qgujm27QHHqpc15olW28d1yBzncI1f1KLHSGNMwGeRug2K6doSB426KYqvgEa');
         $this->apiInstance = new InvoiceApi();
     }
@@ -31,9 +31,11 @@ class TopUpController extends Controller
             'custom_amount_raw' => 'nullable|numeric|min:20000'
         ]);
 
-        $user = Auth::user();
+        $user = session('account');
+        // dd($request);
         
-        $amount = !empty($request->nominal) ? $request->nominal : (!empty($request->custom_amount_raw) ? $request->custom_amount_raw : null);
+        $amount = !empty($request->nominal) ? $request->nominal : (!empty($request->custom_amount) ? $request->custom_amount: null);
+        // dd($amount);
 
         if (!$amount || $amount < 20000) {
             return back()->with('error', 'Minimum top up adalah Rp 20.000');
@@ -48,6 +50,7 @@ class TopUpController extends Controller
             
             // Set expiry date to 24 hours from now
             // $expiryDate = now()->addHours(24)->toISOString();
+            // dd($user);
             
             $createInvoiceRequest = new \Xendit\Invoice\CreateInvoiceRequest([
                 'external_id' => $external_id,
@@ -179,10 +182,14 @@ class TopUpController extends Controller
                         $user = $lockedPayment->user;
                         $user->increment('dompet', $lockedPayment->amount);
                         
+                        // Update session with fresh user data
+                        $freshUser = $user->fresh();
+                        session(['account' => $freshUser]);
+                        
                         return response()->json([
                             'status' => 'success',
                             'message' => 'Pembayaran berhasil! Saldo Anda telah ditambahkan.',
-                            'new_balance' => $user->fresh()->dompet
+                            'new_balance' => $freshUser->dompet
                         ]);
                     }
                     
@@ -282,6 +289,12 @@ class TopUpController extends Controller
                     ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
                     $user = $payment->user;
                     $user->increment('dompet', $payment->amount);
+                    
+                    // Update session with fresh user data if this user is currently logged in
+                    if (session('account') && session('account')->id == $user->id) {
+                        $freshUser = $user->fresh();
+                        session(['account' => $freshUser]);
+                    }
                 }
             }
         } catch (\Exception $e) {

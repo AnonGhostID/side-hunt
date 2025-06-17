@@ -6,11 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "bavix/laravel-wallet": "^11.0",
+        "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^11.0",
-        "laravel/tinker": "^2.9",
-        "midtrans/midtrans-php": "^2.5",
-        "munafio/chatify": "^1.6",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.8",
         "xendit/xendit-php": "^7.0"
     },
     "require-dev": {
@@ -28,7 +27,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/assetHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -47,15 +49,10 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --ansi"
+            "@php artisan key:generate --ansi"
         ]
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "11.x-dev"
-        },
         "laravel": {
             "dont-discover": []
         }

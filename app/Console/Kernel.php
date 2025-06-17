@@ -12,8 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Clean up expired payments every minute
-        $schedule->command('payments:cleanup-expired')->everyMinute();
+        // $schedule->command('inspire')->hourly();
     }
 
     /**

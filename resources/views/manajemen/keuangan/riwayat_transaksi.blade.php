@@ -12,7 +12,7 @@
         </p>
         <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
             <span class="text-gray-700">Saldo Anda Saat Ini:</span>
-            <span class="font-semibold">Rp {{ number_format($user->dompet, 0, ',', '.') }}</span>
+            <span class="font-semibold">Rp {{ number_format(session('account')->dompet, 0, ',', '.') }}</span>
         </div>
 
         <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
