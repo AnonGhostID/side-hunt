@@ -121,7 +121,7 @@
                             </a>
                         </li>
                         @if(session()->has('account'))
-                        @if(session('account')->role=='mitra' || session('account')->role=='user')
+                        @if(session('account')->role=='mitra' || session('account')->role=='user' || session('account')->role=='admin')
                         <li class="nav-item ">
                             <a class="nav-link {{{($active_navbar=='Management')? 'active':''}}}"
                                 aria-current="page" href="/management/">
