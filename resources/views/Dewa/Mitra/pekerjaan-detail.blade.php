@@ -158,15 +158,40 @@
                         <a href="javascript:history.back()" class="btn btn-secondary-custom me-3">
                             <i class="bi bi-arrow-left me-1"></i> Kembali
                         </a>
-                        @auth
-                            <button class="btn btn-warning-custom" onclick="lamarPekerjaan({{ $job->id }})">
-                                <i class="bi bi-send me-1"></i> Lamar Pekerjaan
-                            </button>
+                        @if(session()->has('account'))
+                            @php
+                                $user = session('account');
+                                $userApplied = app('App\Models\Pelamar')
+                                    ->where('job_id', $job->id)
+                                    ->where('user_id', $user['id'])
+                                    ->first();
+                            @endphp
+                            
+                            @if($job->pembuat == $user['id'])
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-1"></i> Ini adalah pekerjaan yang Anda buat
+                                </div>
+                            @elseif($userApplied)
+                                <div class="alert alert-warning">
+                                    @if($userApplied->status == 'pending')
+                                        <i class="bi bi-clock me-1"></i> Lamaran Anda sedang diproses. Status: <strong>Pending</strong>
+                                    @elseif($userApplied->status == 'diterima')
+                                        <i class="bi bi-check-circle me-1"></i> Selamat! Lamaran Anda <strong>Diterima</strong>
+                                    @elseif($userApplied->status == 'ditolak')
+                                        <i class="bi bi-x-circle me-1"></i> Lamaran Anda <strong>Ditolak</strong>
+                                    @endif
+                                    <br><small>Dilamar pada: {{ $userApplied->created_at->format('d F Y H:i') }}</small>
+                                </div>
+                            @else
+                                <button class="btn btn-warning-custom" onclick="lamarPekerjaan({{ $job->id }})">
+                                    <i class="bi bi-send me-1"></i> Lamar Pekerjaan
+                                </button>
+                            @endif
                         @else
                             <a href="/Login" class="btn btn-primary-custom">
                                 <i class="bi bi-box-arrow-in-right me-1"></i> Login untuk Melamar
                             </a>
-                        @endauth
+                        @endif
                     </div>
                 </div>
             </div>
@@ -178,7 +203,6 @@
 @section('script')
 <script>
     function lamarPekerjaan(jobId) {
-        // Add your job application logic here
         Swal.fire({
             title: 'Konfirmasi',
             text: 'Apakah Anda yakin ingin melamar pekerjaan ini?',
@@ -190,9 +214,20 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Redirect to application form or submit application
-                // You can customize this based on your application flow
-                window.location.href = '/kerja/lamar/' + jobId;
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/kerja/lamar/' + jobId;
+                
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+                
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     }

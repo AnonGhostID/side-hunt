@@ -163,6 +163,59 @@ class PekerjaanController extends Controller
         return view('Dewa.Mitra.pekerjaan-detail', compact('job', 'active_navbar', 'nama_halaman'));
     }
 
+    public function lamarPekerjaan($id)
+    {
+        if (!session()->has('account')) {
+            return redirect('/Login')->with('error', 'Anda harus login terlebih dahulu');
+        }
+
+        $user = session('account');
+        $pekerjaan = Pekerjaan::findOrFail($id);
+
+        // Check if user is the job creator
+        if ($pekerjaan->pembuat == $user['id']) {
+            return redirect()->back()->with('error', 'Anda tidak dapat melamar pekerjaan yang Anda buat sendiri');
+        }
+
+        // Check if user has already applied
+        $existingApplication = Pelamar::where('user_id', $user['id'])
+                                     ->where('job_id', $id)
+                                     ->first();
+
+        if ($existingApplication) {
+            return redirect()->back()->with('error', 'Anda sudah melamar pekerjaan ini');
+        }
+
+        // Create new application
+        Pelamar::create([
+            'user_id' => $user['id'],
+            'job_id' => $id,
+            'status' => 'pending'
+        ]);
+
+        return redirect()->back()->with('success', 'Lamaran berhasil dikirim!');
+    }
+
+    public function lowonganTerdaftar()
+    {
+        if (!session()->has('account')) {
+            return redirect('/Login');
+        }
+
+        $user = session('account');
+        
+        // Get jobs created by current user (mitra) with their applicants
+        $jobs = Pekerjaan::where('pembuat', $user['id'])
+                ->with(['pelamar.user'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+        $active_navbar = 'Lowongan Terdaftar';
+        $nama_halaman = 'Lowongan Terdaftar';
+
+        return view('Dewa.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman'));
+    }
+
     function cosineSimilarityPercent($text1, $text2)
     {
         // 1. Hitung frekuensi kata dari masing-masing teks

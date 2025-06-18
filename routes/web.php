@@ -36,6 +36,7 @@ Route::post('/Register_account', action: [UsersController::class, 'create']);
 Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
 Route::get('/kerja/create', [PekerjaanController::class, 'create'])->middleware(['role:mitra|admin']);
 Route::get('/kerja/{id}', [PekerjaanController::class, 'show'])->name('pekerjaan.show');
+Route::post('/kerja/lamar/{id}', [PekerjaanController::class, 'lamarPekerjaan'])->name('pekerjaan.lamar')->middleware(['role:user']);
 
 Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::post('/user/preferensi/save', action: [UsersController::class, 'save_preverensi']);
@@ -114,6 +115,11 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
 });
 
 //Only Mitra
+Route::middleware(['role:mitra|admin'])->group(function () {
+    Route::get('/dewa/mitra/lowongan-terdaftar', [PekerjaanController::class, 'lowonganTerdaftar'])->name('dewa.mitra.lowongan.terdaftar');
+    Route::patch('/dewa/mitra/pelamar/{pelamar}/terima', [PekerjaanController::class, 'terima'])->name('dewa.mitra.pelamar.terima');
+    Route::patch('/dewa/mitra/pelamar/{pelamar}/tolak', [PekerjaanController::class, 'tolak'])->name('dewa.mitra.pelamar.tolak');
+});
 
 //End Dewa
 
