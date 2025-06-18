@@ -53,8 +53,9 @@ class RoleMidleware
             // return redirect('/')->with('fail',['AKSES DITOLAK!','Halaman ini']);
             return redirect('/NotAllowed');
         }
-        else if(session('account')['role']!='admin' && (!in_array($request->path(), ['user/preferensi/save', 'question-new-user']))){
-            if(session('account')['preferensi_user']==null){
+        // Only check for user preferences if the user is not an admin and not accessing preference-related routes
+        else if(session('account')['role'] != 'admin' && !in_array($request->path(), ['user/preferensi/save', 'question-new-user'])){
+            if(session('account')['preferensi_user'] == null){
                 return redirect('/question-new-user');
             }
         }

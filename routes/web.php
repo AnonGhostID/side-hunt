@@ -35,7 +35,7 @@ Route::post('/Login_account', [UsersController::class, 'Login_Account']);
 Route::post('/Register_account', action: [UsersController::class, 'create']);
 Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
 
-Route::middleware(['role:user|mitra'])->group(function () {
+Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::post('/user/preferensi/save', action: [UsersController::class, 'save_preverensi']);
     Route::post('/kerja/add', action: [PekerjaanController::class, 'store']);
     Route::post('/Profile/Edit', [UsersController::class, 'Profile_Edit']);
@@ -50,6 +50,7 @@ Route::middleware(['role:user|mitra'])->group(function () {
     Route::get('/Profile', [UsersController::class, 'Profile']);
     Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
     
+    // Routes for mitra and user only
     Route::middleware(['role:mitra|user'])->group(function () {
         Route::prefix('management')->name('manajemen.')->group(function () {
             Route::get('/', [ManagementPageController::class, 'dashboard'])->name('dashboard');
@@ -69,7 +70,7 @@ Route::middleware(['role:user|mitra'])->group(function () {
             Route::get('/Top-Up/{external_id}', [TopUpController::class, 'payment'])->name('topup.payment');
             Route::post('/Top-Up/check-status', [TopUpController::class, 'checkStatus'])->name('topup.check-status');
             Route::post('/Top-Up/expire-timeout', [TopUpController::class, 'expireOnTimeout'])->name('topup.expire-timeout');
-            Route::post('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topup.cancel');
+            Route::post('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topUp.cancel');
             //
             Route::get('/tarik-saldo', [ManagementPageController::class, 'tarikSaldo'])->name('tarik_saldo');
             Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
@@ -90,36 +91,24 @@ Route::middleware(['role:user|mitra'])->group(function () {
             Route::get('/rating-user', [ManagementPageController::class, 'ratingUser'])->name('rating.user');
             Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
             Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
-    
-    
-            // Rute Khusus Admin (Contoh)
-            Route::prefix('admin')->name('admin.') // Buat middleware 'admin' jika belum ada
-            ->group(function () {
+        });
+    });
+
+    // Admin-only routes
+    Route::middleware(['role:admin'])->group(function () {
+        Route::prefix('management/admin')->name('manajemen.admin.')->group(function () {
             Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
             Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
             Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
-            // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
-            // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
-            Route::get('/admin', [HomeController::class, 'admin'])->name('admin.index'); // Index
-            Route::get('/admin/user/{id}/edit', [UsersController::class, 'showAdmin'])->name('admin.show.profile');
-            Route::match(['get', 'put'], '/admin/user/{id}', [UsersController::class, 'update'])->name('admin.update.profile');
-            Route::get('/admin/user/edit/{id}', [UsersController::class, 'edit'])->name('admin.edit.profile');
-            Route::get('/admin/user/delete/{id}', [UsersController::class, 'delete'])->name('admin.delete.profile');
-            Route::get('/admin/transaksi/setujui/{kode}', [TransaksiController::class, 'setujuiTransaksi'])->name('admin.transaksi.setuju');
-            Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
-            // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
-            // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
-            });
-            // ->group(function () {
-            //     Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
-            //     Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
-            //     Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
-            // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
-            // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
-            // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
-            // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
-            // });
         });
+        
+        Route::get('/admin', [HomeController::class, 'admin'])->name('admin.index');
+        Route::get('/admin/user/{id}/edit', [UsersController::class, 'showAdmin'])->name('admin.show.profile');
+        Route::match(['get', 'put'], '/admin/user/{id}', [UsersController::class, 'update'])->name('admin.update.profile');
+        Route::get('/admin/user/edit/{id}', [UsersController::class, 'edit'])->name('admin.edit.profile');
+        Route::get('/admin/user/delete/{id}', [UsersController::class, 'delete'])->name('admin.delete.profile');
+        Route::get('/admin/transaksi/setujui/{kode}', [TransaksiController::class, 'setujuiTransaksi'])->name('admin.transaksi.setuju');
+        Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
     });
 });
 
