@@ -12,13 +12,10 @@ class BalanceUpdater {
         // Listen for custom balance update events
         document.addEventListener('balanceUpdated', (event) => {
             this.updateBalance(event.detail.newBalance);
-        });
-
-        // Check for balance updates periodically (every 30 seconds)
-        // This is useful for cases where the payment is completed in another tab
-        setInterval(() => {
-            this.checkBalanceUpdate();
-        }, 30000);
+        });        // Balance polling disabled to prevent unnecessary API calls
+        // setInterval(() => {
+        //     this.checkBalanceUpdate();
+        // }, 30000);
     }
 
     /**

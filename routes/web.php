@@ -71,7 +71,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/Top-Up/{external_id}', [TopUpController::class, 'payment'])->name('topup.payment');
             Route::post('/Top-Up/check-status', [TopUpController::class, 'checkStatus'])->name('topup.check-status');
             Route::post('/Top-Up/expire-timeout', [TopUpController::class, 'expireOnTimeout'])->name('topup.expire-timeout');
-            Route::post('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topUp.cancel');
+            Route::post('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topup.cancel');
             //
             Route::get('/tarik-saldo', [ManagementPageController::class, 'tarikSaldo'])->name('tarik_saldo');
             Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
