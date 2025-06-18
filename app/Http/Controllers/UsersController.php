@@ -168,7 +168,6 @@ class UsersController extends Controller
         $req->validate([
 
             'nama-depan' => 'required|string|max:60',
-            'nama-belakang' => 'required|string|max:60',
             'email' => [
                 'required',
                 'max:100',
@@ -192,9 +191,6 @@ class UsersController extends Controller
             'nama-depan.string' => 'Nama harus berupa teks.',
             'nama-depan.max' => 'Nama maksimal 60 karakter.',
 
-            'nama-belakang.required' => 'Nama wajib diisi.',
-            'nama-belakang.string' => 'Nama harus berupa teks.',
-            'nama-belakang.max' => 'Nama maksimal 60 karakter.',
 
             'email.email' => 'Format email tidak valid.',
             'email.max' => 'Email maksimal 100 karakter.',
@@ -208,7 +204,7 @@ class UsersController extends Controller
         })->toArray();
         // dd('masuk');
         $data['password'] = Hash::make($req->password);
-        $data['nama'] = $req['nama-depan'] . ' ' . $req['nama-belakang'];
+        $data['nama'] = $req['nama-depan'];
         if (Users::create($data)) {
             return redirect()->back()->with('success', ['Registrasi Berhasil', 'Akun anda berhasil didaftarkan, Silahkan Login']);
         } else {

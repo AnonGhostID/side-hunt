@@ -22,20 +22,12 @@
                 <option value="2"{ {{ old('role') == 'mitra' ? 'selected' : '' }}} selected>User (Pencari Kerja)</option>
             </select>
         </div>
-        <div class="d-flex flex-row h-auto gap-3 w-100 justify-content-between">
-            <div class="d-flex flex-column w-50">
+        <div class="d-flex flex-column h-auto gap-3 w-100">
+            <div class="d-flex flex-column w-100">
                 <label for="">Nama Depan*</label>
                 <input type="text" name="nama-depan" maxlength="10" placeholder="john"
                     class="w-100 @error('nama-depan') is-invalid @enderror" value="{{ old('nama-depan') }}">
                 @error('nama-depan')
-                <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="d-flex flex-column w-50">
-                <label for="">Nama Belakang*</label>
-                <input type="text" name="nama-belakang" maxlength="30" placeholder="doe"
-                    class="w-100 @error('nama-belakang') is-invalid @enderror" value="{{ old('nama-belakang') }}">
-                @error('nama-belakang')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
