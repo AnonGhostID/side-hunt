@@ -50,12 +50,13 @@ Route::middleware(['role:user|mitra'])->group(function () {
     Route::get('/Profile', [UsersController::class, 'Profile']);
     Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
     
-    Route::middleware(['role:mitra'])->group(function () {
+    Route::middleware(['role:mitra|user'])->group(function () {
         Route::prefix('management')->name('manajemen.')->group(function () {
             Route::get('/', [ManagementPageController::class, 'dashboard'])->name('dashboard');
     
             // Pekerjaan
             Route::get('/pekerjaan-berlangsung', [ManagementPageController::class, 'pekerjaanBerlangsung'])->name('pekerjaan.berlangsung');
+            Route::get('/pekerjaan-terdaftar', [ManagementPageController::class, 'pekerjaanTerdaftar'])->name('pekerjaan.terdaftar');
             Route::get('/upload-laporan', [ManagementPageController::class, 'uploadLaporan'])->name('laporan.upload');
             Route::get('/riwayat-pekerjaan', [ManagementPageController::class, 'riwayatPekerjaan'])->name('pekerjaan.riwayat');
     

@@ -121,7 +121,7 @@
                             </a>
                         </li>
                         @if(session()->has('account'))
-                        @if(session('account')->role=='mitra')
+                        @if(session('account')->role=='mitra' || session('account')->role=='user')
                         <li class="nav-item ">
                             <a class="nav-link {{{($active_navbar=='Management')? 'active':''}}}"
                                 aria-current="page" href="/management/">
@@ -331,7 +331,7 @@
     function reverseGeocode(lat, lon) {
         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
             .then(response => response.json())
-            .then(data => {
+            .then data => {
                 if (data.address) {
                     alert("Nama jalan: " + (data.address.road || "Tidak ditemukan"));
                 } else {

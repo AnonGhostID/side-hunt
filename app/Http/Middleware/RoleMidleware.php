@@ -45,7 +45,11 @@ class RoleMidleware
             return redirect('/Login')->with('fail', ['Akses Ditolak', 'Anda Belum Login, Silahkan login terlebih dahulu!']);
             // abort(403, 'Anda belum login.');
         }
-        else if (!in_array($request->user()->role, $roles)) {
+        
+        // Check role from both Auth::user() and session('account') for consistency
+        $userRole = $user->role ?? (session('account')->role ?? null);
+        
+        if (!in_array($userRole, $roles)) {
             // return redirect('/')->with('fail',['AKSES DITOLAK!','Halaman ini']);
             return redirect('/NotAllowed');
         }

@@ -46,6 +46,11 @@ class ManagementPageController extends Controller
         return view('manajemen.pekerjaan.berlangsung'); // contoh path
     }
 
+    public function pekerjaanTerdaftar()
+    {
+        return view('manajemen.pekerjaan.terdaftar');
+    }
+
     public function uploadLaporan()
     {
         return view('manajemen.laporan.upload');
