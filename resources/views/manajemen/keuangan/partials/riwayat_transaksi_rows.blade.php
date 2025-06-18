@@ -13,11 +13,7 @@
         @endif
     </td>
     <td class="px-5 py-4 border-b border-gray-200 text-sm">
-        @if($t->isPaid())
-            <a href="{{ route('manajemen.topup.payment', ['external_id' => $t->external_id]) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Cek Status</a>
-        @else
-            <span class="text-gray-500">-</span>
-        @endif
+        <a href="{{ route('manajemen.topup.payment', ['external_id' => $t->external_id]) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Cek Status</a>
     </td>
 </tr>
 @empty

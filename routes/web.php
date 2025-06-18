@@ -52,7 +52,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
     
     // Routes for mitra and user only
-    Route::middleware([])->group(function () {
+    Route::middleware(['role:user|mitra|admin'])->group(function () {
         Route::prefix('management')->name('manajemen.')->group(function () {
             Route::get('/', [ManagementPageController::class, 'dashboard'])->name('dashboard');
     
