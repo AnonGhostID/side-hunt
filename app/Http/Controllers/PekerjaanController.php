@@ -154,6 +154,15 @@ class PekerjaanController extends Controller
         $pelamar->update(['status' => 'ditolak']);
         return redirect()->back();
     }
+    public function show($id)
+    {
+        $job = Pekerjaan::findOrFail($id);
+        $active_navbar = 'Detail Pekerjaan';
+        $nama_halaman = 'Detail Pekerjaan';
+        
+        return view('Dewa.Mitra.pekerjaan-detail', compact('job', 'active_navbar', 'nama_halaman'));
+    }
+
     function cosineSimilarityPercent($text1, $text2)
     {
         // 1. Hitung frekuensi kata dari masing-masing teks

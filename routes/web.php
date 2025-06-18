@@ -34,6 +34,7 @@ Route::get('/NotAllowed', function(){
 Route::post('/Login_account', [UsersController::class, 'Login_Account']);
 Route::post('/Register_account', action: [UsersController::class, 'create']);
 Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
+Route::get('/kerja/{id}', [PekerjaanController::class, 'show'])->name('pekerjaan.show');
 
 Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::post('/user/preferensi/save', action: [UsersController::class, 'save_preverensi']);

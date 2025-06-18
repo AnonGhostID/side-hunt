@@ -41,7 +41,7 @@
                         <tr>
                             <td>{{ $job->nama }}</td>
                             <td>{{ $job->alamat }}</td>
-                            <td><a href=""
+                            <td><a href="{{ route('pekerjaan.show', $job->id) }}"
                                     class="btn btn-sm btn-dark">SHOW</a></td>
                         </tr>
                     @empty
