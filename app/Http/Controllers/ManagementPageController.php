@@ -25,7 +25,7 @@ class ManagementPageController extends Controller
         $totalPekerjaans = Pekerjaan::where('pembuat', $user['id'])
                   ->where('is_active', '1')
                   ->count();
-        $totalPekerja = 20;
+        $totalPekerja = Users::where('role', 'user')->count();
         
         // Get fresh user data from database to ensure balance is current
         $currentUser = Users::find($user['id']);
