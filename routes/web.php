@@ -34,6 +34,7 @@ Route::get('/NotAllowed', function(){
 Route::post('/Login_account', [UsersController::class, 'Login_Account']);
 Route::post('/Register_account', action: [UsersController::class, 'create']);
 Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
+Route::get('/kerja/create', [PekerjaanController::class, 'create'])->middleware(['role:mitra|admin']);
 Route::get('/kerja/{id}', [PekerjaanController::class, 'show'])->name('pekerjaan.show');
 
 Route::middleware(['role:user|mitra|admin'])->group(function () {
@@ -43,7 +44,6 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('user.transaksi');
     //Kerja
     Route::get('/question-new-user', action: [HomeController::class, 'new_user']);
-    Route::get('/kerja/create', action: [PekerjaanController::class, 'create']);
 
     //NewUser
 
@@ -112,7 +112,6 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
         Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
     });
 });
-
 
 //Only Mitra
 
