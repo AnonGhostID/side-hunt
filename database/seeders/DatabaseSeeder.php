@@ -111,21 +111,8 @@ class DatabaseSeeder extends Seeder
                 'nama' => ucwords($i)
             ]);
         }
-        $path = database_path('seeders/sql/pekerjaans_mass_insert_final.sql');
         
-        // Read the SQL content
-        $sqlContent = File::get($path);
-        
-        // Replace invalid user IDs with valid ones (1-7)
-        // This ensures foreign key constraints are satisfied
-        $validUserIds = [1, 2, 3, 4, 5, 6, 7];
-        
-        // Use regex to find and replace the pembuat column values
-        $sqlContent = preg_replace_callback('/(\', )(\d+)(, NOW\(\), NOW\(\)\))/', function($matches) use ($validUserIds) {
-            $randomUserId = $validUserIds[array_rand($validUserIds)];
-            return $matches[1] . $randomUserId . $matches[3];
-        }, $sqlContent);
-        
-        DB::unprepared($sqlContent);
+        // Call the PekerjaanSeeder to create 15 Indonesian onsite daily jobs
+        $this->call(PekerjaanSeeder::class);
     }
 }
