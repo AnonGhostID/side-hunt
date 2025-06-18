@@ -73,12 +73,22 @@ class Users extends Model implements AuthenticatableContract
     }
 
     /**
-     * Check if the user is an admin.
+     * Cek user admin.
      *
      * @return bool
      */
     public function isAdmin(): bool
     {
         return $this->role == 'admin';
+    }
+
+    /**
+     * Cek user mitra
+     *
+     * @return bool
+     */
+    public function isMitra(): bool
+    {
+        return $this->role == 'mitra';
     }
 }

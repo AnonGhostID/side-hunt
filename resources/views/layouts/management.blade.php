@@ -93,10 +93,14 @@
                     <i class="fas fa-briefcase"></i>
                     <span>Pekerjaan Berlangsung</span>
                 </a>
-                <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.terdaftar') ? 'active' : '' }}">
-                    <i class="fas fa-list-check"></i>
-                    <span>Pekerjaan Terdaftar</span>
-                </a>
+                @auth
+                    @if(auth()->user()->isMitra())
+                        <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.terdaftar') ? 'active' : '' }}">
+                            <i class="fas fa-list-check"></i>
+                            <span>Pekerjaan Terdaftar</span>
+                        </a>
+                    @endif
+                @endauth
                 <a href="{{ route('manajemen.laporan.upload') }}" class="sidebar-link {{ request()->routeIs('manajemen.laporan.upload') ? 'active' : '' }}">
                     <i class="fas fa-file-upload"></i>
                     <span>Upload Laporan Hasil</span>
