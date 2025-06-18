@@ -8,7 +8,7 @@
             border-radius: 8px;
         }
         .job-header {
-            background-color: #1B4841;
+            background-color: #545454;
             color: white;
             padding: 2rem;
             border-radius: 8px 8px 0 0;

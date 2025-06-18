@@ -8,9 +8,6 @@
     <div class="bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Pekerjaan Yang Telah Anda Daftarkan</h2>
-            <a href="/kerja/create" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
-                <i class="fas fa-plus mr-2"></i>Tambahkan Lowongan Baru
-            </a>
         </div>
         
         <div class="overflow-x-auto">
