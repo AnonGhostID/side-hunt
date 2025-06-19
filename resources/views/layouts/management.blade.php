@@ -89,10 +89,14 @@
                 </a>
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pekerjaan</h3>
-                <a href="{{ route('manajemen.pekerjaan.berlangsung') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.berlangsung') ? 'active' : '' }}">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Pekerjaan Berlangsung</span>
-                </a>
+                @auth
+                    @if(auth()->user()->isUser())
+                        <a href="{{ route('manajemen.pekerjaan.berlangsung') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.berlangsung') ? 'active' : '' }}">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Pekerjaan Berlangsung</span>
+                        </a>
+                    @endif
+                @endauth
                 @auth
                     @if(auth()->user()->isMitra())
                         <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.terdaftar') ? 'active' : '' }}">
@@ -101,15 +105,22 @@
                         </a>
                     @endif
                 @endauth
-                <a href="{{ route('manajemen.laporan.upload') }}" class="sidebar-link {{ request()->routeIs('manajemen.laporan.upload') ? 'active' : '' }}">
-                    <i class="fas fa-file-upload"></i>
-                    <span>Upload Laporan Hasil</span>
-                </a>
-                 <a href="{{ route('manajemen.pekerjaan.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.riwayat') ? 'active' : '' }}">
-                    <i class="fas fa-history"></i>
-                    <span>Riwayat Pekerjaan</span>
-                </a>
-
+                @auth
+                    @if(auth()->user()->isUser())
+                        <a href="{{ route('manajemen.laporan.upload') }}" class="sidebar-link {{ request()->routeIs('manajemen.laporan.upload') ? 'active' : '' }}">
+                            <i class="fas fa-file-upload"></i>
+                            <span>Upload Laporan Hasil</span>
+                        </a>
+                    @endif
+                @endauth
+                @auth
+                    @if(auth()->user()->isUser())
+                        <a href="{{ route('manajemen.pekerjaan.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.riwayat') ? 'active' : '' }}">
+                            <i class="fas fa-history"></i>
+                            <span>Riwayat Pekerjaan</span>
+                        </a>
+                    @endif
+                @endauth
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
                 <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
@@ -179,10 +190,6 @@
                 <a href="{{ route('manajemen.notifikasi.pelamaran') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifikasi.pelamaran') ? 'active' : '' }}">
                     <i class="fas fa-bell"></i>
                     <span>Notifikasi Status Pelamaran</span>
-                </a>
-                 <a href="{{ route('manajemen.chat') }}" class="sidebar-link {{ request()->routeIs('manajemen.chat') ? 'active' : '' }}">
-                    <i class="fas fa-comments"></i>
-                    <span>Chat Antar Pengguna</span>
                 </a>
                 <a href="{{ route('manajemen.rating.user') }}" class="sidebar-link {{ request()->routeIs('manajemen.rating.user') ? 'active' : '' }}">
                     <i class="fas fa-star"></i>

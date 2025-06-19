@@ -91,4 +91,14 @@ class Users extends Model implements AuthenticatableContract
     {
         return $this->role == 'mitra';
     }
+
+    /**
+     * Cek user mitra
+     *
+     * @return bool
+     */
+    public function isUser(): bool
+    {
+        return $this->role == 'user';
+    }
 }
