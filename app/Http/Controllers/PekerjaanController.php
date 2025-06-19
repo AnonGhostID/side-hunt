@@ -147,37 +147,30 @@ class PekerjaanController extends Controller
 
     public function terima(Pelamar $pelamar)
     {
-        $pelamar->update(['status' => 'diterima']);
-        
-        // Create notification for the applicant
-        $job = $pelamar->sidejob;
-        if ($job) {
-            Notification::createJobStatusNotification(
-                $pelamar->user_id,
-                $job->nama,
-                'diterima'
-            );
-        }
-        
+        $this->updatePelamarStatus($pelamar, 'diterima');
         return redirect()->back();
     }
 
     public function tolak(Pelamar $pelamar)
     {
-        $pelamar->update(['status' => 'ditolak']);
-        
-        // Create notification for the applicant
+        $this->updatePelamarStatus($pelamar, 'ditolak');
+        return redirect()->back();
+    }
+
+    private function updatePelamarStatus(Pelamar $pelamar, string $status)
+    {
+        $pelamar->update(['status' => $status]);
+
         $job = $pelamar->sidejob;
         if ($job) {
             Notification::createJobStatusNotification(
                 $pelamar->user_id,
                 $job->nama,
-                'ditolak'
+                $status
             );
         }
-        
-        return redirect()->back();
     }
+
     public function show($id)
     {
         $job = Pekerjaan::findOrFail($id);
