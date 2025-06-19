@@ -50,4 +50,10 @@ class Pekerjaan extends Model
     {
         return $this->hasMany(Pelamar::class, 'job_id');
     }
+
+    // Computed property to get count of accepted applicants
+    public function getJumlahPelamarDiterimaAttribute()
+    {
+        return $this->pelamar()->where('status', 'diterima')->count();
+    }
 }

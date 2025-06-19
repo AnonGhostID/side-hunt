@@ -48,7 +48,13 @@ class ManagementPageController extends Controller
 
     public function pekerjaanTerdaftar()
     {
-        return view('manajemen.pekerjaan.terdaftar');
+        $user = session('account');
+        $pekerjaans = Pekerjaan::where('pembuat', $user['id'])
+                               ->with(['pelamar', 'pembuat'])
+                               ->orderBy('created_at', 'desc')
+                               ->get();
+        
+        return view('manajemen.pekerjaan.terdaftar', compact('pekerjaans'));
     }
 
     public function uploadLaporan()
