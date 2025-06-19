@@ -50,7 +50,6 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
 
     //Profile
     Route::get('/Profile', [UsersController::class, 'Profile']);
-    Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
     
     // Routes for mitra and user only
     Route::middleware(['role:user|mitra|admin'])->group(function () {

@@ -34,10 +34,6 @@
                 </small>
                 
                 <div class="btn-group" role="group">
-                    <a href="/profile/{{ $pelamar->user->id }}" class="btn btn-outline-info btn-action" target="_blank">
-                        <i class="bi bi-person me-1"></i>Profil
-                    </a>
-                    
                     @if($pelamar->status == 'pending')
                         <button type="button" class="btn btn-success btn-action" 
                                 onclick="updateStatus({{ $pelamar->id }}, 'diterima')">

@@ -139,13 +139,13 @@
                                 <i class="bi bi-caret-down-fill"></i>
                             </a>
                             <ul class="dropdown-menu normal ms-4 ms-md-0 bg-darker hover-bg-dark">
-                                <li><a class="dropdown-item" href="#">
+                                <li><a class="dropdown-item" href="{{ route('dewa.mitra.lowongan.terdaftar') }}">
                                         <div class="d-flex flex-row gap-3">
                                             <i class="bi bi-journal-text"></i>
                                             <p>Lowongan Terdaftar</p>
                                         </div>
                                     </a></li>
-                                <li><a class="dropdown-item" href="#">
+                                <li><a class="dropdown-item" href="{{ route('dewa.mitra.lowongan.terdaftar') }}">
                                         <div class="d-flex flex-row gap-3">
                                             <i class="bi bi-people"></i>
                                             <p>Daftar Pelamar</p>

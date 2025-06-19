@@ -24,17 +24,6 @@ class UsersController extends Controller
     //     return view('users.lamaran', compact('lamaran'));
     // }
 
-    public function show($id)
-    {
-        // $user = Users::findOrFail($id);
-        // $jobs = SideJob::where('pembuat', $id)->get(); // Fetch jobs created by the user
-        $active_navbar = 'Profile';
-        $nama_halaman = 'Profile';
-        $kode_Nomor = json_decode(file_get_contents(public_path('json/dial_country.json')), TRUE);
-        return view('Dewa.profile', compact('active_navbar', 'nama_halaman', 'kode_Nomor'));
-
-        // return view('users.profile', compact('user', 'jobs'));
-    }
 
 
     //Untuk admin

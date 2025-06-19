@@ -247,6 +247,7 @@
 <script>
     function updateStatus(pelamarId, status) {
         const actionText = status === 'diterima' ? 'menerima' : 'menolak';
+        const actionUrlPart = status === 'diterima' ? 'terima' : 'tolak';
         
         Swal.fire({
             title: 'Konfirmasi',
@@ -262,7 +263,7 @@
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/dewa/mitra/pelamar/${pelamarId}/${status}`;
+                form.action = `/dewa/mitra/pelamar/${pelamarId}/${actionUrlPart}`;
                 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');
