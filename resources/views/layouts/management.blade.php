@@ -88,7 +88,9 @@
                     <span>Dashboard</span>
                 </a>
 
+                @if(!auth()->user()->isAdmin())
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pekerjaan</h3>
+                
                 @auth
                     @if(auth()->user()->isUser())
                         <a href="{{ route('manajemen.pekerjaan.berlangsung') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.berlangsung') ? 'active' : '' }}">
@@ -121,6 +123,7 @@
                         </a>
                     @endif
                 @endauth
+                @endif
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
                 <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
@@ -145,10 +148,12 @@
                 </a>
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pelaporan & Bantuan</h3>
-                 <a href="{{ route('manajemen.pelaporan.penipuan.form') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelaporan.penipuan.form') ? 'active' : '' }}">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Lapor Indikasi Penipuan</span>
-                </a>
+                @if(!auth()->user()->isAdmin())
+                    <a href="{{ route('manajemen.pelaporan.penipuan.form') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelaporan.penipuan.form') ? 'active' : '' }}">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Lapor Indikasi Penipuan</span>
+                    </a>
+                @endif
                 <a href="{{ route('manajemen.bantuan.panel') }}" class="sidebar-link {{ request()->routeIs('manajemen.bantuan.panel') ? 'active' : '' }}">
                     <i class="fas fa-question-circle"></i>
                     <span>Panel Bantuan</span>
