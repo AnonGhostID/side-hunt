@@ -85,9 +85,16 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
             Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
     
+            // Rute Notifikasi
+            Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+            Route::get('/notifications/page', [App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.page');
+            Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+            Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+            Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+            Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('notifications.delete');
+            Route::get('/notifications/poll', [App\Http\Controllers\NotificationController::class, 'poll'])->name('notifications.poll');
+
             // Fitur Lainnya
-            Route::get('/notifikasi-pekerjaan', [ManagementPageController::class, 'notifikasiStatusPekerjaan'])->name('notifikasi.pekerjaan');
-            Route::get('/notifikasi-pelamaran', [ManagementPageController::class, 'notifikasiStatusPelamaran'])->name('notifikasi.pelamaran');
             Route::get('/chat', [ManagementPageController::class, 'chatPengguna'])->name('chat');
             Route::get('/rating-user', [ManagementPageController::class, 'ratingUser'])->name('rating.user');
             Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');

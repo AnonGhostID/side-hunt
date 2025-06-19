@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\KriteriaJob;
 use App\Models\Pekerjaan;
 use App\Models\Pelamar;
+use App\Models\Notification;
+use App\Models\Users;
 use Illuminate\Http\Request;
 
 class PekerjaanController extends Controller
@@ -146,12 +148,34 @@ class PekerjaanController extends Controller
     public function terima(Pelamar $pelamar)
     {
         $pelamar->update(['status' => 'diterima']);
+        
+        // Create notification for the applicant
+        $job = $pelamar->sidejob;
+        if ($job) {
+            Notification::createJobStatusNotification(
+                $pelamar->user_id,
+                $job->nama,
+                'diterima'
+            );
+        }
+        
         return redirect()->back();
     }
 
     public function tolak(Pelamar $pelamar)
     {
         $pelamar->update(['status' => 'ditolak']);
+        
+        // Create notification for the applicant
+        $job = $pelamar->sidejob;
+        if ($job) {
+            Notification::createJobStatusNotification(
+                $pelamar->user_id,
+                $job->nama,
+                'ditolak'
+            );
+        }
+        
         return redirect()->back();
     }
     public function show($id)
@@ -192,6 +216,16 @@ class PekerjaanController extends Controller
             'job_id' => $id,
             'status' => 'pending'
         ]);
+
+        // Create notification for the job creator (mitra)
+        $applicant = Users::find($user['id']);
+        if ($applicant) {
+            Notification::createNewApplicationNotification(
+                $pekerjaan->pembuat,
+                $pekerjaan->nama,
+                $applicant->nama
+            );
+        }
 
         return redirect()->back()->with('success', 'Lamaran berhasil dikirim!');
     }

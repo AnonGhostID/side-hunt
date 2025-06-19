@@ -66,6 +66,117 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        
+        /* Notification Styles */
+        .notification-bell {
+            position: relative;
+            display: inline-block;
+            margin-right: 1rem;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+        }
+        
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-dropdown.show {
+            display: block;
+        }
+        
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .notification-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .notification-item.unread {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .notification-message {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        
+        .notification-time {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        .notification-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .btn-mark-all-read {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-mark-all-read:hover {
+            text-decoration: underline;
+        }
+        
+        .no-notifications {
+            padding: 32px 16px;
+            text-align: center;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body class="bg-gray-100 antialiased">
@@ -188,13 +299,9 @@
 
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lainnya</h3>
-                 <a href="{{ route('manajemen.notifikasi.pekerjaan') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifikasi.pekerjaan') ? 'active' : '' }}">
+                <a href="{{ route('manajemen.notifications.page') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifications.page') ? 'active' : '' }}">
                     <i class="fas fa-bell"></i>
-                    <span>Notifikasi Status Pekerjaan</span>
-                </a>
-                <a href="{{ route('manajemen.notifikasi.pelamaran') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifikasi.pelamaran') ? 'active' : '' }}">
-                    <i class="fas fa-bell"></i>
-                    <span>Notifikasi Status Pelamaran</span>
+                    <span>Riwayat Notifikasi</span>
                 </a>
                 <a href="{{ route('manajemen.rating.user') }}" class="sidebar-link {{ request()->routeIs('manajemen.rating.user') ? 'active' : '' }}">
                     <i class="fas fa-star"></i>
@@ -235,8 +342,38 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="text-xl font-semibold text-gray-700">@yield('page-title', 'Dashboard')</div>
-                <div>
-                    {{-- Additional navbar items can go here --}}
+                <div class="flex items-center">
+                    {{-- Notification Bell --}}
+                    <div class="notification-bell">
+                        <button id="notification-bell" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                        </button>
+                        
+                        {{-- Notification Dropdown --}}
+                        <div id="notification-dropdown" class="notification-dropdown">
+                            <div class="notification-header">
+                                <h3 class="font-semibold text-gray-900">Notifikasi</h3>
+                                <button id="mark-all-read" class="btn-mark-all-read">Tandai Semua Dibaca</button>
+                            </div>
+                            
+                            <div id="notification-list">
+                                <div class="no-notifications">
+                                    <i class="fas fa-bell-slash text-2xl text-gray-300 mb-2"></i>
+                                    <p>Tidak ada notifikasi</p>
+                                </div>
+                            </div>
+                            
+                            <div class="notification-footer">
+                                <a href="{{ route('manajemen.notifications.page') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    Lihat Semua Notifikasi
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {{-- Home Button --}}
                     <a href="{{ url('/') }}" class="text-blue-500 hover:text-blue-700">
                         <i class="fas fa-home"></i> Kembali ke Beranda
                     </a>
@@ -261,6 +398,276 @@
     </div>
 
     <script src="{{ asset('js/balance-update.js') }}"></script>
+    
+    {{-- Notification System JavaScript --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationBell = document.getElementById('notification-bell');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationList = document.getElementById('notification-list');
+            const markAllReadBtn = document.getElementById('mark-all-read');
+            
+            let isDropdownOpen = false;
+            let pollInterval;
+            
+            // CSRF Token for AJAX requests
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            // Toggle notification dropdown
+            notificationBell.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isDropdownOpen = !isDropdownOpen;
+                
+                if (isDropdownOpen) {
+                    notificationDropdown.classList.add('show');
+                    loadNotifications();
+                } else {
+                    notificationDropdown.classList.remove('show');
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!notificationDropdown.contains(e.target) && !notificationBell.contains(e.target)) {
+                    notificationDropdown.classList.remove('show');
+                    isDropdownOpen = false;
+                }
+            });
+            
+            // Mark all as read
+            markAllReadBtn.addEventListener('click', function() {
+                markAllNotificationsAsRead();
+            });
+            
+            // Load notifications
+            function loadNotifications() {
+                fetch('/management/notifications', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.notifications) {
+                        displayNotifications(data.notifications);
+                        updateBadge(data.unread_count);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                });
+            }
+            
+            // Display notifications in dropdown
+            function displayNotifications(notifications) {
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = `
+                        <div class="no-notifications">
+                            <i class="fas fa-bell-slash text-2xl text-gray-300 mb-2"></i>
+                            <p>Tidak ada notifikasi</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                notifications.forEach(notification => {
+                    const unreadClass = notification.is_read ? '' : 'unread';
+                    const typeIcon = getNotificationIcon(notification.type);
+                    
+                    html += `
+                        <div class="notification-item ${unreadClass}" data-id="${notification.id}">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 mr-3">
+                                    <i class="${typeIcon} text-blue-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="notification-title">${notification.title}</div>
+                                    <div class="notification-message">${notification.message}</div>
+                                    <div class="notification-time">${notification.time_ago}</div>
+                                </div>
+                                ${!notification.is_read ? '<div class="flex-shrink-0"><div class="w-2 h-2 bg-blue-500 rounded-full"></div></div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                notificationList.innerHTML = html;
+                
+                // Add click handlers for notification items
+                document.querySelectorAll('.notification-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const notificationId = this.dataset.id;
+                        if (this.classList.contains('unread')) {
+                            markNotificationAsRead(notificationId, this);
+                        }
+                    });
+                });
+            }
+            
+            // Get notification icon based on type
+            function getNotificationIcon(type) {
+                switch (type) {
+                    case 'application_status':
+                        return 'fas fa-check-circle';
+                    case 'new_application':
+                        return 'fas fa-user-plus';
+                    case 'job_status':
+                        return 'fas fa-briefcase';
+                    default:
+                        return 'fas fa-bell';
+                }
+            }
+            
+            // Mark single notification as read
+            function markNotificationAsRead(notificationId, element) {
+                fetch(`/management/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        element.classList.remove('unread');
+                        const unreadDot = element.querySelector('.w-2.h-2.bg-blue-500');
+                        if (unreadDot) {
+                            unreadDot.remove();
+                        }
+                        updateUnreadCount();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+            }
+            
+            // Mark all notifications as read
+            function markAllNotificationsAsRead() {
+                fetch('/management/notifications/read-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.querySelectorAll('.notification-item.unread').forEach(item => {
+                            item.classList.remove('unread');
+                            const unreadDot = item.querySelector('.w-2.h-2.bg-blue-500');
+                            if (unreadDot) {
+                                unreadDot.remove();
+                            }
+                        });
+                        updateBadge(0);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking all notifications as read:', error);
+                });
+            }
+            
+            // Update notification badge
+            function updateBadge(count) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 99 ? '99+' : count;
+                    notificationBadge.style.display = 'flex';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+            
+            // Update unread count
+            function updateUnreadCount() {
+                fetch('/management/notifications/unread-count', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    updateBadge(data.unread_count);
+                })
+                .catch(error => {
+                    console.error('Error getting unread count:', error);
+                });
+            }
+            
+            // Polling for new notifications
+            function startPolling() {
+                pollInterval = setInterval(() => {
+                    if (!isDropdownOpen) {
+                        fetch('/management/notifications/poll', {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            updateBadge(data.unread_count);
+                            
+                            // Show notification sound/alert if there are new notifications
+                            if (data.has_new && data.recent_notifications.length > 0) {
+                                // Optional: Play notification sound
+                                // playNotificationSound();
+                                
+                                // Optional: Show browser notification
+                                // showBrowserNotification(data.recent_notifications[0]);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error polling notifications:', error);
+                        });
+                    }
+                }, 30000); // Poll every 30 seconds
+            }
+            
+            // Optional: Play notification sound
+            function playNotificationSound() {
+                // You can add audio file for notification sound
+                // const audio = new Audio('/sounds/notification.mp3');
+                // audio.play().catch(() => {}); // Ignore if audio fails
+            }
+            
+            // Optional: Show browser notification
+            function showBrowserNotification(notification) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(notification.title, {
+                        body: notification.message,
+                        icon: '/img/logoOnlyIcon.svg'
+                    });
+                }
+            }
+            
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // Initialize
+            updateUnreadCount();
+            startPolling();
+            
+            // Clean up on page unload
+            window.addEventListener('beforeunload', function() {
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                }
+            });
+        });
+    </script>
+    
     @stack('scripts')
 </body>
 </html>
