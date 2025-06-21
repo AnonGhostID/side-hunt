@@ -30,4 +30,15 @@ class Pelamar extends Model
     {
         return $this->belongsTo(Pekerjaan::class, 'job_id');
     }
+    
+    public function getStatusPekerjaan()
+    {
+        if ($this->status == 'diterima') {
+            return 'Dalam Pengerjaan';
+        } elseif ($this->status == 'pending') {
+            return 'Menunggu diterima oleh Mitra';
+        } else {
+            return ucfirst($this->status);
+        }
+    }
 }

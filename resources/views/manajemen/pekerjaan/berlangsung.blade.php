@@ -38,60 +38,61 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                    {{-- Contoh Data Row 1 --}}
+                    @forelse($pekerjaanBerlangsung as $pelamar)
                     <tr>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <p class="font-semibold">Desain UI/UX Aplikasi Mobile</p>
-                            <p class="text-xs text-gray-500">Kategori: Desain Grafis</p>
+                            @if($pelamar->sidejob)
+                                <p class="font-semibold">{{ $pelamar->sidejob->nama }}</p>
+                                <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
+                            @else
+                                <p class="font-semibold">Pekerjaan tidak ditemukan</p>
+                                <p class="text-xs text-gray-500">Kategori: -</p>
+                            @endif
                         </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">PT. Teknologi Maju</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Andi Pratama</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
+                                {{ $pelamar->sidejob->pembuatUser->nama }}
+                            @else
+                                Tidak diketahui
+                            @endif
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            @if($pelamar->status == 'diterima')
                             <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                                <span class="relative">Dalam Pengerjaan</span>
+                                <span class="relative">{{ $pelamar->getStatusPekerjaan() }}</span>
                             </span>
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">30 Mei 2025</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <a href="#" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat Detail">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="#" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Edit Status (Admin)">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="#" class="text-red-500 hover:text-red-700" title="Batalkan (Admin)">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {{-- Contoh Data Row 2 --}}
-                    <tr>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <p class="font-semibold">Pengembangan Backend E-commerce</p>
-                            <p class="text-xs text-gray-500">Kategori: Web Development</p>
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">CV. Jaya Abadi</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Siti Aminah</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            @else
                             <span class="relative inline-block px-3 py-1 font-semibold text-yellow-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-yellow-200 opacity-50 rounded-full"></span>
-                                <span class="relative">Menunggu Review</span>
+                                <span class="relative">{{ $pelamar->getStatusPekerjaan() }}</span>
                             </span>
+                            @endif
                         </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">15 Juni 2025</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <a href="#" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat Detail">
-                                <i class="fas fa-eye"></i>
+                            @php
+                                $formattedDate = 'Tidak ada deadline';
+                                if ($pelamar->sidejob && !empty($pelamar->sidejob->end_job)) {
+                                    $deadline = \Carbon\Carbon::parse($pelamar->sidejob->end_job);
+                                    $formattedDate = $deadline->locale('id')->format('d-M-Y');
+                                }
+                            @endphp
+                            {{ $formattedDate }}
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            <a href="#" class="text-red-500 hover:text-red-700" title="Report">
+                                <i class="fas fa-flag"></i> Report
                             </a>
                         </td>
                     </tr>
-                    {{-- Tambahkan lebih banyak baris data di sini sesuai kebutuhan --}}
+                    @empty
                     <tr>
                         <td colspan="6" class="px-5 py-10 border-b border-gray-200 text-sm text-center text-gray-500">
-                            Tidak ada pekerjaan lain yang sedang berlangsung.
+                            Tidak ada pekerjaan yang sedang berlangsung.
                         </td>
                     </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

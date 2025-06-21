@@ -37,7 +37,7 @@
                 </div>
             </div>
             
-            <div class="bg-yellow-50 rounded-lg p-4">
+            {{-- <div class="bg-yellow-50 rounded-lg p-4">
                 <div class="flex items-center">
                     <div class="p-2 bg-yellow-100 rounded-lg">
                         <i class="fas fa-clock text-yellow-600"></i>
@@ -47,7 +47,7 @@
                         <p class="text-2xl font-bold text-yellow-900">{{ $pekerjaans->where('status', 'In Progress')->count() }}</p>
                     </div>
                 </div>
-            </div>
+            </div> --}}
             
             <div class="bg-purple-50 rounded-lg p-4">
                 <div class="flex items-center">

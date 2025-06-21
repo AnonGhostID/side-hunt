@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pekerjaan;
+use App\Models\Pelamar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
 use App\Models\Transaksi;
 use App\Models\User;
 use App\Models\Payment; // add Payment import
 use App\Models\Users;
+use Carbon\Carbon;
 
 class ManagementPageController extends Controller
 {
@@ -42,8 +44,34 @@ class ManagementPageController extends Controller
     // --- Fitur Manajemen Utama ---
     public function pekerjaanBerlangsung()
     {
-        $pekerjaan_active = $users = Pekerjaan::where('status', '!=', 'Done')->get();
-        return view('manajemen.pekerjaan.berlangsung'); // contoh path
+        $user = session('account');
+        $pekerjaanBerlangsung = [];
+        
+        if ($user->isUser()) {
+            // For regular users, get jobs they've applied to and been accepted or are pending
+            $pekerjaanBerlangsung = Pelamar::where('user_id', $user->id)
+                ->with(['sidejob', 'user'])
+                ->get();
+        } elseif ($user->isMitra()) {
+            // For mitra, get jobs they've created that have applicants
+            $pekerjaanIds = Pekerjaan::where('pembuat', $user->id)
+                ->pluck('id');
+                
+            $pekerjaanBerlangsung = Pelamar::whereIn('job_id', $pekerjaanIds)
+                ->with(['sidejob', 'user'])
+                ->get();
+        }
+        
+        // Load the job creators for each job
+        foreach ($pekerjaanBerlangsung as $pelamar) {
+            if ($pelamar->sidejob) {
+                $pembuatId = $pelamar->sidejob->pembuat;
+                $pembuatUser = Users::find($pembuatId);
+                $pelamar->sidejob->pembuatUser = $pembuatUser;
+            }
+        }
+        
+        return view('manajemen.pekerjaan.berlangsung', compact('pekerjaanBerlangsung'));
     }
 
     public function pekerjaanTerdaftar()
