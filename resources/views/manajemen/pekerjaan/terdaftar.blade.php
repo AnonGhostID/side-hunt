@@ -19,7 +19,7 @@
                         <i class="fas fa-briefcase text-blue-600"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-sm font-medium text-blue-600">Total Pekerjaan</p>
+                        <p class="text-sm font-medium text-blue-600">Total Pekerjaan Anda</p>
                         <p class="text-2xl font-bold text-blue-900">{{ $pekerjaans->count() }}</p>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
                         <i class="fas fa-check-circle text-green-600"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-sm font-medium text-green-600">Aktif</p>
+                        <p class="text-sm font-medium text-green-600">Total Pekerjaan Aktif</p>
                         <p class="text-2xl font-bold text-green-900">{{ $pekerjaans->where('status', 'Open')->count() }}</p>
                     </div>
                 </div>
