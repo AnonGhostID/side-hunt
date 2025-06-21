@@ -237,10 +237,12 @@
                 @endif
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
-                <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
-                    <i class="fas fa-credit-card"></i>
-                    <span>Top Up Saldo</span>
-                </a>
+                @if(!auth()->user()->isUser())
+                                <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Top Up Saldo</span>
+                                </a>
+                @endif
                  <a href="{{ route('manajemen.tarik_saldo') }}" class="sidebar-link {{ request()->routeIs('manajemen.tarik_saldo') ? 'active' : '' }}">
                     <i class="fas fa-money-bill-transfer"></i>
                     <span>Tarik Saldo</span>

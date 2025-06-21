@@ -15,6 +15,7 @@ class Pekerjaan extends Model
         'min_gaji',
         'max_gaji',
         'max_pekerja',
+        'jumlah_pelamar_diterima',
         'deskripsi',
         'alamat',
         'petunjuk_alamat',

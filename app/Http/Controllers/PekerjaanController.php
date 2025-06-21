@@ -147,8 +147,13 @@ class PekerjaanController extends Controller
 
     public function terima(Pelamar $pelamar)
     {
-        $this->updatePelamarStatus($pelamar, 'diterima');
-        return redirect()->back();
+        $result = $this->updatePelamarStatus($pelamar, 'diterima');
+        
+        if (!$result) {
+            return redirect()->back()->with('error', 'Tidak dapat menerima pelamar karena sudah mencapai batas maksimal pekerja.');
+        }
+        
+        return redirect()->back()->with('success', 'Pelamar berhasil diterima.');
     }
 
     public function tolak(Pelamar $pelamar)
@@ -159,16 +164,37 @@ class PekerjaanController extends Controller
 
     private function updatePelamarStatus(Pelamar $pelamar, string $status)
     {
+        $job = $pelamar->sidejob;
+        $oldStatus = $pelamar->status;
+
+        // If trying to accept (diterima), check if we exceed max_pekerja limit
+        if ($status === 'diterima' && $oldStatus !== 'diterima' && $job) {
+            $currentAccepted = $job->pelamar()->where('status', 'diterima')->count();
+            
+            // Check if accepting this pelamar would exceed the limit
+            if ($currentAccepted >= $job->max_pekerja) {
+                // Don't update status, return early (could throw exception or handle differently)
+                return false;
+            }
+        }
+
+        // Update pelamar status
         $pelamar->update(['status' => $status]);
 
-        $job = $pelamar->sidejob;
+        // Update jumlah_pelamar_diterima count in pekerjaan table
         if ($job) {
+            $acceptedCount = $job->pelamar()->where('status', 'diterima')->count();
+            $job->update(['jumlah_pelamar_diterima' => $acceptedCount]);
+
+            // Create notification
             Notification::createJobStatusNotification(
                 $pelamar->user_id,
                 $job->nama,
                 $status
             );
         }
+
+        return true;
     }
 
     public function show($id)
