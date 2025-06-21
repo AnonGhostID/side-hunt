@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pekerjaan;
 use App\Models\Pelamar;
+use App\Models\Laporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
 use App\Models\Transaksi;
@@ -87,7 +88,45 @@ class ManagementPageController extends Controller
 
     public function uploadLaporan()
     {
-        return view('manajemen.laporan.upload');
+        $user = session('account');
+        $jobs = Pelamar::where('user_id', $user->id)
+            ->where('status', 'diterima')
+            ->with('sidejob')
+            ->get()
+            ->pluck('sidejob')
+            ->filter()
+            ->unique('id');
+
+        return view('manajemen.laporan.upload', compact('jobs'));
+    }
+
+    public function storeLaporan(Request $request)
+    {
+        $user = session('account');
+
+        $request->validate([
+            'pekerjaan_id' => 'required|exists:pekerjaans,id',
+            'deskripsi_laporan' => 'required|string',
+            'foto_selfie' => 'required|image',
+            'dokumentasi_pekerjaan.*' => 'required|image',
+        ]);
+
+        $selfiePath = $request->file('foto_selfie')->store('laporan/selfie', 'public');
+
+        $dokPaths = [];
+        foreach ($request->file('dokumentasi_pekerjaan', []) as $file) {
+            $dokPaths[] = $file->store('laporan/dokumentasi', 'public');
+        }
+
+        Laporan::create([
+            'job_id' => $request->pekerjaan_id,
+            'user_id' => $user->id,
+            'deskripsi' => $request->deskripsi_laporan,
+            'foto_selfie' => $selfiePath,
+            'foto_dokumentasi' => json_encode($dokPaths),
+        ]);
+
+        return redirect()->route('manajemen.laporan.upload')->with('success', 'Laporan berhasil dikirim.');
     }
 
     public function topUp()

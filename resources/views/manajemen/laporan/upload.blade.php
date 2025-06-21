@@ -11,7 +11,7 @@
             Silakan lengkapi formulir di bawah ini untuk mengunggah laporan hasil pekerjaan Anda. Pastikan untuk menyertakan foto selfie dan dokumentasi pekerjaan sebagai bukti.
         </p>
 
-        <form action="#" method="POST" enctype="multipart/form-data"> {{-- Ganti action dengan URL yang sesuai --}}
+        <form action="{{ route('manajemen.laporan.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="space-y-6">
                 {{-- Pilih Pekerjaan --}}
@@ -19,15 +19,18 @@
                     <label for="pekerjaan_id" class="block text-sm font-medium text-gray-700 mb-1">Pilih Pekerjaan</label>
                     <select id="pekerjaan_id" name="pekerjaan_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                         <option value="">-- Pilih Pekerjaan yang Dilaporkan --</option>
-                        <option value="1">Desain UI/UX Aplikasi Mobile (Andi Pratama)</option> {{-- Data dinamis --}}
-                        <option value="2">Pengembangan Backend E-commerce (Siti Aminah)</option> {{-- Data dinamis --}}
+                        @foreach($jobs as $job)
+                            <option value="{{ $job->id }}" @selected(old('pekerjaan_id') == $job->id)>
+                                {{ $job->nama }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 {{-- Deskripsi Laporan --}}
                 <div>
                     <label for="deskripsi_laporan" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Laporan</label>
-                    <textarea id="deskripsi_laporan" name="deskripsi_laporan" rows="4" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Jelaskan progres dan hasil pekerjaan Anda..." required></textarea>
+                    <textarea id="deskripsi_laporan" name="deskripsi_laporan" rows="4" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Jelaskan progres dan hasil pekerjaan Anda..." required>{{ old('deskripsi_laporan') }}</textarea>
                 </div>
 
                 {{-- Upload Foto Selfie --}}
@@ -40,8 +43,8 @@
                 {{-- Upload Dokumentasi Pekerjaan --}}
                 <div>
                     <label for="dokumentasi_pekerjaan" class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumentasi Pekerjaan (File/Screenshot)</label>
-                    <input type="file" id="dokumentasi_pekerjaan" name="dokumentasi_pekerjaan[]" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx,image/*">
-                    <p class="mt-1 text-xs text-gray-500">Bisa lebih dari satu file. Format: PDF, DOC, DOCX, JPG, PNG. Maks per file: 5MB.</p>
+                    <input type="file" id="dokumentasi_pekerjaan" name="dokumentasi_pekerjaan[]" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" required>
+                    <p class="mt-1 text-xs text-gray-500">Unggah satu atau lebih gambar bukti pekerjaan. Format: JPG atau PNG.</p>
                 </div>
 
                 {{-- Tombol Aksi --}}

@@ -60,6 +60,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/pekerjaan-berlangsung', [ManagementPageController::class, 'pekerjaanBerlangsung'])->name('pekerjaan.berlangsung');
             Route::get('/pekerjaan-terdaftar', [ManagementPageController::class, 'pekerjaanTerdaftar'])->name('pekerjaan.terdaftar');
             Route::get('/upload-laporan', [ManagementPageController::class, 'uploadLaporan'])->name('laporan.upload');
+            Route::post('/upload-laporan', [ManagementPageController::class, 'storeLaporan'])->name('laporan.store');
             Route::get('/riwayat-pekerjaan', [ManagementPageController::class, 'riwayatPekerjaan'])->name('pekerjaan.riwayat');
     
             // Keuangan
