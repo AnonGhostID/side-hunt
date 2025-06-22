@@ -4,36 +4,51 @@
 @section('page-title', 'Kelola Pekerjaan')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-semibold text-gray-700 mb-4">{{ $pekerjaan->nama }}</h2>
-        <p class="text-gray-600 mb-6">Status Pekerjaan: <span class="font-semibold">{{ $pekerjaan->status }}</span></p>
-
-        @if($laporans->count() > 0)
-            <div class="space-y-6">
-                @foreach($laporans as $laporan)
-                    <div class="border rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-700 mb-2">{{ $laporan->user->nama ?? 'Pekerja' }}</h4>
-                        <p class="text-gray-600 mb-2">{{ $laporan->deskripsi }}</p>
-                        <div class="mb-3">
-                            <span class="font-medium">Foto Selfie:</span><br>
-                            <img src="{{ asset('storage/'.$laporan->foto_selfie) }}" alt="Selfie" class="w-32 h-32 object-cover rounded mt-1">
-                        </div>
-                        <div class="mb-3">
-                            <span class="font-medium">Dokumentasi:</span>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
-                                @foreach(json_decode($laporan->foto_dokumentasi, true) as $foto)
-                                    <img src="{{ asset('storage/'.$foto) }}" alt="Dokumentasi" class="w-32 h-32 object-cover rounded">
-                                @endforeach
-                            </div>
-                        </div>
-                        <div class="text-sm text-gray-500">Diupload pada {{ $laporan->created_at->format('d M Y H:i') }}</div>
-                    </div>
-                @endforeach
+<main class="container mx-auto px-4 py-8">
+    <section class="bg-white p-6 rounded-lg shadow-lg">
+        {{-- Header Section --}}
+        <header class="border-b pb-4 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">{{ $pekerjaan->nama }}</h2>
+            
+            <div class="flex flex-wrap items-center gap-4">
+                <p class="text-gray-600">
+                    Status: 
+                    <span class="font-medium px-3 py-1 rounded-full text-sm
+                        @if($pekerjaan->status == 'Selesai') 
+                            bg-green-100 text-green-800
+                        @elseif($pekerjaan->status == 'Berlangsung') 
+                            bg-blue-100 text-blue-800
+                        @elseif($pekerjaan->status == 'Ditolak') 
+                            bg-red-100 text-red-800
+                        @else 
+                            bg-gray-100 text-gray-800
+                        @endif">
+                        {{ $pekerjaan->status }}
+                    </span>
+                </p>
             </div>
-        @else
-            <p class="text-gray-500">Belum ada laporan yang diunggah.</p>
-        @endif
-    </div>
-</div>
+        </header>
+
+        {{-- Laporan Section --}}
+        <div>
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Laporan Pekerjaan</h3>
+            
+            @if($laporans->count() > 0)
+                <div class="space-y-6">
+                    @foreach($laporans as $laporan)
+                        @include('manajemen.pekerjaan.partials.laporan-item', ['laporan' => $laporan])
+                    @endforeach
+                </div>
+            @else
+                <div class="bg-gray-50 rounded-lg p-8 text-center">
+                    <p class="text-gray-500">Belum ada laporan yang diunggah.</p>
+                    <p class="text-sm text-gray-400 mt-2">Laporan akan muncul setelah pekerja mengunggahnya.</p>
+                </div>
+            @endif
+        </div>
+    </section>
+    
+    {{-- Include the image modal --}}
+    @include('manajemen.pekerjaan.partials.image-modal')
+</main>
 @endsection
