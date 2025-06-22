@@ -305,10 +305,14 @@
                     <i class="fas fa-bell"></i>
                     <span>Riwayat Notifikasi</span>
                 </a>
-                <a href="{{ route('manajemen.rating.user') }}" class="sidebar-link {{ request()->routeIs('manajemen.rating.user') ? 'active' : '' }}">
-                    <i class="fas fa-star"></i>
-                    <span>Beri Rating Pengguna</span>
-                </a>
+                @auth
+                    @if(auth()->user()->isMitra() && !auth()->user()->isUser())
+                        <a href="{{ route('manajemen.rating.user') }}" class="sidebar-link {{ request()->routeIs('manajemen.rating.user') ? 'active' : '' }}">
+                            <i class="fas fa-star"></i>
+                            <span>Beri Rating Pekerja</span>
+                        </a>
+                    @endif
+                @endauth
                 <a href="{{ route('manajemen.pelamar.track-record') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelamar.track-record') ? 'active' : '' }}">
                     <i class="fas fa-address-book"></i>
                     <span>Track Record Pelamar</span>
