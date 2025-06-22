@@ -137,9 +137,9 @@
                                     <button class="text-indigo-600 hover:text-indigo-900" onclick="viewDetails({{ $pekerjaan->id }})">
                                         <i class="fas fa-eye"></i> Detail
                                     </button>
-                                    <button class="text-green-600 hover:text-green-900" onclick="editJob({{ $pekerjaan->id }})">
+                                    <a href="{{ route('manajemen.pekerjaan.manage', $pekerjaan->id) }}" class="text-green-600 hover:text-green-900">
                                         <i class="fas fa-cog"></i> Manage
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -263,10 +263,6 @@ function viewApplicants(jobId) {
     window.location.href = `/management/pekerjaan/${jobId}/pelamar`;
 }
 
-function editJob(jobId) {
-    // Redirect to manage page
-    window.location.href = `/management/pekerjaan/${jobId}/manage`;
-}
 
 function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');

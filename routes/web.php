@@ -62,6 +62,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/upload-laporan', [ManagementPageController::class, 'uploadLaporan'])->name('laporan.upload');
             Route::post('/upload-laporan', [ManagementPageController::class, 'storeLaporan'])->name('laporan.store');
             Route::get('/riwayat-pekerjaan', [ManagementPageController::class, 'riwayatPekerjaan'])->name('pekerjaan.riwayat');
+            Route::get('/pekerjaan/{id}/manage', [ManagementPageController::class, 'managePekerjaan'])->name('pekerjaan.manage');
     
             // Keuangan
             // Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');

@@ -279,6 +279,23 @@ class ManagementPageController extends Controller
         return view('manajemen.pekerjaan.riwayat');
     }
 
+    public function managePekerjaan($id)
+    {
+        $user = session('account');
+        $pekerjaan = Pekerjaan::with('pelamar')->findOrFail($id);
+
+        if (!$user->isAdmin() && $pekerjaan->pembuat != $user->id) {
+            abort(403);
+        }
+
+        $laporans = Laporan::where('job_id', $id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('manajemen.pekerjaan.manage', compact('pekerjaan', 'laporans'));
+    }
+
     public function ratingUser()
     {
         return view('manajemen.rating.form_rating');
