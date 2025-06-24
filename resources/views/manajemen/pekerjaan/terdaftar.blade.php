@@ -138,7 +138,7 @@
                                         <i class="fas fa-eye"></i> Detail
                                     </button>
                                     <a href="{{ route('manajemen.pekerjaan.manage', $pekerjaan->id) }}" class="text-green-600 hover:text-green-900">
-                                        <i class="fas fa-cog"></i> Manage
+                                        <i class="fas fa-cog"></i> Kelola
                                     </a>
                                 </div>
                             </td>
