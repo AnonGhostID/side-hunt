@@ -86,6 +86,8 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuanForm'])->name('pelaporan.penipuan.form');
             Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
             Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
+            Route::post('/panel-bantuan', [ManagementPageController::class, 'submitTicket'])->name('bantuan.submit');
+            Route::post('/panel-bantuan/{ticket}/respond', [ManagementPageController::class, 'respondTicket'])->name('bantuan.respond');
     
             // Rute Notifikasi
             Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
