@@ -11,6 +11,7 @@ use App\Models\Transaksi;
 use App\Models\User;
 use App\Models\Payment; // add Payment import
 use App\Models\Users;
+use App\Models\SupportTicket;
 use Carbon\Carbon;
 
 class ManagementPageController extends Controller
@@ -234,7 +235,15 @@ class ManagementPageController extends Controller
 
     public function panelBantuan()
     {
-        return view('manajemen.bantuan.panel');
+        $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            $tickets = SupportTicket::with('user')->latest()->get();
+        } else {
+            $tickets = SupportTicket::where('user_id', $user->id)->latest()->get();
+        }
+
+        return view('manajemen.bantuan.panel', compact('tickets'));
     }
 
     // --- Fitur Administrasi Sistem (Contoh) ---

@@ -8,6 +8,7 @@ use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ManagementPageController;
 use App\Http\Controllers\TopUpController;
+use App\Http\Controllers\SupportTicketController;
 use App\Models\Users;
 use Illuminate\Support\Facades\Auth;
 
@@ -86,6 +87,8 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuanForm'])->name('pelaporan.penipuan.form');
             Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
             Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
+            Route::post('/support-tickets', [SupportTicketController::class, 'store'])->name('support-tickets.store');
+            Route::post('/support-tickets/{ticket}/respond', [SupportTicketController::class, 'respond'])->name('support-tickets.respond');
     
             // Rute Notifikasi
             Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
