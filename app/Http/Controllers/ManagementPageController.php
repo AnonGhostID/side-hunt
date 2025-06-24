@@ -11,6 +11,7 @@ use App\Models\Transaksi;
 use App\Models\User;
 use App\Models\Payment; // add Payment import
 use App\Models\Users;
+use App\Models\TiketBantuan;
 use Carbon\Carbon;
 
 class ManagementPageController extends Controller
@@ -234,7 +235,40 @@ class ManagementPageController extends Controller
 
     public function panelBantuan()
     {
-        return view('manajemen.bantuan.panel');
+        $user = session('account');
+        if ($user->isAdmin()) {
+            $tickets = TiketBantuan::with('user')->orderBy('created_at', 'desc')->get();
+        } else {
+            $tickets = TiketBantuan::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+        }
+        return view('manajemen.bantuan.panel', compact('tickets', 'user'));
+    }
+
+    public function storeTicket(Request $request)
+    {
+        $user = session('account');
+        $data = $request->validate([
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+        TiketBantuan::create([
+            'user_id' => $user->id,
+            'subject' => $data['subject'],
+            'description' => $data['description'],
+        ]);
+        return redirect()->route('manajemen.bantuan.panel')->with('success', 'Tiket berhasil dibuat.');
+    }
+
+    public function respondTicket(Request $request, $id)
+    {
+        $ticket = TiketBantuan::findOrFail($id);
+        $data = $request->validate([
+            'admin_response' => 'required|string',
+        ]);
+        $ticket->status = 'closed';
+        $ticket->admin_response = $data['admin_response'];
+        $ticket->save();
+        return redirect()->route('manajemen.bantuan.panel')->with('success', 'Tiket telah ditutup.');
     }
 
     // --- Fitur Administrasi Sistem (Contoh) ---
