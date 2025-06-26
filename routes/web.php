@@ -84,11 +84,9 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
             Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
     
-            // Pelaporan & Bantuan
-            Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuanForm'])->name('pelaporan.penipuan.form');
-            Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
+            // Pelaporan & Bantuan (Unified)
             Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
-            Route::post('/panel-bantuan', [ManagementPageController::class, 'storeTicket'])->name('bantuan.store');
+            Route::post('/panel-bantuan', [ManagementPageController::class, 'storeBantuanDanPenipuan'])->name('bantuan.store');
             Route::post('/panel-bantuan/{id}/respond', [ManagementPageController::class, 'respondTicket'])->name('bantuan.respond');
     
             // Rute Notifikasi

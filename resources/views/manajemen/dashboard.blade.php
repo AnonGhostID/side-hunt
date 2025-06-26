@@ -62,7 +62,7 @@
             Silakan pilih menu yang sesuai dengan kebutuhan Anda.
         </p>
         <div class="mt-6">
-            @if(auth()->user()->role == 'mitra')
+            @if($user->role == 'mitra')
                 <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
                     <i class="fas fa-arrow-right mr-2"></i>Lihat Pekerjaan Terdaftar
                 </a>

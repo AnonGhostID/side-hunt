@@ -201,45 +201,45 @@
                     <span>Dashboard</span>
                 </a>
 
-                @if(!auth()->user()->isAdmin())
+                @if(session('account') && !session('account')->isAdmin())
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pekerjaan</h3>
                 
-                @auth
-                    @if(auth()->user()->isUser())
+                @if(session('account'))
+                    @if(session('account')->isUser())
                         <a href="{{ route('manajemen.pekerjaan.berlangsung') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.berlangsung') ? 'active' : '' }}">
                             <i class="fas fa-briefcase"></i>
                             <span>Pekerjaan Berlangsung</span>
                         </a>
                     @endif
-                @endauth
-                @auth
-                    @if(auth()->user()->isMitra())
+                @endif
+                @if(session('account'))
+                    @if(session('account')->isMitra())
                         <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.terdaftar') ? 'active' : '' }}">
                             <i class="fas fa-list-check"></i>
                             <span>Pekerjaan Terdaftar</span>
                         </a>
                     @endif
-                @endauth
-                @auth
-                    @if(auth()->user()->isUser())
+                @endif
+                @if(session('account'))
+                    @if(session('account')->isUser())
                         <a href="{{ route('manajemen.laporan.upload') }}" class="sidebar-link {{ request()->routeIs('manajemen.laporan.upload') ? 'active' : '' }}">
                             <i class="fas fa-file-upload"></i>
                             <span>Upload Laporan Hasil</span>
                         </a>
                     @endif
-                @endauth
-                @auth
-                    @if(auth()->user()->isUser())
+                @endif
+                @if(session('account'))
+                    @if(session('account')->isUser())
                         <a href="{{ route('manajemen.pekerjaan.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.riwayat') ? 'active' : '' }}">
                             <i class="fas fa-history"></i>
                             <span>Riwayat Pekerjaan</span>
                         </a>
                     @endif
-                @endauth
+                @endif
                 @endif
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
-                @if(!auth()->user()->isUser())
+                @if(session('account') && !session('account')->isUser())
                                 <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
                                     <i class="fas fa-credit-card"></i>
                                     <span>Top Up Saldo</span>
@@ -263,20 +263,13 @@
                 </a>
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pelaporan & Bantuan</h3>
-                @if(!auth()->user()->isAdmin())
-                    <a href="{{ route('manajemen.pelaporan.penipuan.form') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelaporan.penipuan.form') ? 'active' : '' }}">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Lapor Indikasi Penipuan</span>
-                    </a>
-                @endif
                 <a href="{{ route('manajemen.bantuan.panel') }}" class="sidebar-link {{ request()->routeIs('manajemen.bantuan.panel') ? 'active' : '' }}">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Panel Bantuan</span>
+                    <i class="fas fa-headset"></i>
+                    <span>Panel Bantuan dan Laporan Penipuan</span>
                 </a>
 
                 {{-- Admin Section Example - Ideally show based on user role --}}
-                @auth
-                    @if(auth()->user()->isAdmin()) {{-- Anda perlu menambahkan method isAdmin() di model User --}}
+                @if(session('account') && session('account')->isAdmin())
                         <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administrasi Sistem</h3>
                         <a href="{{ route('manajemen.admin.laporan.pemantauan') }}" class="sidebar-link {{ request()->routeIs('manajemen.admin.laporan.pemantauan') ? 'active' : '' }}">
                             <i class="fas fa-binoculars"></i>
@@ -298,8 +291,7 @@
                                 {{-- Tambahkan link untuk Nonaktifkan, Aktifkan, Ubah User di sini jika halaman terpisah --}}
                             </div>
                         </div>
-                    @endif
-                @endauth
+                @endif
 
 
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lainnya</h3>
@@ -307,14 +299,14 @@
                     <i class="fas fa-bell"></i>
                     <span>Riwayat Notifikasi</span>
                 </a>
-                @auth
-                    @if(auth()->user()->isMitra() && !auth()->user()->isUser())
+                @if(session('account'))
+                    @if(session('account')->isMitra() && !session('account')->isUser())
                         <a href="{{ route('manajemen.rating.user') }}" class="sidebar-link {{ request()->routeIs('manajemen.rating.user') ? 'active' : '' }}">
                             <i class="fas fa-star"></i>
                             <span>Beri Rating Pekerja</span>
                         </a>
                     @endif
-                @endauth
+                @endif
                 <a href="{{ route('manajemen.pelamar.track-record') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelamar.track-record') ? 'active' : '' }}">
                     <i class="fas fa-address-book"></i>
                     <span>Track Record Pelamar</span>
@@ -324,12 +316,12 @@
             </nav>
 
             <div class="p-4 border-t border-gray-200">
-                @auth
+                @if(session('account'))
                 <div class="flex items-center mb-3">
                     <img src="{{ asset('img/progress.png') }}"class="w-10 h-10 rounded-full mr-3 object-cover">
                     <div>
-                        <p class="text-sm font-medium text-gray-700">{{ Auth::user()->nama }}</p>
-                        <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
+                        <p class="text-sm font-medium text-gray-700">{{ session('account')->nama }}</p>
+                        <p class="text-xs text-gray-500">{{ session('account')->email }}</p>
                     </div>
                 </div>
                 <a href="/Logout"
@@ -340,7 +332,7 @@
                 <!-- <form id="logout-form" action="" method="POST" class="d-none">
                     @csrf
                 </form> -->
-                @endauth
+                @endif
             </div>
         </aside>
 

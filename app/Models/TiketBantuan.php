@@ -13,10 +13,19 @@ class TiketBantuan extends Model
 
     protected $fillable = [
         'user_id',
+        'type',
         'subject',
         'description',
         'status',
         'admin_response',
+        'pihak_terlapor',
+        'tanggal_kejadian',
+        'bukti_pendukung',
+    ];
+
+    protected $casts = [
+        'bukti_pendukung' => 'array',
+        'tanggal_kejadian' => 'date',
     ];
 
     /**

@@ -14,10 +14,15 @@ return new class extends Migration
         Schema::create('TiketBantuan', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
+            $table->enum('type', ['bantuan', 'penipuan'])->default('bantuan');
             $table->string('subject');
             $table->text('description');
             $table->enum('status', ['open','done','closed'])->default('open');
             $table->text('admin_response')->nullable();
+            // Fields specific to fraud reports
+            $table->string('pihak_terlapor')->nullable();
+            $table->date('tanggal_kejadian')->nullable();
+            $table->json('bukti_pendukung')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
