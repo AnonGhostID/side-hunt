@@ -58,15 +58,23 @@
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @if($pelamar->status == 'diterima')
+                            @php
+                                $statusPekerjaan = $pelamar->getStatusPekerjaan();
+                            @endphp
+                            @if($statusPekerjaan == 'Selesai')
+                            <span class="relative inline-block px-3 py-1 font-semibold text-blue-900 leading-tight">
+                                <span aria-hidden class="absolute inset-0 bg-blue-200 opacity-50 rounded-full"></span>
+                                <span class="relative">{{ $statusPekerjaan }}</span>
+                            </span>
+                            @elseif($pelamar->status == 'diterima')
                             <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                                <span class="relative">{{ $pelamar->getStatusPekerjaan() }}</span>
+                                <span class="relative">{{ $statusPekerjaan }}</span>
                             </span>
                             @else
                             <span class="relative inline-block px-3 py-1 font-semibold text-yellow-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-yellow-200 opacity-50 rounded-full"></span>
-                                <span class="relative">{{ $pelamar->getStatusPekerjaan() }}</span>
+                                <span class="relative">{{ $statusPekerjaan }}</span>
                             </span>
                             @endif
                         </td>

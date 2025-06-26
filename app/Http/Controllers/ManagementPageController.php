@@ -95,7 +95,10 @@ class ManagementPageController extends Controller
             ->with('sidejob')
             ->get()
             ->pluck('sidejob')
-            ->filter()
+            ->filter(function($job) {
+                // Only show jobs that are not yet finished
+                return $job && $job->status !== 'Selesai';
+            })
             ->unique('id');
 
         return view('manajemen.laporan.upload', compact('jobs'));
@@ -111,6 +114,31 @@ class ManagementPageController extends Controller
             'foto_selfie' => 'required|image',
             'dokumentasi_pekerjaan.*' => 'required|image',
         ]);
+
+        // Check if the job is already completed
+        $pekerjaan = Pekerjaan::find($request->pekerjaan_id);
+        if ($pekerjaan && $pekerjaan->status === 'Selesai') {
+            return redirect()->back()->with('error', 'Tidak dapat mengunggah laporan untuk pekerjaan yang sudah selesai.');
+        }
+
+        // Check if user is actually assigned to this job
+        $pelamar = Pelamar::where('user_id', $user->id)
+            ->where('job_id', $request->pekerjaan_id)
+            ->where('status', 'diterima')
+            ->first();
+        
+        if (!$pelamar) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengunggah laporan untuk pekerjaan ini.');
+        }
+
+        // Check if a report has already been submitted for this job by this user
+        $existingLaporan = Laporan::where('job_id', $request->pekerjaan_id)
+            ->where('user_id', $user->id)
+            ->first();
+        
+        if ($existingLaporan) {
+            return redirect()->back()->with('error', 'Anda sudah mengunggah laporan untuk pekerjaan ini sebelumnya.');
+        }
 
         $selfiePath = $request->file('foto_selfie')->store('laporan/selfie', 'public');
 

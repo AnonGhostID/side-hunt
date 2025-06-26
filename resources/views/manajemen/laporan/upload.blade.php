@@ -19,12 +19,20 @@
                     <label for="pekerjaan_id" class="block text-sm font-medium text-gray-700 mb-1">Pilih Pekerjaan</label>
                     <select id="pekerjaan_id" name="pekerjaan_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                         <option value="">-- Pilih Pekerjaan yang Dilaporkan --</option>
-                        @foreach($jobs as $job)
+                        @forelse($jobs as $job)
                             <option value="{{ $job->id }}" @selected(old('pekerjaan_id') == $job->id)>
                                 {{ $job->nama }}
                             </option>
-                        @endforeach
+                        @empty
+                            <option value="" disabled>Tidak ada pekerjaan yang tersedia untuk dilaporkan</option>
+                        @endforelse
                     </select>
+                    @if($jobs->isEmpty())
+                        <p class="mt-2 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tidak ada pekerjaan yang sedang berlangsung untuk dilaporkan. Pekerjaan yang sudah selesai tidak dapat dilaporkan lagi.
+                        </p>
+                    @endif
                 </div>
 
                 {{-- Deskripsi Laporan --}}
@@ -52,7 +60,7 @@
                     <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg mr-3 transition-colors duration-300">
                         Batal
                     </button>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed" @if($jobs->isEmpty()) disabled @endif>
                         <i class="fas fa-upload mr-2"></i>Upload Laporan
                     </button>
                 </div>

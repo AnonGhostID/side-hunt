@@ -34,6 +34,10 @@ class Pelamar extends Model
     public function getStatusPekerjaan()
     {
         if ($this->status == 'diterima') {
+            // Check if the related job is marked as completed
+            if ($this->sidejob && $this->sidejob->status == 'Selesai') {
+                return 'Selesai';
+            }
             return 'Dalam Pengerjaan';
         } elseif ($this->status == 'pending') {
             return 'Menunggu diterima oleh Mitra';
