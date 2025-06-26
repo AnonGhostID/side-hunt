@@ -26,6 +26,22 @@
                         {{ $pekerjaan->status }}
                     </span>
                 </p>
+                @if($pekerjaan->status == 'Open')
+                    <form action="{{ route('manajemen.pekerjaan.updateStatus', $pekerjaan->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Set On Progress
+                        </button>
+                    </form>
+                @endif
+                @if($laporans->count() > 0 && $pekerjaan->status == 'Berlangsung')
+                    <form action="{{ route('manajemen.pekerjaan.terimaHasil', $pekerjaan->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                            Terima Hasil Pekerjaan
+                        </button>
+                    </form>
+                @endif
             </div>
         </header>
 

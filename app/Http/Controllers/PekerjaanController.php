@@ -9,6 +9,7 @@ use App\Models\Pelamar;
 use App\Models\Notification;
 use App\Models\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PekerjaanController extends Controller
 {
@@ -267,6 +268,57 @@ class PekerjaanController extends Controller
         $nama_halaman = 'Lowongan Terdaftar';
 
         return view('Dewa.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $pekerjaan = Pekerjaan::findOrFail($id);
+
+        if ($pekerjaan->status == 'Open') {
+            $pekerjaan->status = 'Berlangsung';
+            $pekerjaan->save();
+            return redirect()->back()->with('success', 'Status pekerjaan berhasil diubah menjadi On Progress.');
+        }
+
+        return redirect()->back()->with('error', 'Status pekerjaan tidak dapat diubah.');
+    }
+
+    public function terimaHasilPekerjaan(Request $request, $id)
+    {
+        $pekerjaan = Pekerjaan::findOrFail($id);
+
+        if ($pekerjaan->status != 'Berlangsung') {
+            return redirect()->back()->with('error', 'Pekerjaan belum dalam status Berlangsung.');
+        }
+
+        $pelamarDiterima = $pekerjaan->pelamar()->where('status', 'diterima')->first();
+
+        if (!$pelamarDiterima) {
+            return redirect()->back()->with('error', 'Tidak ada pelamar yang diterima untuk pekerjaan ini.');
+        }
+
+        $userPelamar = $pelamarDiterima->user;
+
+        if (!$userPelamar) {
+            return redirect()->back()->with('error', 'Data user pelamar tidak ditemukan.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Transfer min_gaji to pelamar's wallet
+            $userPelamar->dompet += $pekerjaan->min_gaji;
+            $userPelamar->save();
+
+            // Update job status to Selesai
+            $pekerjaan->status = 'Selesai';
+            $pekerjaan->save();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Hasil pekerjaan berhasil diterima dan dana telah ditransfer.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menerima hasil pekerjaan: ' . $e->getMessage());
+        }
     }
 
     function cosineSimilarityPercent($text1, $text2)
