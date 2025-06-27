@@ -63,6 +63,86 @@
             @endif
         </div>
     </section>
+
+    {{-- Rating Section - Only show when job is completed --}}
+    @if($pekerjaan->status == 'Selesai')
+        <section class="bg-white p-6 rounded-lg shadow-lg mt-6">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Beri Rating Pekerja</h3>
+            
+            @if(session('rating_success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('rating_success') }}</span>
+                </div>
+            @endif
+
+            @if(session('rating_error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('rating_error') }}</span>
+                </div>
+            @endif
+
+            <div class="bg-gray-50 rounded-lg p-6">
+                @php
+                    $acceptedWorker = $pekerjaan->pelamar()->where('status', 'diterima')->with('user')->first();
+                @endphp
+                
+                @if($acceptedWorker && $acceptedWorker->user)
+                    <form action="{{ route('manajemen.pekerjaan.rating.store', $pekerjaan->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="pekerja_id" value="{{ $acceptedWorker->user->id }}">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pekerja</label>
+                                <div class="flex items-center p-3 bg-white rounded-md border">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-medium">{{ substr($acceptedWorker->user->nama, 0, 1) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ $acceptedWorker->user->nama }}</p>
+                                        <p class="text-sm text-gray-500">{{ $acceptedWorker->user->email }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                                <div class="rating-stars">
+                                    <input type="radio" name="rating" value="5" id="star5" required>
+                                    <label for="star5" title="5 stars">&#9733;</label>
+                                    <input type="radio" name="rating" value="4" id="star4" required>
+                                    <label for="star4" title="4 stars">&#9733;</label>
+                                    <input type="radio" name="rating" value="3" id="star3" required>
+                                    <label for="star3" title="3 stars">&#9733;</label>
+                                    <input type="radio" name="rating" value="2" id="star2" required>
+                                    <label for="star2" title="2 stars">&#9733;</label>
+                                    <input type="radio" name="rating" value="1" id="star1" required>
+                                    <label for="star1" title="1 star">&#9733;</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label for="komentar" class="block text-sm font-medium text-gray-700 mb-2">Komentar (Opsional)</label>
+                            <textarea id="komentar" name="komentar" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Berikan komentar tentang kinerja pekerja..."></textarea>
+                        </div>
+
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-star mr-2"></i> Berikan Rating
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <div class="text-center py-4">
+                        <p class="text-gray-500">Tidak ada pekerja yang dapat diberi rating untuk pekerjaan ini.</p>
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
     
     {{-- Include the image modal --}}
     @include('manajemen.pekerjaan.partials.image-modal')
@@ -104,6 +184,35 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .rating-stars {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .rating-stars input[type="radio"] {
+            display: none;
+        }
+
+        .rating-stars label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .rating-stars label:hover,
+        .rating-stars label:hover ~ label,
+        .rating-stars input[type="radio"]:checked ~ label {
+            color: #ffc107;
+        }
+
+        .rating-stars input[type="radio"]:checked ~ label {
+            color: #ffc107;
+        }
+    </style>
 
     <script>
         // Function to open the confirmation modal

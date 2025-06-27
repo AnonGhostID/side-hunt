@@ -65,6 +65,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/pekerjaan/{id}/manage', [ManagementPageController::class, 'managePekerjaan'])->name('pekerjaan.manage');
             Route::post('/pekerjaan/{id}/update-status', [PekerjaanController::class, 'updateStatus'])->name('pekerjaan.updateStatus');
             Route::post('/pekerjaan/{id}/terima-hasil', [PekerjaanController::class, 'terimaHasilPekerjaan'])->name('pekerjaan.terimaHasil');
+            Route::post('/pekerjaan/{id}/rating', [ManagementPageController::class, 'storeJobRating'])->name('pekerjaan.rating.store');
     
             // Keuangan
             // Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
@@ -100,8 +101,6 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
 
             // Fitur Lainnya
             Route::get('/chat', [ManagementPageController::class, 'chatPengguna'])->name('chat');
-            Route::get('/rating-user', [ManagementPageController::class, 'ratingUser'])->name('rating.user');
-            Route::post('/rating-user', [ManagementPageController::class, 'storeRating'])->name('rating.store');
             Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
             Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
         });

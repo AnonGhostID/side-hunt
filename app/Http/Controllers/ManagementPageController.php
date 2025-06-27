@@ -359,12 +359,8 @@ class ManagementPageController extends Controller
         return view('manajemen.pekerjaan.manage', compact('pekerjaan', 'laporans'));
     }
 
-    public function ratingUser()
-    {
-        return view('manajemen.rating.form_rating');
-    }
 
-    public function storeRating(Request $request)
+    public function storeJobRating(Request $request, $jobId)
     {
         $request->validate([
             'pekerja_id' => 'required',
@@ -372,8 +368,32 @@ class ManagementPageController extends Controller
             'komentar' => 'nullable|string|max:500'
         ]);
 
-        // For now, just return success message since this is a static implementation
-        return redirect()->route('manajemen.rating.user')->with('success', 'Rating berhasil diberikan!');
+        $user = session('account');
+        $pekerjaan = Pekerjaan::findOrFail($jobId);
+
+        // Verify that the user is the job creator
+        if ($pekerjaan->pembuat != $user->id) {
+            return redirect()->back()->with('rating_error', 'Anda tidak memiliki akses untuk memberikan rating pada pekerjaan ini.');
+        }
+
+        // Verify that the job is completed
+        if ($pekerjaan->status != 'Selesai') {
+            return redirect()->back()->with('rating_error', 'Rating hanya dapat diberikan setelah pekerjaan selesai.');
+        }
+
+        // Verify that the worker was actually accepted for this job
+        $acceptedWorker = $pekerjaan->pelamar()
+            ->where('status', 'diterima')
+            ->where('user_id', $request->pekerja_id)
+            ->first();
+
+        if (!$acceptedWorker) {
+            return redirect()->back()->with('rating_error', 'Pekerja yang dipilih tidak valid untuk pekerjaan ini.');
+        }
+
+        // For static implementation, just return success message
+        // In a real implementation, you would save the rating to database
+        return redirect()->back()->with('rating_success', 'Rating berhasil diberikan kepada pekerja!');
     }
 
     public function trackRecordPelamar()
