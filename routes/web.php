@@ -101,6 +101,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             // Fitur Lainnya
             Route::get('/chat', [ManagementPageController::class, 'chatPengguna'])->name('chat');
             Route::get('/rating-user', [ManagementPageController::class, 'ratingUser'])->name('rating.user');
+            Route::post('/rating-user', [ManagementPageController::class, 'storeRating'])->name('rating.store');
             Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
             Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
         });

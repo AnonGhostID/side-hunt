@@ -364,6 +364,18 @@ class ManagementPageController extends Controller
         return view('manajemen.rating.form_rating');
     }
 
+    public function storeRating(Request $request)
+    {
+        $request->validate([
+            'pekerja_id' => 'required',
+            'rating' => 'required|integer|min:1|max:5',
+            'komentar' => 'nullable|string|max:500'
+        ]);
+
+        // For now, just return success message since this is a static implementation
+        return redirect()->route('manajemen.rating.user')->with('success', 'Rating berhasil diberikan!');
+    }
+
     public function trackRecordPelamar()
     {
         return view('manajemen.pelamar.track_record');
