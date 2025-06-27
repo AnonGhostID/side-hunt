@@ -89,9 +89,15 @@
                             {{ $formattedDate }}
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <a href="#" class="text-red-500 hover:text-red-700" title="Report">
-                                <i class="fas fa-flag"></i> Report
-                            </a>
+                            @if($statusPekerjaan == 'Selesai')
+                                <button onclick="openRatingModal({{ $pelamar->id }}, '{{ $pelamar->sidejob->pembuatUser->nama ?? 'Tidak diketahui' }}')" class="text-yellow-500 hover:text-yellow-700" title="Beri Rating">
+                                    <i class="fas fa-star"></i> Rating
+                                </button>
+                            @else
+                                <a href="#" class="text-red-500 hover:text-red-700" title="Report">
+                                    <i class="fas fa-flag"></i> Report
+                                </a>
+                            @endif
                         </td>
                     </tr>
                     @empty
@@ -125,13 +131,132 @@
             </nav>
         </div>
 
+        {{-- Rating Modal --}}
+        <div id="ratingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Beri Rating Pemberi Kerja</h3>
+                    <form id="ratingForm">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pemberi Kerja</label>
+                            <p id="employerName" class="text-sm text-gray-600 bg-gray-50 p-2 rounded"></p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                            <div class="rating-stars">
+                                <input type="radio" name="rating" value="5" id="star5" required>
+                                <label for="star5" title="5 stars">&#9733;</label>
+                                <input type="radio" name="rating" value="4" id="star4" required>
+                                <label for="star4" title="4 stars">&#9733;</label>
+                                <input type="radio" name="rating" value="3" id="star3" required>
+                                <label for="star3" title="3 stars">&#9733;</label>
+                                <input type="radio" name="rating" value="2" id="star2" required>
+                                <label for="star2" title="2 stars">&#9733;</label>
+                                <input type="radio" name="rating" value="1" id="star1" required>
+                                <label for="star1" title="1 star">&#9733;</label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="komentar" class="block text-sm font-medium text-gray-700 mb-2">Komentar (Opsional)</label>
+                            <textarea id="komentar" name="komentar" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Berikan komentar tentang pemberi kerja..."></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeRatingModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
+                                <i class="fas fa-star mr-2"></i> Beri Rating
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection
 
 @push('scripts')
+<style>
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+
+    .rating-stars input[type="radio"] {
+        display: none;
+    }
+
+    .rating-stars label {
+        font-size: 1.5rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label,
+    .rating-stars input[type="radio"]:checked ~ label {
+        color: #ffc107;
+    }
+
+    .rating-stars input[type="radio"]:checked ~ label {
+        color: #ffc107;
+    }
+</style>
+
 <script>
-    // Script khusus untuk halaman ini jika ada
+    let currentPelamarId = null;
+
+    function openRatingModal(pelamarId, employerName) {
+        currentPelamarId = pelamarId;
+        document.getElementById('employerName').textContent = employerName;
+        document.getElementById('ratingModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        
+        // Reset form
+        document.getElementById('ratingForm').reset();
+    }
+
+    function closeRatingModal() {
+        document.getElementById('ratingModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        currentPelamarId = null;
+    }
+
+    // Handle form submission
+    document.getElementById('ratingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const rating = formData.get('rating');
+        const komentar = formData.get('komentar');
+        
+        // Static implementation - just show success message
+        alert(`Rating ${rating} bintang berhasil diberikan!${komentar ? '\nKomentar: ' + komentar : ''}`);
+        
+        closeRatingModal();
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('ratingModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeRatingModal();
+        }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !document.getElementById('ratingModal').classList.contains('hidden')) {
+            closeRatingModal();
+        }
+    });
+
     console.log('Halaman Manajemen Pekerjaan Berlangsung dimuat.');
 </script>
 @endpush

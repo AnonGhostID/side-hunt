@@ -398,7 +398,69 @@ class ManagementPageController extends Controller
 
     public function trackRecordPelamar()
     {
-        return view('manajemen.pelamar.track_record');
+        $user = session('account');
+        
+        // Only allow mitra and admin to access this page
+        if (!$user->isMitra() && !$user->isAdmin()) {
+            abort(403, 'Unauthorized access');
+        }
+        
+        // Get jobs created by the current mitra
+        $mitraJobIds = Pekerjaan::where('pembuat', $user->id)->pluck('id');
+        
+        // Get applicants who are currently applying (status = 'pending') to mitra's jobs
+        $pendingApplicants = Pelamar::whereIn('job_id', $mitraJobIds)
+            ->where('status', 'pending')
+            ->with(['user', 'sidejob'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // For each applicant, get their job history (track record)
+        $applicantsWithHistory = [];
+        
+        foreach ($pendingApplicants as $applicant) {
+            $userId = $applicant->user_id;
+            
+            // Skip if we already processed this user
+            if (isset($applicantsWithHistory[$userId])) {
+                continue;
+            }
+            
+            // Get user's complete job history
+            $jobHistory = Pelamar::where('user_id', $userId)
+                ->with(['sidejob.pembuat'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Calculate statistics
+            $totalJobs = $jobHistory->count();
+            $completedJobs = $jobHistory->where('status', 'diterima')
+                ->filter(function($job) {
+                    if (!$job->sidejob) return false;
+                    $jobStatus = trim(strtolower($job->sidejob->status));
+                    return in_array($jobStatus, ['selesai', 'completed', 'finished', 'done']);
+                })->count();
+            $rejectedJobs = $jobHistory->where('status', 'ditolak')->count();
+            $pendingJobs = $jobHistory->where('status', 'pending')->count();
+            
+            // Calculate completion rate
+            $completionRate = $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 0;
+            
+            $applicantsWithHistory[$userId] = [
+                'user' => $applicant->user,
+                'current_application' => $applicant,
+                'job_history' => $jobHistory,
+                'statistics' => [
+                    'total_jobs' => $totalJobs,
+                    'completed_jobs' => $completedJobs,
+                    'rejected_jobs' => $rejectedJobs,
+                    'pending_jobs' => $pendingJobs,
+                    'completion_rate' => $completionRate
+                ]
+            ];
+        }
+        
+        return view('manajemen.pelamar.track_record', compact('applicantsWithHistory'));
     }
 
 }
