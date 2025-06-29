@@ -1,0 +1,64 @@
+# Development files
+.env
+.env.local
+.env.*.local
+.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+/public/hot
+/public/storage
+/storage/*.key
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+
+# Testing
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Development tools
+.styleci.yml
+.editorconfig
+package-lock.json
+yarn.lock
+
+# Laravel specific
+storage/app/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/logs/*
+bootstrap/cache/*
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

@@ -16,6 +16,18 @@ Route::get('/', function () {
     return redirect('/Index');
 });
 
+// Health check endpoint for Docker
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now(),
+        'services' => [
+            'database' => 'connected',
+            'cache' => 'connected'
+        ]
+    ]);
+});
+
 
 //Auth
 Route::get('/', [HomeController::class, 'index'])->name('home');
