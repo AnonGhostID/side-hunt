@@ -48,22 +48,43 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                    {{-- Contoh Data Row 1 --}}
+                    @forelse($riwayatPekerjaan as $pelamar)
                     <tr>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <p class="font-semibold">Penulisan Artikel SEO (10 Artikel)</p>
-                            <p class="text-xs text-gray-500">Kategori: Penulisan Konten</p>
+                            @if($pelamar->sidejob)
+                                <p class="font-semibold">{{ $pelamar->sidejob->nama }}</p>
+                                <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
+                            @else
+                                <p class="font-semibold">Pekerjaan tidak ditemukan</p>
+                                <p class="text-xs text-gray-500">Kategori: -</p>
+                            @endif
                         </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">PT. Digital Kreatif</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Budi Santoso</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
+                                {{ $pelamar->sidejob->pembuatUser->nama }}
+                            @else
+                                Tidak diketahui
+                            @endif
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
                                 <span class="relative">Selesai</span>
                             </span>
                         </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">15 April 2024</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            @php
+                                $formattedDate = 'Tidak ada tanggal';
+                                if ($pelamar->updated_at) {
+                                    $date = \Carbon\Carbon::parse($pelamar->updated_at);
+                                    $formattedDate = $date->locale('id')->format('d-M-Y');
+                                }
+                            @endphp
+                            {{ $formattedDate }}
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            {{-- Static rating display --}}
                             <i class="fas fa-star text-yellow-400"></i>
                             <i class="fas fa-star text-yellow-400"></i>
                             <i class="fas fa-star text-yellow-400"></i>
@@ -77,35 +98,13 @@
                             </a>
                         </td>
                     </tr>
-                    {{-- Contoh Data Row 2 --}}
+                    @empty
                     <tr>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <p class="font-semibold">Input Data Produk ke Excel</p>
-                            <p class="text-xs text-gray-500">Kategori: Entri Data</p>
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Toko Online CepatLaku</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Rina Wati</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <span class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
-                                <span aria-hidden class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
-                                <span class="relative">Dibatalkan</span>
-                            </span>
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">10 Maret 2024</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">N/A</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            <a href="#" class="text-blue-500 hover:text-blue-700" title="Lihat Detail Riwayat">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {{-- Tambahkan lebih banyak baris data di sini sesuai kebutuhan --}}
-                    {{-- Contoh jika tidak ada data --}}
-                    {{-- <tr>
                         <td colspan="7" class="px-5 py-10 border-b border-gray-200 text-sm text-center text-gray-500">
                             Tidak ada riwayat pekerjaan yang ditemukan.
                         </td>
-                    </tr> --}}
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

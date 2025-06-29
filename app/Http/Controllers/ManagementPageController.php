@@ -216,9 +216,169 @@ class ManagementPageController extends Controller
         return view('manajemen.keuangan.refund_dana');
     }
 
-    public function laporanKeuangan()
+    public function laporanKeuangan(Request $request)
     {
-        return view('manajemen.keuangan.laporan_keuangan');
+        $user = session('account');
+        
+        // Get month and year from request or use 'all' to show all transactions
+        $selectedMonth = $request->get('month', 'all');
+        $selectedYear = $request->get('year', 'all');
+        
+        // Base query for top-up transactions
+        $topUpQuery = Payment::where('user_id', $user->id)
+            ->whereIn('status', ['paid', 'settled']);
+        
+        // Apply month/year filter only if specific month/year is selected
+        if ($selectedMonth !== 'all' && $selectedYear !== 'all') {
+            $topUpQuery->whereMonth('created_at', $selectedMonth)
+                      ->whereYear('created_at', $selectedYear);
+        } elseif ($selectedMonth !== 'all') {
+            // Only month is selected, filter by month for current year
+            $topUpQuery->whereMonth('created_at', $selectedMonth)
+                      ->whereYear('created_at', now()->year);
+        } elseif ($selectedYear !== 'all') {
+            // Only year is selected, show all months for that year
+            $topUpQuery->whereYear('created_at', $selectedYear);
+        }
+        
+        $topUpTransactions = $topUpQuery->orderBy('created_at', 'desc')->get();
+        
+        // Base query for job income transactions
+        $jobIncomeQuery = Transaksi::where('pekerja_id', $user->id)
+            ->where('status', 'sukses');
+        
+        // Apply month/year filter only if specific month/year is selected
+        if ($selectedMonth !== 'all' && $selectedYear !== 'all') {
+            $jobIncomeQuery->whereMonth('dibuat', $selectedMonth)
+                          ->whereYear('dibuat', $selectedYear);
+        } elseif ($selectedMonth !== 'all') {
+            // Only month is selected, filter by month for current year
+            $jobIncomeQuery->whereMonth('dibuat', $selectedMonth)
+                          ->whereYear('dibuat', now()->year);
+        } elseif ($selectedYear !== 'all') {
+            // Only year is selected, show all months for that year
+            $jobIncomeQuery->whereYear('dibuat', $selectedYear);
+        }
+        
+        $jobIncomeTransactions = $jobIncomeQuery->orderBy('dibuat', 'desc')->get();
+        
+        // Base query for job expense transactions
+        $jobExpenseQuery = Transaksi::where('pembuat_id', $user->id)
+            ->where('status', 'sukses');
+        
+        // Apply month/year filter only if specific month/year is selected
+        if ($selectedMonth !== 'all' && $selectedYear !== 'all') {
+            $jobExpenseQuery->whereMonth('dibuat', $selectedMonth)
+                           ->whereYear('dibuat', $selectedYear);
+        } elseif ($selectedMonth !== 'all') {
+            // Only month is selected, filter by month for current year
+            $jobExpenseQuery->whereMonth('dibuat', $selectedMonth)
+                           ->whereYear('dibuat', now()->year);
+        } elseif ($selectedYear !== 'all') {
+            // Only year is selected, show all months for that year
+            $jobExpenseQuery->whereYear('dibuat', $selectedYear);
+        }
+        
+        $jobExpenseTransactions = $jobExpenseQuery->orderBy('dibuat', 'desc')->get();
+        
+        // Combine all transactions for display
+        $allTransactions = collect();
+        
+        // Add top-up transactions as income
+        foreach ($topUpTransactions as $transaction) {
+            $allTransactions->push([
+                'date' => $transaction->created_at,
+                'description' => $transaction->description ?: 'Top Up Saldo',
+                'income' => $transaction->amount,
+                'expense' => 0,
+                'type' => 'topup',
+                'transaction' => $transaction
+            ]);
+        }
+        
+        // Add job income transactions
+        foreach ($jobIncomeTransactions as $transaction) {
+            $allTransactions->push([
+                'date' => $transaction->dibuat,
+                'description' => 'Pendapatan Pekerjaan',
+                'income' => $transaction->jumlah,
+                'expense' => 0,
+                'type' => 'job_income',
+                'transaction' => $transaction
+            ]);
+        }
+        
+        // Add job expense transactions
+        foreach ($jobExpenseTransactions as $transaction) {
+            $allTransactions->push([
+                'date' => $transaction->dibuat,
+                'description' => 'Pembayaran Pekerjaan',
+                'income' => 0,
+                'expense' => $transaction->jumlah,
+                'type' => 'job_expense',
+                'transaction' => $transaction
+            ]);
+        }
+        
+        // Sort by date (newest first)
+        $allTransactions = $allTransactions->sortByDesc('date');
+        
+        // Calculate totals
+        $totalIncome = $allTransactions->sum('income');
+        $totalExpense = $allTransactions->sum('expense');
+        $netIncome = $totalIncome - $totalExpense;
+        
+        // Calculate transaction counts by type
+        $topUpCount = $topUpTransactions->count();
+        $jobIncomeCount = $jobIncomeTransactions->count();
+        $jobExpenseCount = $jobExpenseTransactions->count();
+        $totalTransactions = $allTransactions->count();
+        
+        // Calculate averages
+        $avgIncome = $totalIncome > 0 ? $totalIncome / $allTransactions->where('income', '>', 0)->count() : 0;
+        $avgExpense = $totalExpense > 0 ? $totalExpense / $allTransactions->where('expense', '>', 0)->count() : 0;
+        
+        // Get month name in Indonesian
+        $monthNames = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        
+        $monthName = $selectedMonth !== 'all' ? $monthNames[$selectedMonth] : 'Semua Bulan';
+        
+        // Create a more descriptive period name
+        if ($selectedMonth !== 'all' && $selectedYear !== 'all') {
+            $periodName = $monthNames[$selectedMonth] . ' ' . $selectedYear;
+        } elseif ($selectedMonth !== 'all') {
+            $periodName = $monthNames[$selectedMonth] . ' ' . now()->year;
+        } elseif ($selectedYear !== 'all') {
+            $periodName = 'Semua Bulan ' . $selectedYear;
+        } else {
+            $periodName = 'Semua Periode';
+        }
+        
+        // Get available years for dropdown (from 2020 to current year + 1)
+        $availableYears = range(2020, now()->year + 1);
+        
+        return view('manajemen.keuangan.laporan_keuangan', compact(
+            'allTransactions', 
+            'totalIncome', 
+            'totalExpense', 
+            'netIncome',
+            'monthName',
+            'selectedMonth',
+            'selectedYear',
+            'availableYears',
+            'monthNames',
+            'topUpCount',
+            'jobIncomeCount',
+            'jobExpenseCount',
+            'totalTransactions',
+            'avgIncome',
+            'avgExpense',
+            'periodName'
+        ));
     }
 
     public function panelBantuanDanPenipuan()
@@ -339,7 +499,28 @@ class ManagementPageController extends Controller
     
     public function riwayatPekerjaan()
     {
-        return view('manajemen.pekerjaan.riwayat');
+        $user = session('account');
+        
+        // Get completed jobs for the user
+        $riwayatPekerjaan = Pelamar::where('user_id', $user->id)
+            ->where('status', 'diterima')
+            ->with(['sidejob', 'user'])
+            ->whereHas('sidejob', function($query) {
+                $query->where('status', 'Selesai');
+            })
+            ->orderBy('updated_at', 'desc')
+            ->get();
+        
+        // Load the job creators for each job
+        foreach ($riwayatPekerjaan as $pelamar) {
+            if ($pelamar->sidejob) {
+                $pembuatId = $pelamar->sidejob->pembuat;
+                $pembuatUser = Users::find($pembuatId);
+                $pelamar->sidejob->pembuatUser = $pembuatUser;
+            }
+        }
+        
+        return view('manajemen.pekerjaan.riwayat', compact('riwayatPekerjaan'));
     }
 
     public function managePekerjaan($id)
