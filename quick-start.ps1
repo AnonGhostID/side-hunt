@@ -34,6 +34,7 @@ docker-compose down -v 2>$null
 # Start the application
 Write-Host "🔨 Building and starting the application..." -ForegroundColor Yellow
 Write-Host "   This may take a few minutes on first run..." -ForegroundColor Gray
+Write-Host "   Building Docker image with embedded configuration..." -ForegroundColor Gray
 docker-compose up -d --build
 
 # Wait for services to be ready

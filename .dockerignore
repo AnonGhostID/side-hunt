@@ -1,8 +1,7 @@
-# Development files
+# Development files (keep .env.docker)
 .env
 .env.local
 .env.*.local
-.env.example
 
 # Dependencies
 node_modules/
@@ -53,10 +52,9 @@ storage/framework/views/*
 storage/logs/*
 bootstrap/cache/*
 
-# Docker
+# Docker (keep configuration files but exclude compose)
 Dockerfile
 docker-compose.yml
-docker/
 
 # Temporary files
 *.tmp

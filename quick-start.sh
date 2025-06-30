@@ -32,6 +32,7 @@ docker-compose down -v 2>/dev/null || true
 # Start the application
 echo "🔨 Building and starting the application..."
 echo "   This may take a few minutes on first run..."
+echo "   Building Docker image with embedded configuration..."
 docker-compose up -d --build
 
 # Wait for services to be ready

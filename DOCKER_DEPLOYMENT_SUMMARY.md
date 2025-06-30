@@ -12,23 +12,10 @@ Your Laravel SideHunt application has been successfully converted to a Docker-de
 - `.dockerignore` - Optimized build context
 - `.env.docker` - Production-ready environment configuration
 
-### Docker Configuration Files
-```
-docker/
-├── nginx/
-│   ├── nginx.conf          # Main Nginx configuration
-│   └── default.conf        # Laravel-specific server configuration
-├── php/
-│   ├── php-fpm.conf        # PHP-FPM process manager configuration
-│   └── php.ini             # PHP runtime configuration
-├── mysql/
-│   └── my.cnf              # MySQL optimization settings
-├── supervisor/
-│   └── supervisord.conf    # Process management configuration
-└── scripts/
-    ├── start.sh            # Container startup script
-    └── healthcheck.sh      # Health monitoring script
-```
+### Docker Configuration
+- **Embedded Configuration**: All server configurations are embedded directly in the Dockerfile for maximum compatibility
+- **Self-Contained**: No external configuration files needed - everything is built into the image
+- **Production-Ready**: Optimized settings for Nginx, PHP-FPM, and application performance
 
 ### Utility Scripts
 - `quick-start.sh` / `quick-start.ps1` - One-command deployment
