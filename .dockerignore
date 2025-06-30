@@ -40,7 +40,6 @@ phpunit.xml
 # Development tools
 .styleci.yml
 .editorconfig
-package-lock.json
 yarn.lock
 
 # Laravel specific
