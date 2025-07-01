@@ -73,6 +73,38 @@ class Users extends Model implements AuthenticatableContract
     }
 
     /**
+     * Ratings given by this user
+     */
+    public function ratingsGiven()
+    {
+        return $this->hasMany(Rating::class, 'rater_id');
+    }
+
+    /**
+     * Ratings received by this user
+     */
+    public function ratingsReceived()
+    {
+        return $this->hasMany(Rating::class, 'rated_id');
+    }
+
+    /**
+     * Get average rating for this user
+     */
+    public function getAverageRating($type = null)
+    {
+        return Rating::getAverageRating($this->id, $type);
+    }
+
+    /**
+     * Get rating count for this user
+     */
+    public function getRatingCount($type = null)
+    {
+        return Rating::getRatingCount($this->id, $type);
+    }
+
+    /**
      * Cek user admin.
      *
      * @return bool

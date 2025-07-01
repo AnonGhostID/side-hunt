@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Payment; // add Payment import
 use App\Models\Users;
 use App\Models\TiketBantuan;
+use App\Models\Rating;
 use Carbon\Carbon;
 
 class ManagementPageController extends Controller
@@ -511,12 +512,32 @@ class ManagementPageController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
         
-        // Load the job creators for each job
+        // Load the job creators and ratings for each job
         foreach ($riwayatPekerjaan as $pelamar) {
             if ($pelamar->sidejob) {
                 $pembuatId = $pelamar->sidejob->pembuat;
                 $pembuatUser = Users::find($pembuatId);
                 $pelamar->sidejob->pembuatUser = $pembuatUser;
+                
+                // Load ratings for this job - both directions
+                $jobId = $pelamar->sidejob->id;
+                
+                // Rating given by worker to employer
+                $workerToEmployerRating = Rating::where('job_id', $jobId)
+                    ->where('rater_id', $user->id)
+                    ->where('rated_id', $pembuatId)
+                    ->where('type', 'worker_to_employer')
+                    ->first();
+                
+                // Rating given by employer to worker
+                $employerToWorkerRating = Rating::where('job_id', $jobId)
+                    ->where('rater_id', $pembuatId)
+                    ->where('rated_id', $user->id)
+                    ->where('type', 'employer_to_worker')
+                    ->first();
+                
+                $pelamar->workerToEmployerRating = $workerToEmployerRating;
+                $pelamar->employerToWorkerRating = $employerToWorkerRating;
             }
         }
         
@@ -552,29 +573,62 @@ class ManagementPageController extends Controller
         $user = session('account');
         $pekerjaan = Pekerjaan::findOrFail($jobId);
 
-        // Verify that the user is the job creator
-        if ($pekerjaan->pembuat != $user->id) {
-            return redirect()->back()->with('rating_error', 'Anda tidak memiliki akses untuk memberikan rating pada pekerjaan ini.');
+        // Check if user can rate this worker for this job
+        if (!Rating::canRate($user->id, $request->pekerja_id, $jobId, 'employer_to_worker')) {
+            return redirect()->back()->with('rating_error', 'Anda tidak dapat memberikan rating untuk pekerjaan ini.');
         }
 
-        // Verify that the job is completed
-        if ($pekerjaan->status != 'Selesai') {
-            return redirect()->back()->with('rating_error', 'Rating hanya dapat diberikan setelah pekerjaan selesai.');
+        try {
+            // Create the rating
+            Rating::create([
+                'rater_id' => $user->id,
+                'rated_id' => $request->pekerja_id,
+                'job_id' => $jobId,
+                'rating' => $request->rating,
+                'comment' => $request->komentar,
+                'type' => 'employer_to_worker'
+            ]);
+
+            return redirect()->back()->with('rating_success', 'Rating berhasil diberikan kepada pekerja!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('rating_error', 'Gagal memberikan rating. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Store worker rating for employer
+     */
+    public function storeWorkerRating(Request $request)
+    {
+        $request->validate([
+            'job_id' => 'required|exists:pekerjaans,id',
+            'employer_id' => 'required|exists:users,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000'
+        ]);
+
+        $user = session('account');
+
+        // Check if user can rate this employer for this job
+        if (!Rating::canRate($user->id, $request->employer_id, $request->job_id, 'worker_to_employer')) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak dapat memberikan rating untuk pekerjaan ini.'], 403);
         }
 
-        // Verify that the worker was actually accepted for this job
-        $acceptedWorker = $pekerjaan->pelamar()
-            ->where('status', 'diterima')
-            ->where('user_id', $request->pekerja_id)
-            ->first();
+        try {
+            // Create the rating
+            Rating::create([
+                'rater_id' => $user->id,
+                'rated_id' => $request->employer_id,
+                'job_id' => $request->job_id,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+                'type' => 'worker_to_employer'
+            ]);
 
-        if (!$acceptedWorker) {
-            return redirect()->back()->with('rating_error', 'Pekerja yang dipilih tidak valid untuk pekerjaan ini.');
+            return response()->json(['success' => true, 'message' => 'Rating berhasil diberikan!']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal memberikan rating. Silakan coba lagi.'], 500);
         }
-
-        // For static implementation, just return success message
-        // In a real implementation, you would save the rating to database
-        return redirect()->back()->with('rating_success', 'Rating berhasil diberikan kepada pekerja!');
     }
 
     public function trackRecordPelamar()

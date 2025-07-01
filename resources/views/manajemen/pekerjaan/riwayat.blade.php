@@ -84,13 +84,35 @@
                             {{ $formattedDate }}
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            {{-- Static rating display --}}
-                            <i class="fas fa-star text-yellow-400"></i>
-                            <i class="fas fa-star text-yellow-400"></i>
-                            <i class="fas fa-star text-yellow-400"></i>
-                            <i class="fas fa-star text-yellow-400"></i>
-                            <i class="far fa-star text-yellow-400"></i>
-                            (4.0)
+                            @php
+                                $user = session('account');
+                                // Determine which rating to display based on user role
+                                if ($user->isUser()) {
+                                    // User is worker, show rating received from employer
+                                    $displayRating = $pelamar->employerToWorkerRating;
+                                } else {
+                                    // User is employer, show rating received from worker
+                                    $displayRating = $pelamar->workerToEmployerRating;
+                                }
+                            @endphp
+                            
+                            @if($displayRating)
+                                @for($i = 1; $i <= 5; $i++)
+                                    @if($i <= $displayRating->rating)
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                    @else
+                                        <i class="far fa-star text-yellow-400"></i>
+                                    @endif
+                                @endfor
+                                ({{ $displayRating->rating }}.0)
+                                @if($displayRating->comment)
+                                    <div class="text-xs text-gray-500 mt-1" title="{{ $displayRating->comment }}">
+                                        "{{ Str::limit($displayRating->comment, 50) }}"
+                                    </div>
+                                @endif
+                            @else
+                                <span class="text-gray-400">Belum ada rating</span>
+                            @endif
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             <a href="#" class="text-blue-500 hover:text-blue-700" title="Lihat Detail Riwayat">

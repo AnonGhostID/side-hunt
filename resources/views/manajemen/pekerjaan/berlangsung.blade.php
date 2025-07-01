@@ -90,9 +90,32 @@
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             @if($statusPekerjaan == 'Selesai')
-                                <button onclick="openRatingModal({{ $pelamar->id }}, '{{ $pelamar->sidejob->pembuatUser->nama ?? 'Tidak diketahui' }}')" class="text-yellow-500 hover:text-yellow-700" title="Beri Rating">
-                                    <i class="fas fa-star"></i> Rating
-                                </button>
+                                @php
+                                    $user = session('account');
+                                    $jobId = $pelamar->sidejob->id ?? null;
+                                    $workerId = $pelamar->user_id ?? null;
+                                    $employerId = $pelamar->sidejob->pembuat ?? null;
+                                    
+                                    // Check if current user can rate
+                                    $canRateEmployer = $user->isUser() && $jobId && $employerId && 
+                                                     \App\Models\Rating::canRate($user->id, $employerId, $jobId, 'worker_to_employer');
+                                    $canRateWorker = $user->isMitra() && $jobId && $workerId && 
+                                                   \App\Models\Rating::canRate($user->id, $workerId, $jobId, 'employer_to_worker');
+                                @endphp
+                                
+                                @if($canRateEmployer)
+                                    <button onclick="openRatingModal({{ $jobId }}, {{ $employerId }}, '{{ $pelamar->sidejob->pembuatUser->nama ?? 'Tidak diketahui' }}', 'employer')" class="text-yellow-500 hover:text-yellow-700" title="Beri Rating Pemberi Kerja">
+                                        <i class="fas fa-star"></i> Rating
+                                    </button>
+                                @elseif($canRateWorker)
+                                    <button onclick="openRatingModal({{ $jobId }}, {{ $workerId }}, '{{ $pelamar->user->nama ?? 'Tidak diketahui' }}', 'worker')" class="text-yellow-500 hover:text-yellow-700" title="Beri Rating Pekerja">
+                                        <i class="fas fa-star"></i> Rating
+                                    </button>
+                                @else
+                                    <span class="text-gray-400">
+                                        <i class="fas fa-star"></i> Rated
+                                    </span>
+                                @endif
                             @else
                                 <a href="#" class="text-red-500 hover:text-red-700" title="Report">
                                     <i class="fas fa-flag"></i> Report
@@ -135,11 +158,11 @@
         <div id="ratingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Beri Rating Pemberi Kerja</h3>
+                    <h3 id="modalTitle" class="text-lg font-medium text-gray-900 mb-4">Beri Rating</h3>
                     <form id="ratingForm">
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pemberi Kerja</label>
-                            <p id="employerName" class="text-sm text-gray-600 bg-gray-50 p-2 rounded"></p>
+                            <label id="targetLabel" class="block text-sm font-medium text-gray-700 mb-2">Target Rating</label>
+                            <p id="targetName" class="text-sm text-gray-600 bg-gray-50 p-2 rounded"></p>
                         </div>
                         
                         <div class="mb-4">
@@ -211,11 +234,32 @@
 </style>
 
 <script>
-    let currentPelamarId = null;
+    let currentJobId = null;
+    let currentTargetId = null;
+    let currentRatingType = null;
 
-    function openRatingModal(pelamarId, employerName) {
-        currentPelamarId = pelamarId;
-        document.getElementById('employerName').textContent = employerName;
+    function openRatingModal(jobId, targetId, targetName, ratingType) {
+        currentJobId = jobId;
+        currentTargetId = targetId;
+        currentRatingType = ratingType;
+        
+        // Update modal content based on rating type
+        const modalTitle = document.getElementById('modalTitle');
+        const targetLabel = document.getElementById('targetLabel');
+        const targetNameEl = document.getElementById('targetName');
+        const commentPlaceholder = document.getElementById('komentar');
+        
+        if (ratingType === 'employer') {
+            modalTitle.textContent = 'Beri Rating Pemberi Kerja';
+            targetLabel.textContent = 'Pemberi Kerja';
+            commentPlaceholder.placeholder = 'Berikan komentar tentang pemberi kerja...';
+        } else {
+            modalTitle.textContent = 'Beri Rating Pekerja';
+            targetLabel.textContent = 'Pekerja';
+            commentPlaceholder.placeholder = 'Berikan komentar tentang pekerja...';
+        }
+        
+        targetNameEl.textContent = targetName;
         document.getElementById('ratingModal').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         
@@ -226,21 +270,61 @@
     function closeRatingModal() {
         document.getElementById('ratingModal').classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-        currentPelamarId = null;
+        currentJobId = null;
+        currentTargetId = null;
+        currentRatingType = null;
     }
 
     // Handle form submission
-    document.getElementById('ratingForm').addEventListener('submit', function(e) {
+    document.getElementById('ratingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(this);
         const rating = formData.get('rating');
-        const komentar = formData.get('komentar');
+        const comment = formData.get('komentar');
         
-        // Static implementation - just show success message
-        alert(`Rating ${rating} bintang berhasil diberikan!${komentar ? '\nKomentar: ' + komentar : ''}`);
+        // Prepare data for submission
+        const data = {
+            job_id: currentJobId,
+            rating: rating,
+            comment: comment
+        };
         
-        closeRatingModal();
+        // Add target user based on rating type
+        if (currentRatingType === 'employer') {
+            data.employer_id = currentTargetId;
+        } else {
+            data.worker_id = currentTargetId;
+        }
+        
+        try {
+            const url = currentRatingType === 'employer' 
+                ? '{{ route("manajemen.rating.worker.store") }}'
+                : '{{ route("manajemen.pekerjaan.rating.store", ":jobId") }}'.replace(':jobId', currentJobId);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                alert('Rating berhasil diberikan!');
+                closeRatingModal();
+                // Refresh the page to update the UI
+                window.location.reload();
+            } else {
+                alert(result.message || 'Gagal memberikan rating. Silakan coba lagi.');
+            }
+        } catch (error) {
+            console.error('Error submitting rating:', error);
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+        }
     });
 
     // Close modal when clicking outside
