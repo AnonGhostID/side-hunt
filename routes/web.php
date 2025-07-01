@@ -66,6 +66,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::post('/pekerjaan/{id}/update-status', [PekerjaanController::class, 'updateStatus'])->name('pekerjaan.updateStatus');
             Route::post('/pekerjaan/{id}/terima-hasil', [PekerjaanController::class, 'terimaHasilPekerjaan'])->name('pekerjaan.terimaHasil');
             Route::post('/pekerjaan/{id}/rating', [ManagementPageController::class, 'storeJobRating'])->name('pekerjaan.rating.store');
+            Route::post('/rating/worker', [ManagementPageController::class, 'storeWorkerRating'])->name('rating.worker.store');
     
             // Keuangan
             // Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
