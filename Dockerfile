@@ -27,13 +27,28 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application code
+# Set working directory
 WORKDIR /var/www/html
+
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+# Copy package.json for Node dependencies
+COPY package.json ./
+
+# Install Node dependencies
+RUN npm install --production
+
+# Copy application code
 COPY . .
 
-# Install PHP and Node dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader \
-    && npm install
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Copy Nginx config
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default

@@ -3,6 +3,18 @@ set -e
 
 cd /var/www/html
 
+# Ensure vendor directory exists and is populated
+if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
+    echo "Installing Composer dependencies..."
+    composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+fi
+
+# Ensure node_modules exists
+if [ ! -d "node_modules" ]; then
+    echo "Installing Node dependencies..."
+    npm install --production
+fi
+
 if [ ! -f .env ]; then
     cp .env.example .env
 fi

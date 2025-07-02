@@ -19,6 +19,8 @@ services:
       REDIS_HOST: redis
     volumes:
       - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
     depends_on:
       mysql:
         condition: service_healthy
@@ -51,3 +53,5 @@ services:
 
 volumes:
   db-data:
+  vendor_data:
+  node_modules_data:
