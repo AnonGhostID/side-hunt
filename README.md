@@ -112,6 +112,16 @@ For detailed information about database relationships, table structures, and for
    php artisan serve
    ```
 
+### Docker Setup
+
+If you prefer to use Docker, simply run:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at [http://localhost](http://localhost) and database migrations will be executed automatically on first start.
+
 ## 👥 Default Users
 
 The application comes with pre-seeded users for testing:
