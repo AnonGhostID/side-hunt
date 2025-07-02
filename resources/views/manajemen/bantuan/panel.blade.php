@@ -86,7 +86,38 @@
                                                 <p><strong>Pihak Terlapor:</strong> {{ $ticket->pihak_terlapor }}</p>
                                                 <p><strong>Tanggal:</strong> {{ $ticket->tanggal_kejadian?->format('d/m/Y') }}</p>
                                                 @if($ticket->bukti_pendukung && count($ticket->bukti_pendukung) > 0)
-                                                    <p><strong>Bukti:</strong> {{ count($ticket->bukti_pendukung) }} file</p>
+                                                    <div class="mt-2">
+                                                        <p><strong>Bukti Pendukung:</strong></p>
+                                                        <div class="mt-1 space-y-1">
+                                                            @foreach($ticket->bukti_pendukung as $index => $filePath)
+                                                                @php
+                                                                    $fileName = basename($filePath);
+                                                                    $fileExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                                                                    $isImage = in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif']);
+                                                                @endphp
+                                                                <div class="flex items-center space-x-2">
+                                                                    @if($isImage)
+                                                                        <i class="fas fa-image text-blue-500"></i>
+                                                                    @elseif($fileExtension === 'pdf')
+                                                                        <i class="fas fa-file-pdf text-red-500"></i>
+                                                                    @else
+                                                                        <i class="fas fa-file text-gray-500"></i>
+                                                                    @endif
+                                                                    <a href="{{ asset('storage/' . $filePath) }}" 
+                                                                       target="_blank" 
+                                                                       class="text-blue-600 hover:text-blue-800 text-sm underline">
+                                                                        {{ $fileName }}
+                                                                    </a>
+                                                                    @if($isImage)
+                                                                        <button onclick="showImageModal('{{ asset('storage/' . $filePath) }}', '{{ $fileName }}')" 
+                                                                                class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">
+                                                                            Preview
+                                                                        </button>
+                                                                    @endif
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
                                                 @endif
                                             </div>
                                         @endif
@@ -288,6 +319,29 @@
         </div>
     @endif
 
+    {{-- Image Preview Modal --}}
+    <div id="imageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-lg font-medium text-gray-900">Preview Gambar</h3>
+                    <button onclick="closeImageModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="text-center">
+                    <img id="modalImage" src="" alt="Preview" class="max-w-full max-h-96 mx-auto rounded-lg shadow-lg">
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="closeImageModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -309,6 +363,33 @@
                     }
                 }
             });
+        }
+    });
+
+    // Image modal functions
+    function showImageModal(imageSrc, fileName) {
+        document.getElementById('modalImage').src = imageSrc;
+        document.getElementById('modalTitle').textContent = 'Preview: ' + fileName;
+        document.getElementById('imageModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('imageModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeImageModal();
+        }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !document.getElementById('imageModal').classList.contains('hidden')) {
+            closeImageModal();
         }
     });
 </script>

@@ -268,43 +268,16 @@
                     <span>Panel Bantuan dan Laporan Penipuan</span>
                 </a>
 
-                {{-- Admin Section Example - Ideally show based on user role --}}
-                @if(session('account') && session('account')->isAdmin())
-                        <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administrasi Sistem</h3>
-                        <a href="{{ route('manajemen.admin.laporan.pemantauan') }}" class="sidebar-link {{ request()->routeIs('manajemen.admin.laporan.pemantauan') ? 'active' : '' }}">
-                            <i class="fas fa-binoculars"></i>
-                            <span>Pemantauan Laporan</span>
-                        </a>
-                        <div x-data="{ open: {{ request()->is('manajemen/admin/users*') ? 'true' : 'false' }} }">
-                            <button @click="open = !open" class="sidebar-link w-full text-left">
-                                <i class="fas fa-users-cog"></i>
-                                <span>Manajemen Pengguna</span>
-                                <i class="fas" :class="open ? 'fa-chevron-down ml-auto' : 'fa-chevron-right ml-auto'"></i>
-                            </button>
-                            <div x-show="open" x-transition class="ml-4 mt-1 space-y-1">
-                                <a href="{{ route('manajemen.admin.users.list') }}" class="sidebar-link {{ request()->routeIs('manajemen.admin.users.list') ? 'active' : '' }}">
-                                    <i class="fas fa-list-ul"></i> Daftar User
-                                </a>
-                                <a href="{{ route('manajemen.admin.users.tambah') }}" class="sidebar-link {{ request()->routeIs('manajemen.admin.users.tambah') ? 'active' : '' }}">
-                                    <i class="fas fa-user-plus"></i> Tambah User
-                                </a>
-                                {{-- Tambahkan link untuk Nonaktifkan, Aktifkan, Ubah User di sini jika halaman terpisah --}}
-                            </div>
-                        </div>
-                @endif
-
-
                 <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lainnya</h3>
                 <a href="{{ route('manajemen.notifications.page') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifications.page') ? 'active' : '' }}">
                     <i class="fas fa-bell"></i>
                     <span>Riwayat Notifikasi</span>
                 </a>
-                @if(session('account') && (session('account')->isMitra() || session('account')->isAdmin()))
+                @if(session('account') && (session('account')->isMitra()))
                 <a href="{{ route('manajemen.pelamar.track-record') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelamar.track-record') ? 'active' : '' }}">
                     <i class="fas fa-address-book"></i>
                     <span>Track Record Pelamar</span>
                 </a>
-                @endif
 
 
             </nav>

@@ -698,4 +698,42 @@ class ManagementPageController extends Controller
         return view('manajemen.pelamar.track_record', compact('applicantsWithHistory'));
     }
 
+    /**
+     * Securely serve evidence files for admin users
+     */
+    public function serveEvidenceFile($ticketId, $fileIndex)
+    {
+        $user = session('account');
+        
+        // Only allow admin users to access evidence files
+        if (!$user->isAdmin()) {
+            abort(403, 'Unauthorized access');
+        }
+        
+        $ticket = TiketBantuan::findOrFail($ticketId);
+        
+        // Check if file index exists
+        if (!isset($ticket->bukti_pendukung[$fileIndex])) {
+            abort(404, 'File not found');
+        }
+        
+        $filePath = $ticket->bukti_pendukung[$fileIndex];
+        $fullPath = storage_path('app/public/' . $filePath);
+        
+        // Check if file exists
+        if (!file_exists($fullPath)) {
+            abort(404, 'File not found on disk');
+        }
+        
+        // Get file info
+        $fileName = basename($filePath);
+        $mimeType = mime_content_type($fullPath);
+        
+        // Return file response
+        return response()->file($fullPath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+        ]);
+    }
+
 }
