@@ -751,4 +751,32 @@ class ManagementPageController extends Controller
         ]);
     }
 
+    public function deletePekerjaan(Request $request, $id)
+    {
+        $user = session('account');
+        $pekerjaan = Pekerjaan::findOrFail($id);
+
+        // Only allow owner and only if status is 'Open'
+        if ($pekerjaan->pembuat != $user->id || $pekerjaan->status !== 'Open') {
+            return redirect()->back()->with('error', 'Pekerjaan hanya dapat dihapus jika status masih Open dan Anda adalah pemiliknya.');
+        }
+
+        // Refund min_gaji to owner's dompet
+        $owner = Users::find($pekerjaan->pembuat);
+        if ($owner) {
+            $owner->dompet += $pekerjaan->min_gaji;
+            $owner->save();
+            // Optionally, update session if current user is owner
+            if ($user->id == $owner->id) {
+                session(['account' => $owner]);
+            }
+        }
+
+        // Delete the pekerjaan
+        $pekerjaan->delete();
+
+        return redirect()->route('manajemen.pekerjaan.terdaftar')
+                         ->with('success', 'Pekerjaan berhasil dihapus dan dana sebesar Rp. ' . number_format($pekerjaan->min_gaji, 0, ',', '.') . ' telah dikembalikan ke Dompet Anda.');
+    }
+
 }

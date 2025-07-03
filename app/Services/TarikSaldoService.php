@@ -203,15 +203,13 @@ class TarikSaldoService
     public static function getSupportedBanks(): array
     {
         return [
-            // Major Banks with higher limits
             'BCA' => 'Bank Central Asia (BCA)',
+            'BCA_DIGITAL' => 'Bank Central Asia Digital (BluBCA)',
             'BNI' => 'Bank Negara Indonesia (BNI)',
             'BRI' => 'Bank Rakyat Indonesia (BRI)',
             'MANDIRI' => 'Bank Mandiri',
             'CIMB' => 'Bank CIMB Niaga',
             'PERMATA' => 'Bank Permata',
-            
-            // Other Popular Banks
             'DANAMON' => 'Bank Danamon',
             'MAYBANK' => 'Bank Maybank',
             'PANIN' => 'Bank Panin',
@@ -230,7 +228,6 @@ class TarikSaldoService
             'COMMONWEALTH' => 'Bank Commonwealth',
             'SINARMAS' => 'Bank Sinarmas',
             'JAGO' => 'Bank Jago',
-            'BCA_DIGITAL' => 'Bank Central Asia Digital (BluBCA)',
             'SEABANK' => 'Bank SeaBank Indonesia',
             'ALLO' => 'Allo Bank Indonesia',
             'OKE' => 'Bank Oke Indonesia',

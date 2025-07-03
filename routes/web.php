@@ -108,6 +108,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/chat', [ManagementPageController::class, 'chatPengguna'])->name('chat');
             Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
             Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
+            Route::post('/pekerjaan/{id}/delete', [ManagementPageController::class, 'deletePekerjaan'])->name('pekerjaan.delete');
         });
     });
 

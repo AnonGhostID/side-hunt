@@ -33,6 +33,10 @@
                             Set On Progress
                         </button>
                     </form>
+                    <!-- Hapus dan Batalkan Pekerjaan Button -->
+                    <button type="button" class="bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded flex items-center" onclick="openDeleteModal()">
+                        <i class="fas fa-trash-alt mr-2"></i> Hapus dan Batalkan Pekerjaan
+                    </button>
                 @endif
                 @if($laporans->count() > 0 && $pekerjaan->status == 'Berlangsung')
                     <form id="terimaHasilForm" action="{{ route('manajemen.pekerjaan.terimaHasil', $pekerjaan->id) }}" method="POST">
@@ -185,6 +189,50 @@
         </div>
     </div>
 
+    {{-- Confirmation Modal for Delete & Cancel Job --}}
+    <div id="deleteJobModal" class="fixed inset-0 z-50 hidden overflow-auto bg-black bg-opacity-75 flex items-center justify-center p-4">
+        <div class="relative max-w-md w-full bg-white rounded-lg shadow-xl">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-medium text-gray-900">Konfirmasi Hapus & Batalkan Pekerjaan</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-500" onclick="closeDeleteModal()">
+                    <span class="sr-only">Tutup</span>
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-3">
+                    <p class="text-sm text-gray-700">
+                        <span class="font-bold text-red-600">Peringatan:</span> Menghapus pekerjaan ini akan membatalkan lowongan dan mengembalikan dana anda sebesar Rp {{ number_format($pekerjaan->min_gaji, 0, ',', '.') }} 
+                        (Belum termasuk biaya admin) ke saldo Dompet Anda. 
+                        <br><br>
+                        <div class="text-center mt-4">
+                            <span class="font-bold text-l">Tindakan ini <span class="text-red-600">tidak dapat dibatalkan</span>.</span>
+                        </div>
+                    </p>
+                </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-3 p-6 border-t bg-gray-50 rounded-b-lg">
+                <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Batal
+                </button>
+                <form id="deleteJobForm" action="{{ route('manajemen.pekerjaan.delete', $pekerjaan->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Ya, Hapus & Batalkan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <style>
         .rating-stars {
             display: flex;
@@ -245,6 +293,13 @@
                 closeConfirmationModal();
             }
         });
+
+        function openDeleteModal() {
+            document.getElementById('deleteJobModal').classList.remove('hidden');
+        }
+        function closeDeleteModal() {
+            document.getElementById('deleteJobModal').classList.add('hidden');
+        }
     </script>
 </main>
 @endsection
