@@ -5,12 +5,6 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto p-6 space-y-6">
-    <!-- Alert Messages -->
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif
 
     @if(session('error'))
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -121,12 +115,20 @@
                                id="account_number" 
                                name="account_number" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('account_number') border-red-500 @enderror" 
-                               placeholder="1234567890"
+                               placeholder="Pilih bank terlebih dahulu"
                                value="{{ old('account_number') }}"
+                               pattern="[0-9]*"
+                               inputmode="numeric"
+                               disabled
                                required>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span id="account-length-info">Pilih bank untuk melihat format rekening</span>
+                            <span id="account-counter" class="hidden">0/0</span>
+                        </div>
                         @error('account_number')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                        <div id="account-error" class="text-red-500 text-xs mt-1 hidden"></div>
                     </div>
 
                     <!-- Account Name -->
@@ -140,10 +142,13 @@
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('account_name') border-red-500 @enderror" 
                                placeholder="Nama sesuai rekening bank"
                                value="{{ old('account_name') }}"
+                               pattern="[A-Za-z\s'.-]+"
+                               title="Hanya huruf, spasi, apostrof, titik, dan tanda hubung diperbolehkan"
                                required>
                         @error('account_name')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                        <div id="account-name-error" class="text-red-500 text-xs mt-1 hidden"></div>
                     </div>
 
                     <!-- Submit Button -->
@@ -227,11 +232,134 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('withdrawal-form');
     const amountInput = document.getElementById('amount');
+    const bankSelect = document.getElementById('bank_code');
+    const accountInput = document.getElementById('account_number');
     const submitBtn = document.getElementById('submit-btn');
     const amountError = document.getElementById('amount-error');
+    const accountError = document.getElementById('account-error');
+    const accountLengthInfo = document.getElementById('account-length-info');
+    const accountCounter = document.getElementById('account-counter');
     const quickAmountBtns = document.querySelectorAll('.quick-amount-btn');
     const maxAmount = {{ $userModel->dompet }};
     const minAmount = 50000;
+
+    // Bank account number limits and examples
+    const bankLimits = {
+        'BCA': { max: 10, min: 10, example: '2150324346' },
+        'BNI': { max: 10, min: 10, example: '1234567890' },
+        'BRI': { max: 18, min: 15, example: '123456789012345678' },
+        'MANDIRI': { max: 13, min: 13, example: '1410024972143' },
+        'CIMB': { max: 13, min: 13, example: '1234567890123' },
+        'DANAMON': { max: 10, min: 10, example: '1234567890' },
+        'PERMATA': { max: 10, min: 10, example: '1234567890' },
+        'MAYBANK': { max: 12, min: 12, example: '123456789012' },
+        'PANIN': { max: 10, min: 10, example: '1234567890' },
+        'BSI': { max: 10, min: 10, example: '1234567890' },
+        'MUAMALAT': { max: 10, min: 10, example: '1234567890' }
+    };
+
+    // Bank selection change handler
+    bankSelect.addEventListener('change', function() {
+        const selectedBank = this.value;
+        
+        if (selectedBank && bankLimits[selectedBank]) {
+            const bankLimit = bankLimits[selectedBank];
+            
+            // Enable account input
+            accountInput.disabled = false;
+            accountInput.maxLength = bankLimit.max;
+            
+            // Update placeholder and info
+            accountInput.placeholder = `Contoh: ${bankLimit.example}`;
+            
+            if (bankLimit.min === bankLimit.max) {
+                accountLengthInfo.textContent = `${selectedBank} - ${bankLimit.max} digit`;
+            } else {
+                accountLengthInfo.textContent = `${selectedBank} - ${bankLimit.min}-${bankLimit.max} digit`;
+            }
+            
+            // Show counter
+            accountCounter.classList.remove('hidden');
+            updateAccountCounter();
+            
+            // Clear account input and validate
+            accountInput.value = '';
+            validateAccountNumber();
+        } else {
+            // Disable account input
+            accountInput.disabled = true;
+            accountInput.value = '';
+            accountInput.placeholder = 'Pilih bank terlebih dahulu';
+            accountLengthInfo.textContent = 'Pilih bank untuk melihat format rekening';
+            accountCounter.classList.add('hidden');
+            accountError.classList.add('hidden');
+        }
+    });
+
+    // Account number input handler
+    accountInput.addEventListener('input', function() {
+        // Only allow numbers
+        this.value = this.value.replace(/[^0-9]/g, '');
+        updateAccountCounter();
+        validateAccountNumber();
+    });
+
+    // Update account counter
+    function updateAccountCounter() {
+        const selectedBank = bankSelect.value;
+        if (selectedBank && bankLimits[selectedBank]) {
+            const current = accountInput.value.length;
+            const max = bankLimits[selectedBank].max;
+            accountCounter.textContent = `${current}/${max}`;
+            
+            // Color coding
+            if (current === 0) {
+                accountCounter.className = 'text-gray-500';
+            } else if (current < bankLimits[selectedBank].min) {
+                accountCounter.className = 'text-yellow-600';
+            } else if (current <= max) {
+                accountCounter.className = 'text-green-600';
+            } else {
+                accountCounter.className = 'text-red-600';
+            }
+        }
+    }
+
+    // Account number validation
+    function validateAccountNumber() {
+        const selectedBank = bankSelect.value;
+        const accountNumber = accountInput.value;
+        
+        if (!selectedBank) {
+            return false;
+        }
+        
+        if (!accountNumber) {
+            accountError.textContent = 'Nomor rekening wajib diisi';
+            accountError.classList.remove('hidden');
+            return false;
+        }
+        
+        if (bankLimits[selectedBank]) {
+            const bankLimit = bankLimits[selectedBank];
+            const length = accountNumber.length;
+            
+            if (length < bankLimit.min) {
+                accountError.textContent = `Nomor rekening ${selectedBank} minimal ${bankLimit.min} digit`;
+                accountError.classList.remove('hidden');
+                return false;
+            }
+            
+            if (length > bankLimit.max) {
+                accountError.textContent = `Nomor rekening ${selectedBank} maksimal ${bankLimit.max} digit`;
+                accountError.classList.remove('hidden');
+                return false;
+            }
+        }
+        
+        accountError.classList.add('hidden');
+        return true;
+    }
 
     // Quick amount buttons
     quickAmountBtns.forEach(btn => {
@@ -253,28 +381,73 @@ document.addEventListener('DOMContentLoaded', function() {
         if (amount < minAmount) {
             amountError.textContent = 'Minimum penarikan adalah Rp 50.000';
             amountError.classList.remove('hidden');
-            submitBtn.disabled = true;
             return false;
         }
         
         if (amount > maxAmount) {
             amountError.textContent = 'Saldo tidak mencukupi';
             amountError.classList.remove('hidden');
-            submitBtn.disabled = true;
             return false;
         }
         
         amountError.classList.add('hidden');
-        submitBtn.disabled = false;
         return true;
     }
 
+    // Account name validation
+    function validateAccountName() {
+        const accountNameInput = document.getElementById('account_name');
+        const accountNameError = document.getElementById('account-name-error');
+        const accountName = accountNameInput.value.trim();
+        
+        if (!accountName) {
+            accountNameError.textContent = 'Nama pemilik rekening wajib diisi';
+            accountNameError.classList.remove('hidden');
+            return false;
+        }
+        
+        // Only allow letters, spaces, apostrophes, periods, and hyphens
+        const nameRegex = /^[A-Za-z\s'.-]+$/;
+        if (!nameRegex.test(accountName)) {
+            accountNameError.textContent = 'Nama hanya boleh berisi huruf (tanpa angka atau simbol khusus)';
+            accountNameError.classList.remove('hidden');
+            return false;
+        }
+        
+        accountNameError.classList.add('hidden');
+        return true;
+    }
+    
+    // Overall form validation
+    function validateForm() {
+        const isAmountValid = validateAmount();
+        const isAccountValid = validateAccountNumber();
+        const isBankSelected = bankSelect.value !== '';
+        const isAccountNameValid = validateAccountName();
+        
+        const isFormValid = isAmountValid && isAccountValid && isBankSelected && isAccountNameValid;
+        submitBtn.disabled = !isFormValid;
+        
+        return isFormValid;
+    }
+
     // Real-time validation
-    amountInput.addEventListener('input', validateAmount);
+    amountInput.addEventListener('input', validateForm);
+    bankSelect.addEventListener('change', validateForm);
+    accountInput.addEventListener('input', validateForm);
+    
+    // Account name input handler
+    const accountNameInput = document.getElementById('account_name');
+    accountNameInput.addEventListener('input', function() {
+        // Remove any non-allowed characters as the user types
+        this.value = this.value.replace(/[^A-Za-z\s'.-]/g, '');
+        validateAccountName();
+        validateForm();
+    });
 
     // Form submission
     form.addEventListener('submit', function(e) {
-        if (!validateAmount()) {
+        if (!validateForm()) {
             e.preventDefault();
             return false;
         }
@@ -283,13 +456,11 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
     });
 
-    // Format number input
-    amountInput.addEventListener('blur', function() {
-        if (this.value) {
-            const formatted = parseInt(this.value).toLocaleString('id-ID');
-            // Keep the raw value for form submission
-        }
-    });
+    // Initialize validation on page load
+    if (bankSelect.value) {
+        bankSelect.dispatchEvent(new Event('change'));
+    }
+    validateForm();
 });
 </script>
 @endsection
