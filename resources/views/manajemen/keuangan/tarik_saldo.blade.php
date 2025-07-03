@@ -4,6 +4,26 @@
 @section('page-title', 'Tarik Saldo')
 
 @section('content')
+<style>
+    .payment-type-label {
+        transition: all 0.3s ease;
+    }
+    
+    .payment-type-label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .destination-option {
+        transition: all 0.3s ease;
+    }
+    
+    .destination-option.hidden {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+</style>
+
 <div class="max-w-6xl mx-auto p-6 space-y-6">
 
     @if(session('error'))
@@ -37,6 +57,46 @@
 
                 <form action="{{ route('manajemen.payout.store') }}" method="POST" id="withdrawal-form">
                     @csrf
+                    
+                    <!-- Payment Type Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Pilih Jenis Pembayaran
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="payment-type-option" data-type="bank">
+                                <input type="radio" 
+                                       id="payment_type_bank" 
+                                       name="payment_type" 
+                                       value="bank" 
+                                       class="hidden payment-type-radio"
+                                       {{ old('payment_type', 'bank') == 'bank' ? 'checked' : '' }}>
+                                <label for="payment_type_bank" 
+                                       class="payment-type-label flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-300">
+                                    <i class="fas fa-university text-2xl mb-2 text-blue-600"></i>
+                                    <span class="font-medium">Transfer Bank</span>
+                                    <span class="text-xs text-gray-500 mt-1">Ke rekening bank</span>
+                                </label>
+                            </div>
+                            <div class="payment-type-option" data-type="ewallet">
+                                <input type="radio" 
+                                       id="payment_type_ewallet" 
+                                       name="payment_type" 
+                                       value="ewallet" 
+                                       class="hidden payment-type-radio"
+                                       {{ old('payment_type') == 'ewallet' ? 'checked' : '' }}>
+                                <label for="payment_type_ewallet" 
+                                       class="payment-type-label flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-300">
+                                    <i class="fas fa-mobile-alt text-2xl mb-2 text-green-600"></i>
+                                    <span class="font-medium">E-Wallet</span>
+                                    <span class="text-xs text-gray-500 mt-1">DANA, GoPay, OVO</span>
+                                </label>
+                            </div>
+                        </div>
+                        @error('payment_type')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                     
                     <!-- Amount Input -->
                     <div class="mb-6">
@@ -85,44 +145,63 @@
                         </div>
                     </div>
 
-                    <!-- Bank Selection -->
-                    <div class="mb-6">
-                        <label for="bank_code" class="block text-sm font-medium text-gray-700 mb-2">
-                            Bank Tujuan
-                        </label>
-                        <select id="bank_code" 
-                                name="bank_code" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('bank_code') border-red-500 @enderror"
-                                required>
-                            <option value="">Pilih Bank</option>
-                            @foreach($supportedBanks as $code => $name)
-                                <option value="{{ $code }}" {{ old('bank_code') == $code ? 'selected' : '' }}>
-                                    {{ $name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('bank_code')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <!-- Bank/E-wallet Selection -->
+                    <div class="mb-6" id="destination-selection">
+                        <!-- Bank Selection (Default) -->
+                        <div id="bank-selection" class="destination-option">
+                            <label for="bank_code" class="block text-sm font-medium text-gray-700 mb-2">
+                                Bank Tujuan
+                            </label>
+                            <select id="bank_code" 
+                                    name="bank_code" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('bank_code') border-red-500 @enderror">
+                                <option value="">Pilih Bank</option>
+                                @foreach($supportedBanks as $code => $name)
+                                    <option value="{{ $code }}" {{ old('bank_code') == $code ? 'selected' : '' }}>
+                                        {{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('bank_code')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <!-- E-wallet Selection (Hidden by default) -->
+                        <div id="ewallet-selection" class="destination-option hidden">
+                            <label for="ewallet_code" class="block text-sm font-medium text-gray-700 mb-2">
+                                E-Wallet Tujuan
+                            </label>
+                            <select id="ewallet_code" 
+                                    name="ewallet_code" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih E-Wallet</option>
+                                @foreach($supportedEwallets as $code => $name)
+                                    <option value="{{ $code }}" {{ old('ewallet_code') == $code ? 'selected' : '' }}>
+                                        {{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Account Number -->
+                    <!-- Account Number/Phone -->
                     <div class="mb-6">
                         <label for="account_number" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nomor Rekening
+                            <span id="account-number-label">Nomor Rekening</span>
                         </label>
                         <input type="text" 
                                id="account_number" 
                                name="account_number" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('account_number') border-red-500 @enderror" 
-                               placeholder="Pilih bank terlebih dahulu"
+                               placeholder="Pilih jenis pembayaran terlebih dahulu"
                                value="{{ old('account_number') }}"
                                pattern="[0-9]*"
                                inputmode="numeric"
                                disabled
                                required>
                         <div class="flex justify-between text-xs text-gray-500 mt-1">
-                            <span id="account-length-info">Pilih bank untuk melihat format rekening</span>
+                            <span id="account-length-info">Pilih jenis pembayaran untuk melihat format</span>
                             <span id="account-counter" class="hidden">0/0</span>
                         </div>
                         @error('account_number')
@@ -134,13 +213,13 @@
                     <!-- Account Name -->
                     <div class="mb-6">
                         <label for="account_name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nama Pemilik Rekening
+                            <span id="account-name-label">Nama Pemilik Rekening</span>
                         </label>
                         <input type="text" 
                                id="account_name" 
                                name="account_name" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('account_name') border-red-500 @enderror" 
-                               placeholder="Nama sesuai rekening bank"
+                               placeholder="Nama sesuai rekening/akun"
                                value="{{ old('account_name') }}"
                                pattern="[A-Za-z\s'.-]+"
                                title="Hanya huruf, spasi, apostrof, titik, dan tanda hubung diperbolehkan"
@@ -233,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('withdrawal-form');
     const amountInput = document.getElementById('amount');
     const bankSelect = document.getElementById('bank_code');
+    const ewalletSelect = document.getElementById('ewallet_code');
     const accountInput = document.getElementById('account_number');
     const submitBtn = document.getElementById('submit-btn');
     const amountError = document.getElementById('amount-error');
@@ -240,6 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const accountLengthInfo = document.getElementById('account-length-info');
     const accountCounter = document.getElementById('account-counter');
     const quickAmountBtns = document.querySelectorAll('.quick-amount-btn');
+    const paymentTypeRadios = document.querySelectorAll('.payment-type-radio');
+    const bankSelection = document.getElementById('bank-selection');
+    const ewalletSelection = document.getElementById('ewallet-selection');
+    const accountNumberLabel = document.getElementById('account-number-label');
+    const accountNameLabel = document.getElementById('account-name-label');
     const maxAmount = {{ $userModel->dompet }};
     const minAmount = 50000;
 
@@ -255,8 +340,108 @@ document.addEventListener('DOMContentLoaded', function() {
         'MAYBANK': { max: 12, min: 12, example: '123456789012' },
         'PANIN': { max: 10, min: 10, example: '1234567890' },
         'BSI': { max: 10, min: 10, example: '1234567890' },
-        'MUAMALAT': { max: 10, min: 10, example: '1234567890' }
+        'MUAMALAT': { max: 10, min: 10, example: '1234567890' },
+        'BTN': { max: 16, min: 16, example: '1234567890123456' },
+        'BUKOPIN': { max: 12, min: 12, example: '123456789012' },
+        'MEGA': { max: 15, min: 15, example: '123456789012345' },
+        'OCBC': { max: 12, min: 12, example: '123456789012' },
+        'DBS': { max: 10, min: 10, example: '1234567890' },
+        'CITIBANK': { max: 10, min: 10, example: '1234567890' },
+        'HSBC': { max: 12, min: 12, example: '123456789012' },
+        'STANDARD_CHARTERED': { max: 12, min: 12, example: '123456789012' },
+        'ANZ': { max: 15, min: 15, example: '123456789012345' },
+        'UOB': { max: 12, min: 12, example: '123456789012' },
+        'COMMONWEALTH': { max: 12, min: 12, example: '123456789012' },
+        'SINARMAS': { max: 12, min: 12, example: '123456789012' },
+        'JAGO': { max: 12, min: 12, example: '123456789012' },
+        'BCA_DIGITAL': { max: 12, min: 12, example: '123456789012' },
+        'SEABANK': { max: 12, min: 12, example: '123456789012' },
+        'ALLO': { max: 12, min: 12, example: '123456789012' },
+        'OKE': { max: 12, min: 12, example: '123456789012' },
+        'BNC': { max: 12, min: 12, example: '123456789012' },
+        'DKI': { max: 12, min: 12, example: '123456789012' },
+        'JAWA_BARAT': { max: 12, min: 12, example: '123456789012' },
+        'JAWA_TENGAH': { max: 12, min: 12, example: '123456789012' },
+        'JAWA_TIMUR': { max: 12, min: 12, example: '123456789012' },
+        'SUMUT': { max: 12, min: 12, example: '123456789012' },
+        'SUMSEL_DAN_BABEL': { max: 12, min: 12, example: '123456789012' },
+        'SUMATERA_BARAT': { max: 12, min: 12, example: '123456789012' },
+        'RIAU_DAN_KEPRI': { max: 12, min: 12, example: '123456789012' },
+        'JAMBI': { max: 12, min: 12, example: '123456789012' },
+        'ACEH': { max: 12, min: 12, example: '123456789012' },
+        'LAMPUNG': { max: 12, min: 12, example: '123456789012' },
+        'BENGKULU': { max: 12, min: 12, example: '123456789012' },
+        'SULSELBAR': { max: 12, min: 12, example: '123456789012' },
+        'SULUT': { max: 12, min: 12, example: '123456789012' },
+        'SULAWESI': { max: 12, min: 12, example: '123456789012' },
+        'SULAWESI_TENGGARA': { max: 12, min: 12, example: '123456789012' },
+        'KALIMANTAN_BARAT': { max: 12, min: 12, example: '123456789012' },
+        'KALIMANTAN_SELATAN': { max: 12, min: 12, example: '123456789012' },
+        'KALIMANTAN_TENGAH': { max: 12, min: 12, example: '123456789012' },
+        'KALIMANTAN_TIMUR': { max: 12, min: 12, example: '123456789012' },
+        'BALI': { max: 12, min: 12, example: '123456789012' },
+        'NUSA_TENGGARA_BARAT': { max: 12, min: 12, example: '123456789012' },
+        'NUSA_TENGGARA_TIMUR': { max: 12, min: 12, example: '123456789012' },
+        'MALUKU': { max: 12, min: 12, example: '123456789012' },
+        'PAPUA': { max: 12, min: 12, example: '123456789012' }
     };
+
+    // E-wallet limits and examples
+    const ewalletLimits = {
+        'DANA': { max: 13, min: 10, example: '081234567890' },
+        'GOPAY': { max: 13, min: 10, example: '081234567890' },
+        'OVO': { max: 13, min: 10, example: '081234567890' },
+        'LINKAJA': { max: 13, min: 10, example: '081234567890' },
+        'SHOPEEPAY': { max: 13, min: 10, example: '081234567890' }
+    };
+
+    // Payment type selection handlers
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            updatePaymentTypeUI();
+            resetDestinationSelection();
+            validateForm();
+        });
+    });
+
+    // Update payment type UI
+    function updatePaymentTypeUI() {
+        const selectedType = document.querySelector('input[name="payment_type"]:checked').value;
+        
+        // Update payment type label styles
+        document.querySelectorAll('.payment-type-label').forEach(label => {
+            label.classList.remove('border-blue-500', 'bg-blue-50');
+            label.classList.add('border-gray-300');
+        });
+        
+        document.querySelector(`#payment_type_${selectedType}`).nextElementSibling.classList.remove('border-gray-300');
+        document.querySelector(`#payment_type_${selectedType}`).nextElementSibling.classList.add('border-blue-500', 'bg-blue-50');
+        
+        // Show/hide appropriate selection
+        if (selectedType === 'bank') {
+            bankSelection.classList.remove('hidden');
+            ewalletSelection.classList.add('hidden');
+            accountNumberLabel.textContent = 'Nomor Rekening';
+            accountNameLabel.textContent = 'Nama Pemilik Rekening';
+        } else {
+            bankSelection.classList.add('hidden');
+            ewalletSelection.classList.remove('hidden');
+            accountNumberLabel.textContent = 'Nomor Telepon';
+            accountNameLabel.textContent = 'Nama Pemilik Akun';
+        }
+    }
+
+    // Reset destination selection
+    function resetDestinationSelection() {
+        bankSelect.value = '';
+        ewalletSelect.value = '';
+        accountInput.value = '';
+        accountInput.disabled = true;
+        accountInput.placeholder = 'Pilih jenis pembayaran terlebih dahulu';
+        accountLengthInfo.textContent = 'Pilih jenis pembayaran untuk melihat format';
+        accountCounter.classList.add('hidden');
+        accountError.classList.add('hidden');
+    }
 
     // Bank selection change handler
     bankSelect.addEventListener('change', function() {
@@ -286,15 +471,51 @@ document.addEventListener('DOMContentLoaded', function() {
             accountInput.value = '';
             validateAccountNumber();
         } else {
-            // Disable account input
-            accountInput.disabled = true;
-            accountInput.value = '';
-            accountInput.placeholder = 'Pilih bank terlebih dahulu';
-            accountLengthInfo.textContent = 'Pilih bank untuk melihat format rekening';
-            accountCounter.classList.add('hidden');
-            accountError.classList.add('hidden');
+            resetAccountInput();
         }
     });
+
+    // E-wallet selection change handler
+    ewalletSelect.addEventListener('change', function() {
+        const selectedEwallet = this.value;
+        
+        if (selectedEwallet && ewalletLimits[selectedEwallet]) {
+            const ewalletLimit = ewalletLimits[selectedEwallet];
+            
+            // Enable account input
+            accountInput.disabled = false;
+            accountInput.maxLength = ewalletLimit.max;
+            
+            // Update placeholder and info
+            accountInput.placeholder = `Contoh: ${ewalletLimit.example}`;
+            
+            if (ewalletLimit.min === ewalletLimit.max) {
+                accountLengthInfo.textContent = `${selectedEwallet} - ${ewalletLimit.max} digit`;
+            } else {
+                accountLengthInfo.textContent = `${selectedEwallet} - ${ewalletLimit.min}-${ewalletLimit.max} digit`;
+            }
+            
+            // Show counter
+            accountCounter.classList.remove('hidden');
+            updateAccountCounter();
+            
+            // Clear account input and validate
+            accountInput.value = '';
+            validateAccountNumber();
+        } else {
+            resetAccountInput();
+        }
+    });
+
+    // Reset account input
+    function resetAccountInput() {
+        accountInput.disabled = true;
+        accountInput.value = '';
+        accountInput.placeholder = 'Pilih jenis pembayaran terlebih dahulu';
+        accountLengthInfo.textContent = 'Pilih jenis pembayaran untuk melihat format';
+        accountCounter.classList.add('hidden');
+        accountError.classList.add('hidden');
+    }
 
     // Account number input handler
     accountInput.addEventListener('input', function() {
@@ -306,16 +527,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update account counter
     function updateAccountCounter() {
-        const selectedBank = bankSelect.value;
-        if (selectedBank && bankLimits[selectedBank]) {
+        const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+        const selectedDestination = paymentType === 'bank' ? bankSelect.value : ewalletSelect.value;
+        const limits = paymentType === 'bank' ? bankLimits : ewalletLimits;
+        
+        if (selectedDestination && limits[selectedDestination]) {
             const current = accountInput.value.length;
-            const max = bankLimits[selectedBank].max;
+            const max = limits[selectedDestination].max;
             accountCounter.textContent = `${current}/${max}`;
             
             // Color coding
             if (current === 0) {
                 accountCounter.className = 'text-gray-500';
-            } else if (current < bankLimits[selectedBank].min) {
+            } else if (current < limits[selectedDestination].min) {
                 accountCounter.className = 'text-yellow-600';
             } else if (current <= max) {
                 accountCounter.className = 'text-green-600';
@@ -327,31 +551,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Account number validation
     function validateAccountNumber() {
-        const selectedBank = bankSelect.value;
+        const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+        const selectedDestination = paymentType === 'bank' ? bankSelect.value : ewalletSelect.value;
+        const limits = paymentType === 'bank' ? bankLimits : ewalletLimits;
         const accountNumber = accountInput.value;
         
-        if (!selectedBank) {
+        if (!selectedDestination) {
             return false;
         }
         
         if (!accountNumber) {
-            accountError.textContent = 'Nomor rekening wajib diisi';
+            accountError.textContent = paymentType === 'bank' ? 'Nomor rekening wajib diisi' : 'Nomor telepon wajib diisi';
             accountError.classList.remove('hidden');
             return false;
         }
         
-        if (bankLimits[selectedBank]) {
-            const bankLimit = bankLimits[selectedBank];
+        if (limits[selectedDestination]) {
+            const limit = limits[selectedDestination];
             const length = accountNumber.length;
             
-            if (length < bankLimit.min) {
-                accountError.textContent = `Nomor rekening ${selectedBank} minimal ${bankLimit.min} digit`;
+            if (length < limit.min) {
+                accountError.textContent = `Nomor ${paymentType === 'bank' ? 'rekening' : 'telepon'} ${selectedDestination} minimal ${limit.min} digit`;
                 accountError.classList.remove('hidden');
                 return false;
             }
             
-            if (length > bankLimit.max) {
-                accountError.textContent = `Nomor rekening ${selectedBank} maksimal ${bankLimit.max} digit`;
+            if (length > limit.max) {
+                accountError.textContent = `Nomor ${paymentType === 'bank' ? 'rekening' : 'telepon'} ${selectedDestination} maksimal ${limit.max} digit`;
                 accountError.classList.remove('hidden');
                 return false;
             }
@@ -401,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const accountName = accountNameInput.value.trim();
         
         if (!accountName) {
-            accountNameError.textContent = 'Nama pemilik rekening wajib diisi';
+            accountNameError.textContent = 'Nama pemilik rekening/akun wajib diisi';
             accountNameError.classList.remove('hidden');
             return false;
         }
@@ -422,10 +648,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateForm() {
         const isAmountValid = validateAmount();
         const isAccountValid = validateAccountNumber();
-        const isBankSelected = bankSelect.value !== '';
         const isAccountNameValid = validateAccountName();
+        const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+        const isDestinationSelected = paymentType === 'bank' ? bankSelect.value !== '' : ewalletSelect.value !== '';
         
-        const isFormValid = isAmountValid && isAccountValid && isBankSelected && isAccountNameValid;
+        const isFormValid = isAmountValid && isAccountValid && isDestinationSelected && isAccountNameValid;
         submitBtn.disabled = !isFormValid;
         
         return isFormValid;
@@ -434,6 +661,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Real-time validation
     amountInput.addEventListener('input', validateForm);
     bankSelect.addEventListener('change', validateForm);
+    ewalletSelect.addEventListener('change', validateForm);
     accountInput.addEventListener('input', validateForm);
     
     // Account name input handler
@@ -452,13 +680,31 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
+        // Set the bank_code based on payment type
+        const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+        if (paymentType === 'ewallet') {
+            // For e-wallet, use the selected e-wallet code as bank_code
+            const selectedEwallet = ewalletSelect.value;
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'bank_code';
+            hiddenInput.value = selectedEwallet;
+            form.appendChild(hiddenInput);
+        }
+        
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
     });
 
+    // Initialize payment type UI
+    updatePaymentTypeUI();
+    
     // Initialize validation on page load
-    if (bankSelect.value) {
+    const selectedPaymentType = document.querySelector('input[name="payment_type"]:checked').value;
+    if (selectedPaymentType === 'bank' && bankSelect.value) {
         bankSelect.dispatchEvent(new Event('change'));
+    } else if (selectedPaymentType === 'ewallet' && ewalletSelect.value) {
+        ewalletSelect.dispatchEvent(new Event('change'));
     }
     validateForm();
 });

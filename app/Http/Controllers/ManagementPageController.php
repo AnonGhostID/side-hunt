@@ -171,6 +171,7 @@ class ManagementPageController extends Controller
         $user = session('account');
         $userModel = Users::find($user['id']);
         $supportedBanks = TarikSaldoService::getSupportedBanks();
+        $supportedEwallets = TarikSaldoService::getSupportedEwallets();
         
         // Get recent payouts
         $recentPayouts = Payout::where('user_id', $user['id'])
@@ -178,7 +179,7 @@ class ManagementPageController extends Controller
             ->limit(5)
             ->get();
 
-        return view('manajemen.keuangan.tarik_saldo', compact('userModel', 'supportedBanks', 'recentPayouts'));
+        return view('manajemen.keuangan.tarik_saldo', compact('userModel', 'supportedBanks', 'supportedEwallets', 'recentPayouts'));
     }
 
     public function riwayatTransaksi()

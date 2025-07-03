@@ -26,15 +26,18 @@ class PayoutController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:50000',
-            'bank_code' => 'required|string|max:10',
+            'payment_type' => 'required|string|in:bank,ewallet',
+            'bank_code' => 'required_if:payment_type,bank|string|max:50',
             'account_number' => 'required|string|max:50',
             'account_name' => 'required|string|max:100',
         ], [
             'amount.min' => 'Minimum penarikan adalah Rp 50.000',
             'amount.required' => 'Jumlah penarikan harus diisi',
-            'bank_code.required' => 'Kode bank harus dipilih',
-            'account_number.required' => 'Nomor rekening harus diisi',
-            'account_name.required' => 'Nama pemilik rekening harus diisi',
+            'payment_type.required' => 'Jenis pembayaran harus dipilih',
+            'payment_type.in' => 'Jenis pembayaran tidak valid',
+            'bank_code.required_if' => 'Kode bank harus dipilih untuk pembayaran bank',
+            'account_number.required' => 'Nomor rekening/e-wallet harus diisi',
+            'account_name.required' => 'Nama pemilik rekening/e-wallet harus diisi',
         ]);
 
         $user = session('account');
@@ -59,6 +62,7 @@ class PayoutController extends Controller
                 $payout = Payout::create([
                     'user_id' => $userModel->id,
                     'amount' => $amount,
+                    'payment_type' => $request->payment_type,
                     'bank_code' => $request->bank_code,
                     'account_number' => $request->account_number,
                     'account_name' => $request->account_name,

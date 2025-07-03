@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->decimal('amount', 12, 2);
-            $table->string('bank_code', 10);
+            $table->enum('payment_type', ['bank', 'ewallet'])->default('bank');
+            $table->string('bank_code', 50);
             $table->string('account_number', 50);
             $table->string('account_name', 100);
             $table->enum('status', ['pending', 'processing', 'completed', 'failed'])->default('pending');
@@ -29,6 +30,7 @@ return new class extends Migration
             $table->index(['user_id', 'status']);
             $table->index(['created_at']);
             $table->index(['xendit_disbursement_id']);
+            $table->index(['payment_type']);
             
             // Add foreign key constraint
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

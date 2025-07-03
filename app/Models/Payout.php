@@ -10,6 +10,7 @@ class Payout extends Model
     protected $fillable = [
         'user_id',
         'amount',
+        'payment_type',
         'bank_code',
         'account_number',
         'account_name',
