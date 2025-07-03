@@ -9,9 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Jika Anda memerlukan info Auth
 use App\Models\Transaksi;
 use App\Models\User;
-use App\Models\Payment; // add Payment import
+use App\Models\FinancialTransaction;
 use App\Models\Users;
-use App\Models\Payout;
 use App\Models\TiketBantuan;
 use App\Models\Rating;
 use App\Services\TarikSaldoService;
@@ -174,7 +173,8 @@ class ManagementPageController extends Controller
         $supportedEwallets = TarikSaldoService::getSupportedEwallets();
         
         // Get recent payouts
-        $recentPayouts = Payout::where('user_id', $user['id'])
+        $recentPayouts = FinancialTransaction::where('user_id', $user['id'])
+            ->payouts()
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -186,7 +186,8 @@ class ManagementPageController extends Controller
     {
         // Fetch payments for logged-in user
         $perPage = 10;
-        $transaksi = Payment::where('user_id', session('account')['id'])
+        $transaksi = FinancialTransaction::where('user_id', session('account')['id'])
+            ->payments()
             ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
@@ -203,11 +204,11 @@ class ManagementPageController extends Controller
         $perPage = $request->query('per_page', 10);
         // Determine per page count
         if ($perPage === 'all') {
-            $perPage = Payment::where('user_id', $user['id'])->count();
+            $perPage = FinancialTransaction::where('user_id', $user['id'])->payments()->count();
         } else {
             $perPage = (int) $perPage;
         }
-        $query = Payment::where('user_id', $user['id']);
+        $query = FinancialTransaction::where('user_id', $user['id'])->payments();
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('external_id', 'like', "%{$search}%")
@@ -239,8 +240,9 @@ class ManagementPageController extends Controller
         $selectedYear = $request->get('year', 'all');
         
         // Base query for top-up transactions
-        $topUpQuery = Payment::where('user_id', $user->id)
-            ->whereIn('status', ['paid', 'settled']);
+        $topUpQuery = FinancialTransaction::where('user_id', $user->id)
+            ->payments()
+            ->whereIn('status', ['completed']);
         
         // Apply month/year filter only if specific month/year is selected
         if ($selectedMonth !== 'all' && $selectedYear !== 'all') {

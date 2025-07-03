@@ -113,7 +113,7 @@
 @elseif(isset($view_type) && $view_type === 'success')
     {{-- SUCCESS STATE --}}
     {{-- Security: This should only be accessible for paid/settled payments --}}
-    @if(!in_array($payment->status, ['paid', 'settled']))
+    @if(!in_array($payment->status, ['completed']))
         <script>
             alert('Akses tidak diizinkan: Pembayaran belum berhasil');
             window.location.href = '{{ route("manajemen.topUp") }}';

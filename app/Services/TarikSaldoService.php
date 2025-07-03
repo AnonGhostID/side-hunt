@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Payout;
+use App\Models\FinancialTransaction;
 use Illuminate\Support\Facades\Log;
 use Xendit\Configuration;
 use Xendit\Payout\PayoutApi;
@@ -19,7 +19,7 @@ class TarikSaldoService
         $this->payoutApi = new PayoutApi();
     }
 
-    public function createDisbursement(Payout $payout): array
+    public function createDisbursement(FinancialTransaction $payout): array
     {
         try {
             // Debug: Log all values before creating request
@@ -87,7 +87,7 @@ class TarikSaldoService
     /**
      * Get channel code for Xendit (both bank and e-wallet)
      */
-    private function getChannelCode(Payout $payout): string
+    private function getChannelCode(FinancialTransaction $payout): string
     {
         if ($payout->payment_type === 'ewallet') {
             return $this->getEwalletChannelCode($payout->bank_code);

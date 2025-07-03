@@ -67,17 +67,28 @@ class Users extends Model implements AuthenticatableContract
         return $this->belongsToMany(Users::class, 'pelamars');
     }
 
-    public function payments()
+    /**
+     * Get all financial transactions for this user
+     */
+    public function financialTransactions()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(FinancialTransaction::class);
     }
 
     /**
-     * Get payouts for this user
+     * Get payments (top-ups) for this user
+     */
+    public function payments()
+    {
+        return $this->hasMany(FinancialTransaction::class)->payments();
+    }
+
+    /**
+     * Get payouts (withdrawals) for this user
      */
     public function payouts()
     {
-        return $this->hasMany(Payout::class);
+        return $this->hasMany(FinancialTransaction::class)->payouts();
     }
 
     /**

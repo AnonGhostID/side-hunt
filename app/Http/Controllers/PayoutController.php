@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payout;
+use App\Models\FinancialTransaction;
 use App\Models\Users;
 use App\Services\TarikSaldoService;
 use Illuminate\Http\Request;
@@ -59,8 +59,9 @@ class PayoutController extends Controller
         try {
             return DB::transaction(function () use ($request, $userModel, $amount) {
                 // Create payout record
-                $payout = Payout::create([
+                $payout = FinancialTransaction::create([
                     'user_id' => $userModel->id,
+                    'type' => 'payout',
                     'amount' => $amount,
                     'payment_type' => $request->payment_type,
                     'bank_code' => $request->bank_code,
@@ -129,7 +130,8 @@ class PayoutController extends Controller
     public function history()
     {
         $user = session('account');
-        $payouts = Payout::where('user_id', $user['id'])
+        $payouts = FinancialTransaction::where('user_id', $user['id'])
+            ->payouts()
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
