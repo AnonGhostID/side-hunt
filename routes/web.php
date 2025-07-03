@@ -8,6 +8,7 @@ use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ManagementPageController;
 use App\Http\Controllers\TopUpController;
+use App\Http\Controllers\PayoutController;
 use App\Models\Users;
 use Illuminate\Support\Facades\Auth;
 
@@ -80,6 +81,9 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::post('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topup.cancel');
             //
             Route::get('/tarik-saldo', [ManagementPageController::class, 'tarikSaldo'])->name('tarik_saldo');
+            Route::post('/tarik-saldo', [\App\Http\Controllers\PayoutController::class, 'store'])->name('payout.store');
+            Route::get('/tarik-saldo/history', [\App\Http\Controllers\PayoutController::class, 'history'])->name('payout.history');
+            Route::get('/tarik-saldo/balance', [\App\Http\Controllers\PayoutController::class, 'checkBalance'])->name('payout.balance');
             Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
             // AJAX endpoint for fetching riwayat transaksi data without page reload
             Route::get('/riwayat-transaksi/data', [ManagementPageController::class, 'riwayatTransaksiData'])->name('transaksi.riwayat.data');

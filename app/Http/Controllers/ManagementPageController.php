@@ -11,8 +11,10 @@ use App\Models\Transaksi;
 use App\Models\User;
 use App\Models\Payment; // add Payment import
 use App\Models\Users;
+use App\Models\Payout;
 use App\Models\TiketBantuan;
 use App\Models\Rating;
+use App\Services\TarikSaldoService;
 use Carbon\Carbon;
 
 class ManagementPageController extends Controller
@@ -166,7 +168,17 @@ class ManagementPageController extends Controller
 
     public function tarikSaldo()
     {
-        return view('manajemen.keuangan.tarik_saldo');
+        $user = session('account');
+        $userModel = Users::find($user['id']);
+        $supportedBanks = TarikSaldoService::getSupportedBanks();
+        
+        // Get recent payouts
+        $recentPayouts = Payout::where('user_id', $user['id'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('manajemen.keuangan.tarik_saldo', compact('userModel', 'supportedBanks', 'recentPayouts'));
     }
 
     public function riwayatTransaksi()

@@ -73,6 +73,14 @@ class Users extends Model implements AuthenticatableContract
     }
 
     /**
+     * Get payouts for this user
+     */
+    public function payouts()
+    {
+        return $this->hasMany(Payout::class);
+    }
+
+    /**
      * Ratings given by this user
      */
     public function ratingsGiven()

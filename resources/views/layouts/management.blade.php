@@ -278,6 +278,7 @@
                     <i class="fas fa-address-book"></i>
                     <span>Track Record Pelamar</span>
                 </a>
+                @endif
 
 
             </nav>
