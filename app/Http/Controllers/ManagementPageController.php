@@ -184,10 +184,9 @@ class ManagementPageController extends Controller
 
     public function riwayatTransaksi()
     {
-        // Fetch payments for logged-in user
+        // Fetch both payments and payouts for logged-in user
         $perPage = 10;
         $transaksi = FinancialTransaction::where('user_id', session('account')['id'])
-            ->payments()
             ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
@@ -204,15 +203,17 @@ class ManagementPageController extends Controller
         $perPage = $request->query('per_page', 10);
         // Determine per page count
         if ($perPage === 'all') {
-            $perPage = FinancialTransaction::where('user_id', $user['id'])->payments()->count();
+            $perPage = FinancialTransaction::where('user_id', $user['id'])->count();
         } else {
             $perPage = (int) $perPage;
         }
-        $query = FinancialTransaction::where('user_id', $user['id'])->payments();
+        $query = FinancialTransaction::where('user_id', $user['id']);
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('external_id', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('xendit_reference_id', 'like', "%{$search}%")
+                  ->orWhere('account_name', 'like', "%{$search}%");
             });
         }
         $transaksi = $query->orderBy('updated_at', 'desc')

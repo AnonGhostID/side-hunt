@@ -8,7 +8,7 @@
     <div class="bg-white p-6 rounded-lg shadow-lg">
         <h2 class="text-xl font-semibold text-gray-700 mb-4">Daftar Riwayat Transaksi</h2>
         <p class="text-gray-600 mb-6">
-            Berikut adalah daftar transaksi yang pernah dilakukan. Anda dapat memeriksa detail status pembayaran di sini.
+            Berikut adalah daftar semua transaksi yang pernah dilakukan, termasuk top up saldo dan penarikan dana. Anda dapat memeriksa detail status transaksi di sini.
         </p>
         <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
             <span class="text-gray-700">Saldo Anda Saat Ini:</span>
