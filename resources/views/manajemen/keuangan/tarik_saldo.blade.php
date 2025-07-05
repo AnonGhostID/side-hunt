@@ -298,9 +298,10 @@
                 </h4>
                 <ul class="text-sm text-blue-800 space-y-1">
                     <li>• Minimum penarikan Rp 50.000</li>
-                    <li>• Proses 1-2 hari kerja</li>
-                    <li>• Tanpa biaya admin</li>
-                    <li>• 11 bank utama didukung</li>
+                    <li>• Proses Instan (pada jam kerja)</li>
+                    <li>• Proses manual 1-2 hari kerja (di luar jam kerja)</li>
+                    <li>• Pastikan nomor rekening/akun benar</li>
+                    <li>• Mendukung puluhan bank dan e-wallet!</li>
                 </ul>
             </div>
         </div>
