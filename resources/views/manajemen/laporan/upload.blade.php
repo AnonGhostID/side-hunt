@@ -46,13 +46,15 @@
                     <label for="foto_selfie" class="block text-sm font-medium text-gray-700 mb-1">Upload Foto Selfie (Bukti Pengerjaan)</label>
                     <input type="file" id="foto_selfie" name="foto_selfie" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required accept="image/*">
                     <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Maks: 2MB.</p>
+                    <div id="foto_selfie_error" class="mt-1 text-xs text-red-600 hidden"></div>
                 </div>
 
                 {{-- Upload Dokumentasi Pekerjaan --}}
                 <div>
                     <label for="dokumentasi_pekerjaan" class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumentasi Pekerjaan (File/Screenshot)</label>
                     <input type="file" id="dokumentasi_pekerjaan" name="dokumentasi_pekerjaan[]" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" required>
-                    <p class="mt-1 text-xs text-gray-500">Unggah satu atau lebih gambar bukti pekerjaan. Format: JPG atau PNG.</p>
+                    <p class="mt-1 text-xs text-gray-500">Unggah satu atau lebih gambar bukti pekerjaan. Format: JPG atau PNG. Maks: 5MB per file.</p>
+                    <div id="dokumentasi_pekerjaan_error" class="mt-1 text-xs text-red-600 hidden"></div>
                 </div>
 
                 {{-- Tombol Aksi --}}
@@ -74,6 +76,147 @@
 <script>
     // Script untuk halaman upload laporan
     console.log('Halaman Upload Laporan dimuat.');
-    // Anda bisa menambahkan validasi sisi klien atau preview gambar di sini
+    
+    // Konstanta untuk ukuran file maksimum (2MB dalam bytes)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 2MB
+    
+    // Ekstensi file yang diizinkan
+    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png'];
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
+    
+    // Fungsi untuk memformat ukuran file
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Fungsi untuk mendapatkan ekstensi file
+    function getFileExtension(filename) {
+        return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+    }
+    
+    // Fungsi untuk validasi ekstensi file
+    function validateFileExtension(file) {
+        const extension = getFileExtension(file.name);
+        const mimeType = file.type.toLowerCase();
+        
+        return ALLOWED_EXTENSIONS.includes(extension) && ALLOWED_MIME_TYPES.includes(mimeType);
+    }
+    
+    // Fungsi untuk validasi file lengkap (ukuran dan ekstensi)
+    function validateFile(file, errorElementId) {
+        const errorElement = document.getElementById(errorElementId);
+        let errors = [];
+        
+        // Validasi ekstensi file
+        if (!validateFileExtension(file)) {
+            const extension = getFileExtension(file.name);
+            errors.push(`Format file tidak didukung (${extension.toUpperCase()}). Hanya JPG, JPEG, dan PNG yang diizinkan.`);
+        }
+        
+        // Validasi ukuran file
+        if (file.size > MAX_FILE_SIZE) {
+            errors.push(`Ukuran file terlalu besar (${formatFileSize(file.size)}). Maksimal 2MB.`);
+        }
+        
+        if (errors.length > 0) {
+            errorElement.innerHTML = errors.join('<br>');
+            errorElement.classList.remove('hidden');
+            return false;
+        } else {
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+            return true;
+        }
+    }
+    
+    // Event listener untuk foto selfie
+    document.getElementById('foto_selfie').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const isValid = validateFile(file, 'foto_selfie_error');
+            if (!isValid) {
+                e.target.value = ''; // Reset input jika file tidak valid
+            }
+        }
+    });
+    
+    // Event listener untuk dokumentasi pekerjaan
+    document.getElementById('dokumentasi_pekerjaan').addEventListener('change', function(e) {
+        const files = e.target.files;
+        let allValid = true;
+        let errorMessages = [];
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Validasi ekstensi file
+            if (!validateFileExtension(file)) {
+                const extension = getFileExtension(file.name);
+                allValid = false;
+                errorMessages.push(`File "${file.name}" memiliki format tidak didukung (${extension.toUpperCase()}). Hanya JPG, JPEG, dan PNG yang diizinkan.`);
+            }
+            
+            // Validasi ukuran file
+            if (file.size > MAX_FILE_SIZE) {
+                allValid = false;
+                errorMessages.push(`File "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 2MB.`);
+            }
+        }
+        
+        const errorElement = document.getElementById('dokumentasi_pekerjaan_error');
+        if (!allValid) {
+            errorElement.innerHTML = errorMessages.join('<br>');
+            errorElement.classList.remove('hidden');
+            e.target.value = ''; // Reset input jika ada file yang tidak valid
+        } else {
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+        }
+    });
+    
+    // Validasi sebelum form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const fotoSelfie = document.getElementById('foto_selfie').files[0];
+        const dokumentasiFiles = document.getElementById('dokumentasi_pekerjaan').files;
+        
+        let hasError = false;
+        let errorMessages = [];
+        
+        // Validasi foto selfie
+        if (fotoSelfie) {
+            if (!validateFileExtension(fotoSelfie)) {
+                const extension = getFileExtension(fotoSelfie.name);
+                errorMessages.push(`Foto selfie memiliki format tidak didukung (${extension.toUpperCase()}). Hanya JPG, JPEG, dan PNG yang diizinkan.`);
+                hasError = true;
+            }
+            if (fotoSelfie.size > MAX_FILE_SIZE) {
+                errorMessages.push(`Foto selfie terlalu besar (${formatFileSize(fotoSelfie.size)}). Maksimal 2MB.`);
+                hasError = true;
+            }
+        }
+        
+        // Validasi dokumentasi pekerjaan
+        for (let i = 0; i < dokumentasiFiles.length; i++) {
+            const file = dokumentasiFiles[i];
+            if (!validateFileExtension(file)) {
+                const extension = getFileExtension(file.name);
+                errorMessages.push(`File dokumentasi "${file.name}" memiliki format tidak didukung (${extension.toUpperCase()}). Hanya JPG, JPEG, dan PNG yang diizinkan.`);
+                hasError = true;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                errorMessages.push(`File dokumentasi "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 2MB.`);
+                hasError = true;
+            }
+        }
+        
+        if (hasError) {
+            e.preventDefault();
+            alert('Terdapat masalah dengan file yang dipilih:\n\n' + errorMessages.join('\n') + '\n\nHarap perbaiki sebelum melanjutkan.');
+        }
+    });
 </script>
 @endpush
