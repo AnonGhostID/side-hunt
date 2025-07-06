@@ -45,7 +45,7 @@
                 <div>
                     <label for="foto_selfie" class="block text-sm font-medium text-gray-700 mb-1">Upload Foto Selfie (Bukti Pengerjaan)</label>
                     <input type="file" id="foto_selfie" name="foto_selfie" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required accept="image/*">
-                    <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Maks: 2MB.</p>
+                    <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Maks: 5MB.</p>
                     <div id="foto_selfie_error" class="mt-1 text-xs text-red-600 hidden"></div>
                 </div>
 
@@ -53,7 +53,7 @@
                 <div>
                     <label for="dokumentasi_pekerjaan" class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumentasi Pekerjaan (File/Screenshot)</label>
                     <input type="file" id="dokumentasi_pekerjaan" name="dokumentasi_pekerjaan[]" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" required>
-                    <p class="mt-1 text-xs text-gray-500">Unggah satu atau lebih gambar bukti pekerjaan. Format: JPG atau PNG. Maks: 5MB per file.</p>
+                    <p class="mt-1 text-xs text-gray-500">Unggah satu atau lebih gambar bukti pekerjaan. Format: JPG atau PNG. Maks: 5MB per file. Maksimal 10 file.</p>
                     <div id="dokumentasi_pekerjaan_error" class="mt-1 text-xs text-red-600 hidden"></div>
                 </div>
 
@@ -77,8 +77,11 @@
     // Script untuk halaman upload laporan
     console.log('Halaman Upload Laporan dimuat.');
     
-    // Konstanta untuk ukuran file maksimum (2MB dalam bytes)
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 2MB
+    // Konstanta untuk ukuran file maksimum (5MB dalam bytes)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    
+    // Maksimal jumlah file dokumentasi yang dapat diunggah
+    const MAX_DOCUMENTATION_FILES = 10;
     
     // Ekstensi file yang diizinkan
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png'];
@@ -119,7 +122,7 @@
         
         // Validasi ukuran file
         if (file.size > MAX_FILE_SIZE) {
-            errors.push(`Ukuran file terlalu besar (${formatFileSize(file.size)}). Maksimal 2MB.`);
+            errors.push(`Ukuran file terlalu besar (${formatFileSize(file.size)}). Maksimal 5MB.`);
         }
         
         if (errors.length > 0) {
@@ -150,6 +153,12 @@
         let allValid = true;
         let errorMessages = [];
         
+        // Validasi jumlah file
+        if (files.length > MAX_DOCUMENTATION_FILES) {
+            allValid = false;
+            errorMessages.push(`Terlalu banyak file dipilih (${files.length}). Maksimal ${MAX_DOCUMENTATION_FILES} file.`);
+        }
+        
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             
@@ -163,7 +172,7 @@
             // Validasi ukuran file
             if (file.size > MAX_FILE_SIZE) {
                 allValid = false;
-                errorMessages.push(`File "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 2MB.`);
+                errorMessages.push(`File "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 5MB.`);
             }
         }
         
@@ -194,12 +203,17 @@
                 hasError = true;
             }
             if (fotoSelfie.size > MAX_FILE_SIZE) {
-                errorMessages.push(`Foto selfie terlalu besar (${formatFileSize(fotoSelfie.size)}). Maksimal 2MB.`);
+                errorMessages.push(`Foto selfie terlalu besar (${formatFileSize(fotoSelfie.size)}). Maksimal 5MB.`);
                 hasError = true;
             }
         }
         
         // Validasi dokumentasi pekerjaan
+        if (dokumentasiFiles.length > MAX_DOCUMENTATION_FILES) {
+            errorMessages.push(`Terlalu banyak file dokumentasi dipilih (${dokumentasiFiles.length}). Maksimal ${MAX_DOCUMENTATION_FILES} file.`);
+            hasError = true;
+        }
+        
         for (let i = 0; i < dokumentasiFiles.length; i++) {
             const file = dokumentasiFiles[i];
             if (!validateFileExtension(file)) {
@@ -208,7 +222,7 @@
                 hasError = true;
             }
             if (file.size > MAX_FILE_SIZE) {
-                errorMessages.push(`File dokumentasi "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 2MB.`);
+                errorMessages.push(`File dokumentasi "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 5MB.`);
                 hasError = true;
             }
         }

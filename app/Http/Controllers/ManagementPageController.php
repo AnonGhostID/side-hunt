@@ -421,7 +421,7 @@ class ManagementPageController extends Controller
                 'description' => 'required|string',
                 'pihak_terlapor' => 'required|string|max:255',
                 'tanggal_kejadian' => 'required|date',
-                'bukti_pendukung.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+                'bukti_pendukung.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,gif|max:10240',
             ]);
             
             $buktiPaths = [];

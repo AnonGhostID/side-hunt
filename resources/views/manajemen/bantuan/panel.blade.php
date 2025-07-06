@@ -94,12 +94,17 @@
                                                                     $fileName = basename($filePath);
                                                                     $fileExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
                                                                     $isImage = in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif']);
+                                                                    $isDocument = in_array($fileExtension, ['pdf', 'doc', 'docx', 'xls', 'xlsx']);
                                                                 @endphp
                                                                 <div class="flex items-center space-x-2">
                                                                     @if($isImage)
                                                                         <i class="fas fa-image text-blue-500"></i>
                                                                     @elseif($fileExtension === 'pdf')
                                                                         <i class="fas fa-file-pdf text-red-500"></i>
+                                                                    @elseif(in_array($fileExtension, ['doc', 'docx']))
+                                                                        <i class="fas fa-file-word text-blue-600"></i>
+                                                                    @elseif(in_array($fileExtension, ['xls', 'xlsx']))
+                                                                        <i class="fas fa-file-excel text-green-600"></i>
                                                                     @else
                                                                         <i class="fas fa-file text-gray-500"></i>
                                                                     @endif
@@ -176,15 +181,21 @@
                     <input type="hidden" name="type" value="bantuan">
                     <div class="mb-4">
                         <label for="subject_bantuan" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                        <input id="subject_bantuan" name="subject" type="text" required 
+                        <input id="subject_bantuan" name="subject" type="text" required maxlength="100"
                                class="w-full border border-gray-300 rounded-lg p-2" 
                                value="{{ old('subject') }}" placeholder="Masukkan subject bantuan">
+                        <div class="text-right text-xs text-gray-500 mt-1">
+                            <span id="subject_bantuan_count">0</span>/100 karakter
+                        </div>
                     </div>
                     <div class="mb-4">
                         <label for="description_bantuan" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                        <textarea id="description_bantuan" name="description" rows="4" required 
+                        <textarea id="description_bantuan" name="description" rows="4" required maxlength="1000"
                                   class="w-full border border-gray-300 rounded-lg p-2" 
                                   placeholder="Jelaskan masalah atau pertanyaan Anda">{{ old('description') }}</textarea>
+                        <div class="text-right text-xs text-gray-500 mt-1">
+                            <span id="description_bantuan_count">0</span>/1000 karakter
+                        </div>
                     </div>
                     <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-paper-plane mr-2"></i>Kirim Tiket
@@ -230,8 +241,9 @@
                     <div class="mb-6">
                         <label for="bukti_pendukung" class="block text-sm font-medium text-gray-700 mb-1">Bukti Pendukung (Opsional)</label>
                         <input type="file" id="bukti_pendukung" name="bukti_pendukung[]" multiple
+                               accept=".pdf,.xlsx,.docx,.doc,.xls,.jpg,.jpeg,.png,.gif"
                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <p class="text-xs text-gray-500 mt-1">Anda dapat mengunggah beberapa file (gambar, PDF, dll.). Maksimum ukuran per file: 2MB.</p>
+                        <p class="text-xs text-gray-500 mt-1">Anda dapat mengunggah file dokumen (PDF, XLSX, DOCX, DOC, XLS) dan gambar (JPG, JPEG, PNG, GIF). Maksimum 10 file, ukuran per file: 10MB.</p>
                     </div>
 
                     <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
@@ -353,15 +365,54 @@
         if (fileInput) {
             fileInput.addEventListener('change', function() {
                 const files = this.files;
-                const maxSizePerFile = 2 * 1024 * 1024; // 2MB
+                const maxSizePerFile = 10 * 1024 * 1024; // 10MB
+                const maxFiles = 10;
+                const allowedTypes = ['pdf', 'xlsx', 'docx', 'doc', 'xls', 'jpg', 'jpeg', 'png', 'gif'];
+
+                // Check number of files
+                if (files.length > maxFiles) {
+                    alert('Anda hanya dapat mengunggah maksimal ' + maxFiles + ' file. Anda memilih ' + files.length + ' file.');
+                    this.value = ''; // Clear the input
+                    return;
+                }
 
                 for (let i = 0; i < files.length; i++) {
+                    // Check file size
                     if (files[i].size > maxSizePerFile) {
-                        alert('Ukuran file ' + files[i].name + ' melebihi batas maksimum 2MB.');
+                        alert('Ukuran file ' + files[i].name + ' melebihi batas maksimum 10MB.');
+                        this.value = ''; // Clear the input
+                        return;
+                    }
+
+                    // Check file type
+                    const fileExtension = files[i].name.split('.').pop().toLowerCase();
+                    if (!allowedTypes.includes(fileExtension)) {
+                        alert('Tipe file ' + files[i].name + ' tidak diizinkan. Hanya file PDF, XLSX, DOCX, DOC, XLS, JPG, JPEG, PNG, dan GIF yang diperbolehkan.');
                         this.value = ''; // Clear the input
                         return;
                     }
                 }
+            });
+        }
+
+        // Character counting for bantuan form
+        const subjectBantuan = document.getElementById('subject_bantuan');
+        const subjectBantuanCount = document.getElementById('subject_bantuan_count');
+        const descriptionBantuan = document.getElementById('description_bantuan');
+        const descriptionBantuanCount = document.getElementById('description_bantuan_count');
+
+        // Update character count on page load
+        if (subjectBantuan && subjectBantuanCount) {
+            subjectBantuanCount.textContent = subjectBantuan.value.length;
+            subjectBantuan.addEventListener('input', function() {
+                subjectBantuanCount.textContent = this.value.length;
+            });
+        }
+
+        if (descriptionBantuan && descriptionBantuanCount) {
+            descriptionBantuanCount.textContent = descriptionBantuan.value.length;
+            descriptionBantuan.addEventListener('input', function() {
+                descriptionBantuanCount.textContent = this.value.length;
             });
         }
     });
