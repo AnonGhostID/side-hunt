@@ -34,7 +34,7 @@
 - **Styling**: CSS/SCSS for responsive design
 - **Chat System**: Chatify package for real-time messaging
 - **Authentication**: Laravel's built-in authentication
-- **Payment System**: Custom wallet implementation
+- **Payment System**: Custom wallet implementation with Xendit integration
 
 ## 📊 Project Statistics
 
@@ -50,9 +50,12 @@
 The application uses a well-structured relational database design with the following core entities:
 
 - **Users**: Platform users (both job creators and workers)
-- **Side Jobs**: Job postings with detailed requirements
+- **Side Jobs (Pekerjaans)**: Job postings with detailed requirements
 - **Applications (Pelamars)**: Job application management
-- **Transactions**: Financial transaction handling
+- **Transactions (Transaksis)**: Financial transaction handling
+- **Financial Transactions**: Unified system for payments and payouts
+- **Ratings**: User and job rating system
+- **Notifications**: Real-time user notifications
 - **Chat System**: Real-time messaging infrastructure
 
 For detailed information about database relationships, table structures, and foreign key constraints, please refer to our comprehensive **[Database Relations Documentation](DATABASE.MD)**.
@@ -60,7 +63,7 @@ For detailed information about database relationships, table structures, and for
 ## 🏗️ Installation & Setup
 
 ### Prerequisites
-- PHP 8.1 or higher
+- PHP 8.2 or higher
 - Composer
 - MySQL/MariaDB
 - Node.js & NPM (for asset compilation)
@@ -124,21 +127,27 @@ The application comes with pre-seeded users for testing:
 
 ### Models & Relationships
 - **User Model**: Handles authentication and user relationships
-- **SideJob Model**: Manages job postings and creator relationships
+- **Pekerjaan Model**: Manages job postings and creator relationships
 - **Pelamar Model**: Handles job applications and status tracking
 - **Transaksi Model**: Manages financial transactions between users
+- **FinancialTransaction Model**: Unified system for payments and payouts
+- **Notification Model**: Handles user notifications
+- **Rating Model**: Manages user and job ratings
 
 ### Controllers
-- Job management and application processing
-- User authentication and profile management
-- Transaction handling and wallet operations
-- Chat system integration
+- **PekerjaanController**: Job management and application processing
+- **UsersController**: User authentication and profile management
+- **TransaksiController**: Transaction handling and wallet operations
+- **ManagementPageController**: Admin and user dashboard management
+- **TopUpController**: Wallet top-up functionality
+- **PayoutController**: Wallet withdrawal functionality
+- **NotificationController**: User notification management
 
 ### Middleware & Security
-- Authentication middleware for protected routes
-- Admin authorization for administrative functions
-- CSRF protection for form submissions
-- Password hashing and secure session management
+- **Role Middleware**: Role-based access control (user, mitra, admin)
+- **Authentication middleware**: Protected routes for authenticated users
+- **CSRF protection**: Form submissions security
+- **Password hashing**: Secure password storage
 
 ## 📱 Usage Flow
 

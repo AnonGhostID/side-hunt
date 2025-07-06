@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
+use App\Models\FinancialTransaction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,8 +67,9 @@ class TopUpController extends Controller
             $result = $this->apiInstance->createInvoice($createInvoiceRequest);
             
             // Save to database
-            $payment = Payment::create([
+            $payment = FinancialTransaction::create([
                 'user_id' => $user->id,
+                'type' => 'payment',
                 'status' => $result->getStatus(),
                 'checkout_link' => $result['invoice_url'],
                 'external_id' => $external_id,
@@ -88,7 +89,7 @@ class TopUpController extends Controller
     
     public function payment($external_id)
     {
-        $query = Payment::where('external_id', $external_id);
+        $query = FinancialTransaction::where('external_id', $external_id);
         
         if (Auth::user()->isAdmin != 1) {
             $query->where('user_id', Auth::id());
@@ -109,8 +110,7 @@ class TopUpController extends Controller
             case 'pending':
                 return view('manajemen.keuangan.topup', compact('payment'))->with(['view_type' => 'waiting']);
             
-            case 'paid':
-            case 'settled':
+            case 'completed':
                 return view('manajemen.keuangan.topup', compact('payment'))->with(['view_type' => 'success']);
             
             case 'failed':
@@ -127,7 +127,7 @@ class TopUpController extends Controller
     public function checkStatus(Request $request)
     {
         $external_id = $request->external_id;
-        $query = Payment::where('external_id', $external_id);
+        $query = FinancialTransaction::where('external_id', $external_id);
         
         if (Auth::user()->isAdmin != 1) {
             $query->where('user_id', Auth::id());
@@ -153,7 +153,7 @@ class TopUpController extends Controller
                 
                 return DB::transaction(function () use ($payment, $xenditStatus, $result) {
 
-                    $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
+                    $lockedPayment = FinancialTransaction::where('id', $payment->id)->lockForUpdate()->first();
                     $previousStatus = $lockedPayment->status;
                     
                     $paymentMethod = null;
@@ -170,7 +170,7 @@ class TopUpController extends Controller
                         $paymentMethod = $result[0]['payment_details']['payment_method'];
                     }
                     
-                    $updateData = ['status' => $xenditStatus];
+                    $updateData = ['status' => $this->mapXenditStatus($xenditStatus)];
                     if ($paymentMethod) {
                         $updateData['method'] = $paymentMethod;
                     }
@@ -178,7 +178,8 @@ class TopUpController extends Controller
                     $lockedPayment->update($updateData);
                     
                     if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
-                        ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
+                        ($previousStatus !== 'completed')) {
+                        
                         $user = $lockedPayment->user;
                         $user->increment('dompet', $lockedPayment->amount);
                         
@@ -215,7 +216,7 @@ class TopUpController extends Controller
 
     public function cancel(Request $request, $external_id)
     {
-        $query = Payment::where('external_id', $external_id)
+        $query = FinancialTransaction::where('external_id', $external_id)
                        ->where('status', 'pending');
         
         if (Auth::user()->isAdmin != 1) {
@@ -249,7 +250,7 @@ class TopUpController extends Controller
         }
     }
 
-    private function updatePaymentStatus(Payment $payment)
+    private function updatePaymentStatus(FinancialTransaction $payment)
     {
         try {
             $result = $this->apiInstance->getInvoices(null, $payment->external_id);
@@ -278,7 +279,7 @@ class TopUpController extends Controller
                     $paymentMethod = $result[0]['payment_details']['payment_method'];
                 }
                 
-                $updateData = ['status' => $xenditStatus];
+                $updateData = ['status' => $this->mapXenditStatus($xenditStatus)];
                 if ($paymentMethod) {
                     $updateData['method'] = $paymentMethod;
                 }
@@ -286,7 +287,8 @@ class TopUpController extends Controller
                 $payment->update($updateData);
                 
                 if (($xenditStatus === 'paid' || $xenditStatus === 'settled') && 
-                    ($previousStatus !== 'paid' && $previousStatus !== 'settled')) {
+                    ($previousStatus !== 'completed')) {
+                    
                     $user = $payment->user;
                     $user->increment('dompet', $payment->amount);
                     
@@ -308,15 +310,31 @@ class TopUpController extends Controller
         return match($status) {
             'pending' => 'Menunggu pembayaran...',
             'paid', 'settled' => 'Pembayaran berhasil!',
+            'completed' => 'Pembayaran berhasil!',
             'expired' => 'Pembayaran telah kedaluwarsa',
             'cancelled' => 'Pembayaran dibatalkan',
             default => 'Status tidak dikenal'
         };
     }
 
+    /**
+     * Map Xendit status to unified status
+     */
+    private function mapXenditStatus($xenditStatus): string
+    {
+        return match(strtolower($xenditStatus)) {
+            'paid', 'settled' => 'completed',
+            'pending' => 'pending',
+            'failed' => 'failed',
+            'expired' => 'expired',
+            'cancelled' => 'cancelled',
+            default => 'pending'
+        };
+    }
+
     public function cleanupExpiredPayments()
     {
-        $expiredPayments = Payment::where('status', 'pending')
+        $expiredPayments = FinancialTransaction::where('status', 'pending')
                                 ->where('created_at', '<', now()->subHours(24))
                                 ->get();
 
@@ -330,7 +348,7 @@ class TopUpController extends Controller
     public function expireOnTimeout(Request $request)
     {
         $external_id = $request->external_id;
-        $query = Payment::where('external_id', $external_id)
+        $query = FinancialTransaction::where('external_id', $external_id)
                        ->where('status', 'pending');
         
         if (Auth::user()->isAdmin != 1) {
