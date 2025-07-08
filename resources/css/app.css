@@ -1,2 +1,6 @@
-@import 'node_modules/bootstrap/scss/bootstrap';
-    @vite(['resources/js/app.js'])
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bootstrap imports */
+@import 'bootstrap/scss/bootstrap';
