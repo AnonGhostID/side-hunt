@@ -106,7 +106,7 @@
                 <div class="bg-green-50 p-4 rounded-lg border border-green-200">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-arrow-up text-green-600 text-xl"></i>
+                            <i class="fas fa-arrow-down text-green-600 text-xl"></i>
                         </div>
                         <div class="ml-3">
                             <p class="text-sm font-medium text-green-800">Total Pemasukan</p>
@@ -118,7 +118,7 @@
                 <div class="bg-red-50 p-4 rounded-lg border border-red-200">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-arrow-down text-red-600 text-xl"></i>
+                            <i class="fas fa-arrow-up text-red-600 text-xl"></i>
                         </div>
                         <div class="ml-3">
                             <p class="text-sm font-medium text-red-800">Total Pengeluaran</p>
