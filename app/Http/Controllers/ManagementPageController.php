@@ -298,21 +298,39 @@ class ManagementPageController extends Controller
         
         $jobExpenseTransactions = $jobExpenseQuery->orderBy('dibuat', 'desc')->get();
         
+        // Query for withdrawal (payout) transactions
+        $withdrawalQuery = FinancialTransaction::where('user_id', $user->id)
+            ->payouts()
+            ->whereIn('status', ['completed']);
+
+        // Apply month/year filter only if specific month/year is selected
+        if ($selectedMonth !== 'all' && $selectedYear !== 'all') {
+            $withdrawalQuery->whereMonth('created_at', $selectedMonth)
+                           ->whereYear('created_at', $selectedYear);
+        } elseif ($selectedMonth !== 'all') {
+            $withdrawalQuery->whereMonth('created_at', $selectedMonth)
+                           ->whereYear('created_at', now()->year);
+        } elseif ($selectedYear !== 'all') {
+            $withdrawalQuery->whereYear('created_at', $selectedYear);
+        }
+
+        $withdrawalTransactions = $withdrawalQuery->orderBy('created_at', 'desc')->get();
+
         // Combine all transactions for display
         $allTransactions = collect();
-        
-        // Add top-up transactions as income
+
+        // Add top-up transactions as expense (Pengeluaran)
         foreach ($topUpTransactions as $transaction) {
             $allTransactions->push([
                 'date' => $transaction->created_at,
                 'description' => $transaction->description ?: 'Top Up Saldo',
-                'income' => $transaction->amount,
-                'expense' => 0,
+                'income' => 0,
+                'expense' => $transaction->amount,
                 'type' => 'topup',
                 'transaction' => $transaction
             ]);
         }
-        
+
         // Add job income transactions
         foreach ($jobIncomeTransactions as $transaction) {
             $allTransactions->push([
@@ -324,7 +342,7 @@ class ManagementPageController extends Controller
                 'transaction' => $transaction
             ]);
         }
-        
+
         // Add job expense transactions
         foreach ($jobExpenseTransactions as $transaction) {
             $allTransactions->push([
@@ -336,21 +354,34 @@ class ManagementPageController extends Controller
                 'transaction' => $transaction
             ]);
         }
-        
+
+        // Add withdrawal transactions as income (Pemasukan)
+        foreach ($withdrawalTransactions as $transaction) {
+            $allTransactions->push([
+                'date' => $transaction->created_at,
+                'description' => $transaction->description ?: 'Penarikan Saldo',
+                'income' => $transaction->amount,
+                'expense' => 0,
+                'type' => 'withdrawal',
+                'transaction' => $transaction
+            ]);
+        }
+
         // Sort by date (newest first)
         $allTransactions = $allTransactions->sortByDesc('date');
-        
+
         // Calculate totals
         $totalIncome = $allTransactions->sum('income');
         $totalExpense = $allTransactions->sum('expense');
         $netIncome = $totalIncome - $totalExpense;
-        
+
         // Calculate transaction counts by type
         $topUpCount = $topUpTransactions->count();
         $jobIncomeCount = $jobIncomeTransactions->count();
         $jobExpenseCount = $jobExpenseTransactions->count();
+        $withdrawalCount = $withdrawalTransactions->count();
         $totalTransactions = $allTransactions->count();
-        
+
         // Calculate averages
         $avgIncome = $totalIncome > 0 ? $totalIncome / $allTransactions->where('income', '>', 0)->count() : 0;
         $avgExpense = $totalExpense > 0 ? $totalExpense / $allTransactions->where('expense', '>', 0)->count() : 0;
@@ -391,6 +422,7 @@ class ManagementPageController extends Controller
             'topUpCount',
             'jobIncomeCount',
             'jobExpenseCount',
+            'withdrawalCount',
             'totalTransactions',
             'avgIncome',
             'avgExpense',

@@ -80,6 +80,8 @@
                                         <span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Pendapatan</span>
                                     @elseif($transaction['type'] === 'job_expense')
                                         <span class="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded">Pengeluaran</span>
+                                    @elseif($transaction['type'] === 'withdrawal')
+                                        <span class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Penarikan</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-4 border-b border-gray-200 text-sm">
