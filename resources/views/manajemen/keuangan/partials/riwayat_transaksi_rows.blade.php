@@ -43,6 +43,8 @@
     <td class="px-5 py-4 border-b border-gray-200 text-sm">
         @if($t->type == 'payment' && $t->external_id)
             <a href="{{ route('manajemen.topup.payment', ['external_id' => $t->external_id]) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Cek Status</a>
+        @elseif($t->type == 'payout')
+            <a href="{{ route('manajemen.payout.show', $t->id) }}" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">Detail Penarikan</a>
         @else
             <span class="text-gray-400 text-xs">{{ $t->type_label }}</span>
         @endif

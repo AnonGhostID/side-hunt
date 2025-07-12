@@ -146,6 +146,21 @@ class PayoutController extends Controller
     }
 
     /**
+     * Show payout details
+     */
+    public function show($id)
+    {
+        $user = session('account');
+        
+        $payout = FinancialTransaction::where('user_id', $user['id'])
+            ->where('type', 'payout')
+            ->where('id', $id)
+            ->firstOrFail();
+
+        return view('manajemen.keuangan.payout_detail', compact('payout'));
+    }
+
+    /**
      * Check user's available balance
      */
     public function checkBalance()

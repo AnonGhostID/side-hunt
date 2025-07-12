@@ -286,7 +286,7 @@
             <div class="p-4 border-t border-gray-200">
                 @if(session('account'))
                 <div class="flex items-center mb-3">
-                    <img src="{{ asset('img/progress.png') }}"class="w-10 h-10 rounded-full mr-3 object-cover">
+                    <img src="{{ asset('profiledefault.png') }}"class="w-10 h-10 rounded-full mr-3 object-cover">
                     <div>
                         <p class="text-sm font-medium text-gray-700">{{ session('account')->nama }}</p>
                         <p class="text-xs text-gray-500">{{ session('account')->email }}</p>

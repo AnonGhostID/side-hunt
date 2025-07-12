@@ -20,3 +20,6 @@ yarn-error.log
 package-lock.json
 composer.lock
 /.clinerules/
+CLAUDE.md
+CLAUDE.local.md
+/.claude/*
