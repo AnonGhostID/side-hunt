@@ -506,6 +506,7 @@ class ManagementPageController extends Controller
                 'pihak_terlapor' => 'required|string|max:255',
                 'tanggal_kejadian' => 'required|date',
                 'bukti_pendukung.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,gif|max:10240',
+                'bukti_pendukung' => 'nullable|array|max:5',
             ]);
             
             $buktiPaths = [];
@@ -531,13 +532,23 @@ class ManagementPageController extends Controller
                 'type' => 'required|in:bantuan,penipuan',
                 'subject' => 'required|string|max:255',
                 'description' => 'required|string',
+                'bukti_pendukung.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,txt,rtf,gif|max:10240',
+                'bukti_pendukung' => 'nullable|array|max:5',
             ]);
+            
+            $buktiPaths = [];
+            if ($request->hasFile('bukti_pendukung')) {
+                foreach ($request->file('bukti_pendukung') as $file) {
+                    $buktiPaths[] = $file->store('bukti_bantuan', 'public');
+                }
+            }
             
             TiketBantuan::create([
                 'user_id' => $user->id,
                 'type' => 'bantuan',
                 'subject' => $data['subject'],
                 'description' => $data['description'],
+                'bukti_pendukung' => $buktiPaths,
             ]);
             
             return redirect()->route('manajemen.bantuan.panel')->with('success', 'Tiket bantuan berhasil dibuat.');

@@ -313,8 +313,10 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Dokumen Pendukung (Opsional)</label>
                             <input name="bukti_pendukung[]" type="file" multiple 
                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.rtf"
-                                   class="w-full border border-gray-300 rounded-lg p-2 text-sm">
-                            <p class="text-xs text-gray-500 mt-1">Format yang didukung: PDF, DOC, DOCX, JPG, PNG, GIF, TXT, RTF</p>
+                                   class="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                                   onchange="validateFileCount(this, 5, 'file-count-bantuan')">
+                            <p class="text-xs text-gray-500 mt-1">Format yang didukung: PDF, DOC, DOCX, JPG, PNG, GIF, TXT, RTF. Maksimal 5 file.</p>
+                            <p id="file-count-bantuan" class="text-xs text-red-500 mt-1 hidden">Maksimal 5 file yang dapat diunggah.</p>
                         </div>
                         <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
                             Buat Tiket
@@ -349,8 +351,10 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Dokumen Pendukung (Opsional)</label>
                             <input name="bukti_pendukung[]" type="file" multiple 
                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.rtf"
-                                   class="w-full border border-gray-300 rounded-lg p-2 text-sm">
-                            <p class="text-xs text-gray-500 mt-1">Format yang didukung: PDF, DOC, DOCX, JPG, PNG, GIF, TXT, RTF</p>
+                                   class="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                                   onchange="validateFileCount(this, 5, 'file-count-penipuan')">
+                            <p class="text-xs text-gray-500 mt-1">Format yang didukung: PDF, DOC, DOCX, JPG, PNG, GIF, TXT, RTF. Maksimal 5 file.</p>
+                            <p id="file-count-penipuan" class="text-xs text-red-500 mt-1 hidden">Maksimal 5 file yang dapat diunggah.</p>
                         </div>
                         <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
                             Buat Laporan
@@ -516,6 +520,26 @@
 
 @push('scripts')
 <script>
+// Function to validate file count
+function validateFileCount(input, maxFiles, errorElementId) {
+    const files = input.files;
+    const errorElement = document.getElementById(errorElementId);
+    
+    if (files.length > maxFiles) {
+        // Show error message
+        errorElement.classList.remove('hidden');
+        
+        // Clear the input
+        input.value = '';
+        
+        // Show alert
+        alert(`Maksimal ${maxFiles} file yang dapat diunggah. Silakan pilih ulang file Anda.`);
+    } else {
+        // Hide error message
+        errorElement.classList.add('hidden');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Store ticket data globally
     window.ticketsData = @json($tickets);
