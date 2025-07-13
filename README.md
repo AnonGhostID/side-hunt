@@ -115,6 +115,52 @@ For detailed information about database relationships, table structures, and for
    php artisan serve
    ```
 
+## 🖥️ Server Management Commands
+
+### Production Server Commands (Port 8899)
+
+**Start the server:**
+```bash
+nohup php artisan serve --host=127.0.0.1 --port=8899 > storage/logs/laravel-server.log 2>&1 &
+```
+
+**Check server status:**
+```bash
+ps aux | grep "php artisan serve"
+```
+
+**Stop the server:**
+```bash
+pkill -f "php artisan serve"
+```
+
+**Restart the server:**
+```bash
+pkill -f "php artisan serve" && sleep 2 && nohup php artisan serve --host=127.0.0.1 --port=8899 > storage/logs/laravel-server.log 2>&1 &
+```
+
+**View server logs:**
+```bash
+tail -f storage/logs/laravel-server.log
+```
+
+**Test server connection:**
+```bash
+curl -I http://127.0.0.1:8899
+```
+
+### Asset Management
+
+**Rebuild assets after changes:**
+```bash
+npm run build
+```
+
+**Watch for asset changes (development):**
+```bash
+npm run dev
+```
+
 ## 👥 Default Users
 
 The application comes with pre-seeded users for testing:
