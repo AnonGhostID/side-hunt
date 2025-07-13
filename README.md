@@ -103,14 +103,20 @@ For detailed information about database relationships, table structures, and for
    php artisan migrate:fresh --seed
    ```
 
-6. **Compile assets**
+6. **Create storage symbolic link**
+   ```bash
+   php artisan storage:link
+   ```
+   *This creates a symbolic link from `public/storage` to `storage/app/public`, which is required for serving uploaded files (like evidence images for fraud reports).*
+
+7. **Compile assets**
    ```bash
    npm run dev
    # or for production
    npm run build
    ```
 
-7. **Start the development server**
+8. **Start the development server**
    ```bash
    php artisan serve
    ```

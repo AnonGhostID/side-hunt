@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\FinancialTransaction;
 use App\Models\Users;
 use App\Models\TiketBantuan;
+use App\Models\TicketMessage;
 use App\Models\Rating;
 use App\Services\TarikSaldoService;
 use Carbon\Carbon;
@@ -42,7 +43,48 @@ class ManagementPageController extends Controller
             $user = $currentUser;
         }
         
-        return view('manajemen.dashboard', compact('totalPekerjaans','totalPekerja', 'user'));
+        // Admin-specific data
+        $totalReports = null;
+        $totalHelpRequests = null;
+        $totalResolved = null;
+        $totalCompleted = null;
+        $recentTickets = null;
+        
+        if ($user->role == 'admin') {
+            // Get total fraud reports
+            $totalReports = TiketBantuan::where('type', 'penipuan')->count();
+            
+            // Get total help requests
+            $totalHelpRequests = TiketBantuan::where('type', 'bantuan')->count();
+            
+            // Get total resolved cases
+            $totalResolved = TiketBantuan::where('status', 'closed')->count();
+            
+            // Get recent tickets for admin dashboard
+            $recentTickets = TiketBantuan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->limit(3)
+                ->get();
+        } else {
+            // For regular users, calculate completed projects
+            $totalCompleted = Pelamar::where('user_id', $user->id)
+                ->where('status', 'diterima')
+                ->whereHas('sidejob', function($query) {
+                    $query->where('status', 'Selesai');
+                })
+                ->count();
+        }
+        
+        return view('manajemen.dashboard', compact(
+            'totalPekerjaans', 
+            'totalPekerja', 
+            'user', 
+            'totalReports', 
+            'totalHelpRequests', 
+            'totalResolved',
+            'totalCompleted',
+            'recentTickets'
+        ));
     }
 
     // --- Fitur Manajemen Utama ---
@@ -439,9 +481,14 @@ class ManagementPageController extends Controller
     {
         $user = session('account');
         if ($user->isAdmin()) {
-            $tickets = TiketBantuan::with('user')->orderBy('created_at', 'desc')->get();
+            $tickets = TiketBantuan::with(['user', 'messages', 'latestMessage.sender'])
+                ->orderBy('created_at', 'desc')
+                ->get();
         } else {
-            $tickets = TiketBantuan::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            $tickets = TiketBantuan::where('user_id', $user->id)
+                ->with(['user', 'messages', 'latestMessage.sender'])
+                ->orderBy('created_at', 'desc')
+                ->get();
         }
         return view('manajemen.bantuan.panel', compact('tickets', 'user'));
     }
@@ -502,16 +549,100 @@ class ManagementPageController extends Controller
         return $this->panelBantuanDanPenipuan();
     }
 
-    public function respondTicket(Request $request, $id)
+    public function sendMessage(Request $request, $ticketId)
     {
-        $ticket = TiketBantuan::findOrFail($id);
-        $data = $request->validate([
-            'admin_response' => 'required|string',
+        $user = session('account');
+        $ticket = TiketBantuan::findOrFail($ticketId);
+        
+        // Check permissions
+        if (!$user->isAdmin() && $ticket->user_id != $user->id) {
+            abort(403, 'Unauthorized');
+        }
+        
+        $request->validate([
+            'message' => 'required|string|max:2000',
         ]);
-        $ticket->status = 'closed';
-        $ticket->admin_response = $data['admin_response'];
-        $ticket->save();
-        return redirect()->route('manajemen.bantuan.panel')->with('success', 'Tiket telah ditutup.');
+        
+        $senderType = $user->isAdmin() ? 'admin' : 'user';
+        
+        TicketMessage::create([
+            'ticket_id' => $ticketId,
+            'sender_id' => $user->id,
+            'sender_type' => $senderType,
+            'message' => $request->message,
+        ]);
+        
+        return response()->json(['success' => true, 'message' => 'Pesan berhasil dikirim']);
+    }
+
+    public function getTicketMessages($ticketId)
+    {
+        $user = session('account');
+        $ticket = TiketBantuan::findOrFail($ticketId);
+        
+        // Check permissions
+        if (!$user->isAdmin() && $ticket->user_id != $user->id) {
+            abort(403, 'Unauthorized');
+        }
+        
+        $messages = $ticket->messages()->with('sender')->get();
+        
+        // Mark messages as read based on user type
+        $currentUserType = $user->isAdmin() ? 'admin' : 'user';
+        $unreadMessages = $ticket->messages()
+            ->where('sender_type', '!=', $currentUserType)
+            ->whereNull('read_at');
+        
+        $unreadMessages->update(['read_at' => now()]);
+        
+        return response()->json([
+            'messages' => $messages,
+            'ticket' => $ticket
+        ]);
+    }
+
+    public function closeTicket(Request $request, $id)
+    {
+        $user = session('account');
+        $ticket = TiketBantuan::findOrFail($id);
+        
+        // Only admin can close tickets
+        if (!$user->isAdmin()) {
+            abort(403, 'Unauthorized');
+        }
+        
+        $request->validate([
+            'closing_message' => 'nullable|string|max:2000',
+        ]);
+        
+        // Send closing message if provided
+        if ($request->closing_message) {
+            TicketMessage::create([
+                'ticket_id' => $id,
+                'sender_id' => $user->id,
+                'sender_type' => 'admin',
+                'message' => $request->closing_message,
+            ]);
+        }
+        
+        $ticket->update(['status' => 'closed']);
+        
+        return response()->json(['success' => true, 'message' => 'Tiket berhasil ditutup']);
+    }
+
+    public function reopenTicket($id)
+    {
+        $user = session('account');
+        $ticket = TiketBantuan::findOrFail($id);
+        
+        // Only ticket owner or admin can reopen
+        if (!$user->isAdmin() && $ticket->user_id != $user->id) {
+            abort(403, 'Unauthorized');
+        }
+        
+        $ticket->update(['status' => 'open']);
+        
+        return response()->json(['success' => true, 'message' => 'Tiket berhasil dibuka kembali']);
     }
 
     // --- Fitur Administrasi Sistem (Contoh) ---

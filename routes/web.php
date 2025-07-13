@@ -94,7 +94,12 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             // Pelaporan & Bantuan (Unified)
             Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
             Route::post('/panel-bantuan', [ManagementPageController::class, 'storeBantuanDanPenipuan'])->name('bantuan.store');
-            Route::post('/panel-bantuan/{id}/respond', [ManagementPageController::class, 'respondTicket'])->name('bantuan.respond');
+            
+            // Conversation routes
+            Route::post('/ticket/{ticketId}/message', [ManagementPageController::class, 'sendMessage'])->name('ticket.message.send');
+            Route::get('/ticket/{ticketId}/messages', [ManagementPageController::class, 'getTicketMessages'])->name('ticket.messages.get');
+            Route::post('/ticket/{id}/close', [ManagementPageController::class, 'closeTicket'])->name('ticket.close');
+            Route::post('/ticket/{id}/reopen', [ManagementPageController::class, 'reopenTicket'])->name('ticket.reopen');
     
             // Rute Notifikasi
             Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');

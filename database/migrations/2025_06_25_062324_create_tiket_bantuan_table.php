@@ -18,12 +18,24 @@ return new class extends Migration
             $table->string('subject');
             $table->text('description');
             $table->enum('status', ['open','done','closed'])->default('open');
-            $table->text('admin_response')->nullable();
             // Fields specific to fraud reports
             $table->string('pihak_terlapor')->nullable();
             $table->date('tanggal_kejadian')->nullable();
             $table->json('bukti_pendukung')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        // Create ticket messages table for conversation system
+        Schema::create('ticket_messages', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('ticket_id');
+            $table->unsignedBigInteger('sender_id');
+            $table->enum('sender_type', ['user', 'admin']); 
+            $table->text('message');
+            $table->timestamp('read_at')->nullable();
+            $table->foreign('ticket_id')->references('id')->on('TiketBantuan')->onDelete('cascade');
+            $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -33,6 +45,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('ticket_messages');
         Schema::dropIfExists('TiketBantuan');
     }
 };

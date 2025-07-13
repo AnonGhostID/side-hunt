@@ -214,85 +214,94 @@
                     <span>Dashboard</span>
                 </a>
 
-                @if(session('account') && !session('account')->isAdmin())
-                <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pekerjaan</h3>
-                
-                @if(session('account'))
-                    @if(session('account')->isUser())
-                        <a href="{{ route('manajemen.pekerjaan.berlangsung') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.berlangsung') ? 'active' : '' }}">
-                            <i class="fas fa-briefcase"></i>
-                            <span>Pekerjaan Berlangsung</span>
-                        </a>
+                @if(session('account') && session('account')->isAdmin())
+                    {{-- Admin Only Navigation --}}
+                    <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administrasi</h3>
+                    <a href="{{ route('manajemen.bantuan.panel') }}" class="sidebar-link {{ request()->routeIs('manajemen.bantuan.panel') ? 'active' : '' }}">
+                        <i class="fas fa-headset"></i>
+                        <span>Panel Bantuan dan Laporan Penipuan</span>
+                    </a>
+                @else
+                    {{-- Regular User Navigation --}}
+                    @if(session('account') && !session('account')->isAdmin())
+                    <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pekerjaan</h3>
+                    
+                    @if(session('account'))
+                        @if(session('account')->isUser())
+                            <a href="{{ route('manajemen.pekerjaan.berlangsung') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.berlangsung') ? 'active' : '' }}">
+                                <i class="fas fa-briefcase"></i>
+                                <span>Pekerjaan Berlangsung</span>
+                            </a>
+                        @endif
+                    @endif
+                    @if(session('account'))
+                        @if(session('account')->isMitra())
+                            <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.terdaftar') ? 'active' : '' }}">
+                                <i class="fas fa-list-check"></i>
+                                <span>Pekerjaan Terdaftar</span>
+                            </a>
+                        @endif
+                    @endif
+                    @if(session('account'))
+                        @if(session('account')->isUser())
+                            <a href="{{ route('manajemen.laporan.upload') }}" class="sidebar-link {{ request()->routeIs('manajemen.laporan.upload') ? 'active' : '' }}">
+                                <i class="fas fa-file-upload"></i>
+                                <span>Upload Laporan Hasil</span>
+                            </a>
+                        @endif
+                    @endif
+                    @if(session('account'))
+                        @if(session('account')->isUser())
+                            <a href="{{ route('manajemen.pekerjaan.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.riwayat') ? 'active' : '' }}">
+                                <i class="fas fa-history"></i>
+                                <span>Riwayat Pekerjaan</span>
+                            </a>
+                        @endif
+                    @endif
+                    @endif
+
+                    <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
+                    @if(session('account') && !session('account')->isUser())
+                                    <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Top Up Saldo</span>
+                                    </a>
+                    @endif
+                     <a href="{{ route('manajemen.tarik_saldo') }}" class="sidebar-link {{ request()->routeIs('manajemen.tarik_saldo') ? 'active' : '' }}">
+                        <i class="fas fa-money-bill-transfer"></i>
+                        <span>Tarik Saldo</span>
+                    </a>
+                    <a href="{{ route('manajemen.transaksi.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.transaksi.riwayat') ? 'active' : '' }}">
+                        <i class="fas fa-receipt"></i>
+                        <span>Riwayat Transaksi</span>
+                    </a>
+                    <!-- <a href="{{ route('manajemen.dana.refund') }}" class="sidebar-link {{ request()->routeIs('manajemen.dana.refund') ? 'active' : '' }}">
+                        <i class="fas fa-undo-alt"></i>
+                        <span>Refund Dana</span>
+                    </a> -->
+                    <a href="{{ route('manajemen.keuangan.laporan') }}" class="sidebar-link {{ request()->routeIs('manajemen.keuangan.laporan') ? 'active' : '' }}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Laporan Keuangan</span>
+                    </a>
+
+                    <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pelaporan & Bantuan</h3>
+                    <a href="{{ route('manajemen.bantuan.panel') }}" class="sidebar-link {{ request()->routeIs('manajemen.bantuan.panel') ? 'active' : '' }}">
+                        <i class="fas fa-headset"></i>
+                        <span>Panel Bantuan dan Laporan Penipuan</span>
+                    </a>
+
+                    <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lainnya</h3>
+                    <a href="{{ route('manajemen.notifications.page') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifications.page') ? 'active' : '' }}">
+                        <i class="fas fa-bell"></i>
+                        <span>Riwayat Notifikasi</span>
+                    </a>
+                    @if(session('account') && (session('account')->isMitra()))
+                    <a href="{{ route('manajemen.pelamar.track-record') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelamar.track-record') ? 'active' : '' }}">
+                        <i class="fas fa-address-book"></i>
+                        <span>Track Record Pelamar</span>
+                    </a>
                     @endif
                 @endif
-                @if(session('account'))
-                    @if(session('account')->isMitra())
-                        <a href="{{ route('manajemen.pekerjaan.terdaftar') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.terdaftar') ? 'active' : '' }}">
-                            <i class="fas fa-list-check"></i>
-                            <span>Pekerjaan Terdaftar</span>
-                        </a>
-                    @endif
-                @endif
-                @if(session('account'))
-                    @if(session('account')->isUser())
-                        <a href="{{ route('manajemen.laporan.upload') }}" class="sidebar-link {{ request()->routeIs('manajemen.laporan.upload') ? 'active' : '' }}">
-                            <i class="fas fa-file-upload"></i>
-                            <span>Upload Laporan Hasil</span>
-                        </a>
-                    @endif
-                @endif
-                @if(session('account'))
-                    @if(session('account')->isUser())
-                        <a href="{{ route('manajemen.pekerjaan.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.pekerjaan.riwayat') ? 'active' : '' }}">
-                            <i class="fas fa-history"></i>
-                            <span>Riwayat Pekerjaan</span>
-                        </a>
-                    @endif
-                @endif
-                @endif
-
-                <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Keuangan</h3>
-                @if(session('account') && !session('account')->isUser())
-                                <a href="{{ route('manajemen.topUp') }}" class="sidebar-link {{ request()->routeIs('manajemen.topUp') ? 'active' : '' }}">
-                                    <i class="fas fa-credit-card"></i>
-                                    <span>Top Up Saldo</span>
-                                </a>
-                @endif
-                 <a href="{{ route('manajemen.tarik_saldo') }}" class="sidebar-link {{ request()->routeIs('manajemen.tarik_saldo') ? 'active' : '' }}">
-                    <i class="fas fa-money-bill-transfer"></i>
-                    <span>Tarik Saldo</span>
-                </a>
-                <a href="{{ route('manajemen.transaksi.riwayat') }}" class="sidebar-link {{ request()->routeIs('manajemen.transaksi.riwayat') ? 'active' : '' }}">
-                    <i class="fas fa-receipt"></i>
-                    <span>Riwayat Transaksi</span>
-                </a>
-                <!-- <a href="{{ route('manajemen.dana.refund') }}" class="sidebar-link {{ request()->routeIs('manajemen.dana.refund') ? 'active' : '' }}">
-                    <i class="fas fa-undo-alt"></i>
-                    <span>Refund Dana</span>
-                </a> -->
-                <a href="{{ route('manajemen.keuangan.laporan') }}" class="sidebar-link {{ request()->routeIs('manajemen.keuangan.laporan') ? 'active' : '' }}">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Laporan Keuangan</span>
-                </a>
-
-                <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pelaporan & Bantuan</h3>
-                <a href="{{ route('manajemen.bantuan.panel') }}" class="sidebar-link {{ request()->routeIs('manajemen.bantuan.panel') ? 'active' : '' }}">
-                    <i class="fas fa-headset"></i>
-                    <span>Panel Bantuan dan Laporan Penipuan</span>
-                </a>
-
-                <h3 class="mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lainnya</h3>
-                <a href="{{ route('manajemen.notifications.page') }}" class="sidebar-link {{ request()->routeIs('manajemen.notifications.page') ? 'active' : '' }}">
-                    <i class="fas fa-bell"></i>
-                    <span>Riwayat Notifikasi</span>
-                </a>
-                @if(session('account') && (session('account')->isMitra()))
-                <a href="{{ route('manajemen.pelamar.track-record') }}" class="sidebar-link {{ request()->routeIs('manajemen.pelamar.track-record') ? 'active' : '' }}">
-                    <i class="fas fa-address-book"></i>
-                    <span>Track Record Pelamar</span>
-                </a>
-                @endif
-
 
             </nav>
 
