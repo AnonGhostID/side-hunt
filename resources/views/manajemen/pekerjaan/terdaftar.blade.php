@@ -63,7 +63,8 @@
         </div>
         @endif
         
-        <div class="overflow-x-auto">
+        {{-- Desktop Table View --}}
+        <div class="hidden lg:block overflow-x-auto">
             <table class="min-w-full bg-white border border-gray-200">
                 <thead class="bg-gray-50">
                     <tr>

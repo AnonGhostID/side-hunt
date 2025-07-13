@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <span class="text-sm text-gray-500">Jumlah Top Up:</span>
                             <p class="font-semibold text-lg">Rp {{ number_format($payment->amount, 0, ',', '.') }}</p>

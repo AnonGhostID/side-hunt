@@ -24,8 +24,8 @@
             </button> --}}
         </div>
 
-        {{-- Tabel Data Pekerjaan --}}
-        <div class="overflow-x-auto bg-white rounded-lg shadow">
+        {{-- Desktop Table View --}}
+        <div class="hidden lg:block overflow-x-auto bg-white rounded-lg shadow">
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
@@ -132,6 +132,112 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile Card View --}}
+        <div class="block lg:hidden space-y-4">
+            @forelse($pekerjaanBerlangsung as $pelamar)
+            <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+                {{-- Job Title & Category --}}
+                <div class="mb-3">
+                    @if($pelamar->sidejob)
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $pelamar->sidejob->nama }}</h3>
+                        <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
+                    @else
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1">Pekerjaan tidak ditemukan</h3>
+                        <p class="text-xs text-gray-500">Kategori: -</p>
+                    @endif
+                </div>
+
+                {{-- Status Badge --}}
+                <div class="mb-3">
+                    @php
+                        $statusPekerjaan = $pelamar->getStatusPekerjaan();
+                    @endphp
+                    @if($statusPekerjaan == 'Selesai')
+                    <span class="inline-block px-3 py-1 font-semibold text-blue-900 leading-tight bg-blue-200 rounded-full text-sm">
+                        {{ $statusPekerjaan }}
+                    </span>
+                    @elseif($pelamar->status == 'diterima')
+                    <span class="inline-block px-3 py-1 font-semibold text-green-900 leading-tight bg-green-200 rounded-full text-sm">
+                        {{ $statusPekerjaan }}
+                    </span>
+                    @else
+                    <span class="inline-block px-3 py-1 font-semibold text-yellow-900 leading-tight bg-yellow-200 rounded-full text-sm">
+                        {{ $statusPekerjaan }}
+                    </span>
+                    @endif
+                </div>
+
+                {{-- Details Grid --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
+                    <div>
+                        <span class="text-gray-500">Pemberi Kerja:</span>
+                        <div class="font-medium">
+                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
+                                {{ $pelamar->sidejob->pembuatUser->nama }}
+                            @else
+                                Tidak diketahui
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Pelamar:</span>
+                        <div class="font-medium">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <span class="text-gray-500">Deadline:</span>
+                        <div class="font-medium">
+                            @php
+                                $formattedDate = 'Tidak ada deadline';
+                                if ($pelamar->sidejob && !empty($pelamar->sidejob->end_job)) {
+                                    try {
+                                        $date = \Carbon\Carbon::parse($pelamar->sidejob->end_job);
+                                        $formattedDate = $date->locale('id')->format('d-M-Y');
+                                        
+                                        if ($date->isPast()) {
+                                            $formattedDate .= ' (Lewat)';
+                                        } elseif ($date->isToday()) {
+                                            $formattedDate .= ' (Hari ini)';
+                                        } elseif ($date->isTomorrow()) {
+                                            $formattedDate .= ' (Besok)';
+                                        }
+                                    } catch (\Exception $e) {
+                                        $formattedDate = 'Format tanggal tidak valid';
+                                    }
+                                }
+                            @endphp
+                            {{ $formattedDate }}
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="flex flex-col sm:flex-row gap-2">
+                    @if($pelamar->sidejob)
+                        <a href="{{ route('manajemen.pekerjaan.manage', $pelamar->sidejob->id) }}" 
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm text-center">
+                            <i class="fas fa-cog mr-1"></i>Kelola
+                        </a>
+                        @if($statusPekerjaan == 'Selesai')
+                            <button onclick="openRatingModal({{ $pelamar->user_id }}, {{ $pelamar->sidejob->id }})" 
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm">
+                                <i class="fas fa-star mr-1"></i>Rating
+                            </button>
+                        @endif
+                    @else
+                        <span class="text-gray-400 text-sm">Tidak ada aksi tersedia</span>
+                    @endif
+                </div>
+            </div>
+            @empty
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <div class="text-gray-500 mb-2">
+                    <i class="fas fa-briefcase text-4xl text-gray-300"></i>
+                </div>
+                <p class="text-gray-500">Tidak ada pekerjaan yang sedang berlangsung.</p>
+            </div>
+            @endforelse
         </div>
 
         {{-- Pagination (jika diperlukan) --}}

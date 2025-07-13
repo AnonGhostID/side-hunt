@@ -26,10 +26,11 @@
         .sidebar-link {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
+            padding: 1rem 1rem; /* Increased padding for better touch targets */
             border-radius: 0.375rem;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
             color: #6b7280; /* gray-500 */
+            min-height: 48px; /* Ensure minimum touch target size */
         }
         .sidebar-link:hover {
             background-color: #e5e7eb; /* gray-200 */
@@ -183,6 +184,18 @@
 </head>
 <body class="bg-gray-100 antialiased">
     <div x-data="{ sidebarOpen: false }" class="flex h-screen bg-gray-100">
+        <!-- Mobile overlay -->
+        <div x-show="sidebarOpen" 
+             @click="sidebarOpen = false"
+             class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+        </div>
+
         <aside
             class="fixed inset-y-0 left-0 z-30 flex flex-col h-full w-64 transform transition-transform duration-300 ease-in-out bg-white border-r border-gray-200 shadow-lg lg:translate-x-0 lg:static lg:inset-0"
             :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
@@ -190,8 +203,8 @@
                 <a href="{{ route('manajemen.dashboard') }}" class="text-2xl font-bold text-blue-600">
                     {{ config('app.name', 'SideHunt') }}
                 </a>
-                <button @click="sidebarOpen = false" class="text-gray-500 lg:hidden">
-                    <i class="fas fa-times"></i>
+                <button @click="sidebarOpen = false" class="text-gray-500 lg:hidden p-2 hover:bg-gray-100 rounded">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
 
@@ -306,10 +319,10 @@
 
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="flex items-center justify-between p-4 h-16 bg-white border-b border-gray-200 shadow-sm">
-                <button @click="sidebarOpen = true" class="text-gray-500 focus:outline-none lg:hidden">
-                    <i class="fas fa-bars"></i>
+                <button @click="sidebarOpen = true" class="text-gray-500 focus:outline-none lg:hidden p-2 hover:bg-gray-100 rounded">
+                    <i class="fas fa-bars text-lg"></i>
                 </button>
-                <div class="text-xl font-semibold text-gray-700">@yield('page-title', 'Dashboard')</div>
+                <div class="text-lg sm:text-xl font-semibold text-gray-700 truncate px-2">@yield('page-title', 'Dashboard')</div>
                 <div class="flex items-center">
                     {{-- Notification Bell --}}
                     <div class="notification-bell">
@@ -342,13 +355,16 @@
                     </div>
                     
                     {{-- Home Button --}}
-                    <a href="{{ url('/') }}" class="text-blue-500 hover:text-blue-700">
-                        <i class="fas fa-home"></i> Kembali ke Beranda
+                    <a href="{{ url('/') }}" class="text-blue-500 hover:text-blue-700 text-sm hidden sm:inline">
+                        <i class="fas fa-home"></i> <span class="ml-1">Kembali ke Beranda</span>
+                    </a>
+                    <a href="{{ url('/') }}" class="text-blue-500 hover:text-blue-700 sm:hidden p-2">
+                        <i class="fas fa-home text-lg"></i>
                     </a>
                 </div>
             </header>
 
-            <main class="flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-100">
+            <main class="flex-1 p-4 sm:p-6 overflow-x-hidden overflow-y-auto bg-gray-100">
                 @if (session('success'))
                     <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md" role="alert">
                         {{ session('success') }}

@@ -6,9 +6,9 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white p-6 rounded-lg shadow-lg">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <h2 class="text-xl font-semibold text-gray-700">Detail Penarikan Dana</h2>
-            <a href="{{ route('manajemen.transaksi.riwayat') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+            <a href="{{ route('manajemen.transaksi.riwayat') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded w-full sm:w-auto text-center">
                 <i class="fas fa-arrow-left mr-2"></i>Kembali
             </a>
         </div>

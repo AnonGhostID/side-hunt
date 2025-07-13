@@ -56,7 +56,8 @@
                 @endif
             </div>
         @else
-            <div class="overflow-x-auto bg-white rounded-lg shadow">
+            {{-- Desktop Table View --}}
+            <div class="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
                 <table class="min-w-full leading-normal">
                     <thead>
                         <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
@@ -102,6 +103,60 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Mobile Card View --}}
+            <div class="block md:hidden space-y-4">
+                @foreach($allTransactions as $transaction)
+                <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+                    {{-- Date & Type Badge --}}
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="font-semibold text-gray-900">{{ $transaction['date']->format('d M Y') }}</p>
+                        </div>
+                        <div>
+                            @if($transaction['type'] === 'topup')
+                                <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Top Up</span>
+                            @elseif($transaction['type'] === 'job_income')
+                                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Pendapatan</span>
+                            @elseif($transaction['type'] === 'job_expense')
+                                <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">Pengeluaran</span>
+                            @elseif($transaction['type'] === 'withdrawal')
+                                <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Penarikan</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Description --}}
+                    <div class="mb-3">
+                        <p class="text-sm text-gray-700">{{ $transaction['description'] }}</p>
+                    </div>
+
+                    {{-- Amount Information --}}
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <span class="text-gray-500">Pemasukan:</span>
+                            <div class="font-medium">
+                                @if($transaction['income'] > 0)
+                                    <span class="text-green-600 font-semibold">Rp {{ number_format($transaction['income'], 0, ',', '.') }}</span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Pengeluaran:</span>
+                            <div class="font-medium">
+                                @if($transaction['expense'] > 0)
+                                    <span class="text-red-600 font-semibold">Rp {{ number_format($transaction['expense'], 0, ',', '.') }}</span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
 
             <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">

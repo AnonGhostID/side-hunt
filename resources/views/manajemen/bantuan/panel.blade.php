@@ -55,7 +55,8 @@
                 </nav>
             </div>
 
-            <div class="overflow-x-auto">
+            {{-- Desktop Table View --}}
+            <div class="hidden lg:block overflow-x-auto">
                 <table class="min-w-full bg-white">
                     <thead>
                         <tr>
@@ -152,6 +153,104 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Mobile Card View for Admin --}}
+            <div class="block lg:hidden space-y-4">
+                @foreach($tickets as $ticket)
+                    <div x-show="activeTab === 'all' || activeTab === '{{ $ticket->type }}'" 
+                         class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+                        {{-- Type Badge --}}
+                        <div class="mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {{ $ticket->type === 'penipuan' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ $ticket->type === 'penipuan' ? 'Laporan Penipuan' : 'Tiket Bantuan' }}
+                            </span>
+                        </div>
+
+                        {{-- Subject & User --}}
+                        <div class="mb-3">
+                            <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $ticket->subject }}</h3>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-user mr-1"></i>{{ $ticket->user->nama }}
+                            </p>
+                        </div>
+
+                        {{-- Description --}}
+                        <div class="mb-3">
+                            <span class="text-gray-500 text-sm">Deskripsi:</span>
+                            <div class="mt-1">
+                                <p class="text-sm text-gray-700 leading-relaxed">{{ $ticket->description }}</p>
+                                @if($ticket->type === 'penipuan')
+                                    <div class="text-sm text-gray-500 mt-2 space-y-1">
+                                        <p><strong>Pihak Terlapor:</strong> {{ $ticket->pihak_terlapor }}</p>
+                                        <p><strong>Tanggal:</strong> {{ $ticket->tanggal_kejadian?->format('d/m/Y') }}</p>
+                                        @if($ticket->bukti_pendukung && count($ticket->bukti_pendukung) > 0)
+                                            <div class="mt-2">
+                                                <p><strong>Bukti Pendukung:</strong></p>
+                                                <div class="mt-1 space-y-1">
+                                                    @foreach($ticket->bukti_pendukung as $index => $filePath)
+                                                        @php
+                                                            $fileName = basename($filePath);
+                                                            $fileExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                                                            $isImage = in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif']);
+                                                        @endphp
+                                                        <div class="flex items-center space-x-2">
+                                                            @if($isImage)
+                                                                <i class="fas fa-image text-blue-500"></i>
+                                                            @elseif($fileExtension === 'pdf')
+                                                                <i class="fas fa-file-pdf text-red-500"></i>
+                                                            @else
+                                                                <i class="fas fa-file text-gray-500"></i>
+                                                            @endif
+                                                            <a href="{{ asset('storage/' . $filePath) }}" 
+                                                               target="_blank" 
+                                                               class="text-blue-600 hover:text-blue-800 text-sm underline">
+                                                                {{ $fileName }}
+                                                            </a>
+                                                            @if($isImage)
+                                                                <button onclick="showImageModal('{{ asset('storage/' . $filePath) }}', '{{ $fileName }}')" 
+                                                                        class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">
+                                                                    Preview
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Status & Action --}}
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {{ $ticket->status === 'open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                {{ ucfirst($ticket->status) }}
+                            </span>
+                            
+                            <div class="w-full sm:w-auto">
+                                @if($ticket->status === 'open')
+                                    <form method="POST" action="{{ route('manajemen.bantuan.respond', $ticket->id) }}">
+                                        @csrf
+                                        <textarea name="admin_response" required class="w-full border rounded p-2 text-sm mb-2" 
+                                                  placeholder="Masukkan respon admin..." rows="2"></textarea>
+                                        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm">
+                                            Tutup Tiket
+                                        </button>
+                                    </form>
+                                @else
+                                    <div class="bg-gray-50 p-2 rounded text-sm">
+                                        <span class="text-gray-600">Respon Admin:</span>
+                                        <p class="text-gray-700 mt-1">{{ $ticket->admin_response }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     @else
@@ -278,7 +377,8 @@
                 </nav>
             </div>
 
-            <div class="overflow-x-auto">
+            {{-- Desktop Table View for User History --}}
+            <div class="hidden lg:block overflow-x-auto">
                 <table class="min-w-full bg-white">
                     <thead>
                         <tr>
@@ -327,6 +427,63 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Mobile Card View for User History --}}
+            <div class="block lg:hidden space-y-4">
+                @foreach($tickets as $ticket)
+                    <div x-show="activeTab === 'history_all' || activeTab === 'history_{{ $ticket->type }}'" 
+                         class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+                        {{-- Type Badge --}}
+                        <div class="mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {{ $ticket->type === 'penipuan' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ $ticket->type === 'penipuan' ? 'Penipuan' : 'Bantuan' }}
+                            </span>
+                        </div>
+
+                        {{-- Subject --}}
+                        <div class="mb-3">
+                            <h3 class="font-semibold text-gray-900 text-lg">{{ $ticket->subject }}</h3>
+                        </div>
+
+                        {{-- Description --}}
+                        <div class="mb-3">
+                            <span class="text-gray-500 text-sm">Deskripsi:</span>
+                            <div class="mt-1">
+                                <p class="text-sm text-gray-700 leading-relaxed">{{ $ticket->description }}</p>
+                                @if($ticket->type === 'penipuan')
+                                    <div class="text-sm text-gray-500 mt-2 space-y-1">
+                                        <p><strong>Pihak Terlapor:</strong> {{ $ticket->pihak_terlapor }}</p>
+                                        <p><strong>Tanggal:</strong> {{ $ticket->tanggal_kejadian?->format('d/m/Y') }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Status & Response --}}
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-500 text-sm">Status:</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {{ $ticket->status === 'open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                    {{ ucfirst($ticket->status) }}
+                                </span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-500 text-sm">Respon Admin:</span>
+                                <div class="mt-1 bg-gray-50 p-3 rounded">
+                                    @if($ticket->status === 'closed')
+                                        <p class="text-sm text-gray-700">{{ $ticket->admin_response }}</p>
+                                    @else
+                                        <p class="text-sm text-gray-500 italic">Menunggu respon admin...</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     @endif

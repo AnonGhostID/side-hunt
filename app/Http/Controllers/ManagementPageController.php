@@ -222,9 +222,14 @@ class ManagementPageController extends Controller
 
         // Render partials
         $rows = view('manajemen.keuangan.partials.riwayat_transaksi_rows', compact('transaksi'))->render();
+        $mobileCards = view('manajemen.keuangan.partials.riwayat_transaksi_mobile_cards', compact('transaksi'))->render();
         $pagination = view('manajemen.keuangan.partials.riwayat_transaksi_pagination', compact('transaksi'))->render();
 
-        return response()->json(['table' => $rows, 'pagination' => $pagination]);
+        return response()->json([
+            'table' => $rows, 
+            'mobile_cards' => $mobileCards,
+            'pagination' => $pagination
+        ]);
     }
 
     public function refundDana()

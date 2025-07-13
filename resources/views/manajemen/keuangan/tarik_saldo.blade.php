@@ -48,7 +48,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Withdrawal Form -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 order-2 lg:order-1">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                     <i class="fas fa-money-bill-transfer text-blue-600 mr-3"></i>
@@ -63,7 +63,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-3">
                             Pilih Jenis Pembayaran
                         </label>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="payment-type-option" data-type="bank">
                                 <input type="radio" 
                                        id="payment_type_bank" 
@@ -246,7 +246,7 @@
         </div>
 
         <!-- Recent Withdrawals -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-1 order-1 lg:order-2">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <i class="fas fa-history text-gray-600 mr-2"></i>
