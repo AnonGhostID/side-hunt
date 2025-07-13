@@ -58,43 +58,34 @@
             </div>
         </div>
 
-        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">Laporan Terbaru</h3>
-                @if($recentTickets && $recentTickets->count() > 0)
-                    <ul class="space-y-3">
-                        @foreach($recentTickets as $ticket)
-                            <li class="flex items-center text-sm text-gray-600">
-                                @if($ticket->type == 'penipuan')
-                                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
-                                    Laporan penipuan: {{ Str::limit($ticket->subject, 40) }}
-                                @elseif($ticket->type == 'bantuan')
-                                    <i class="fas fa-question-circle text-yellow-500 mr-3"></i>
-                                    Permintaan bantuan: {{ Str::limit($ticket->subject, 40) }}
-                                @endif
-                                @if($ticket->status == 'closed')
-                                    <i class="fas fa-check-circle text-green-500 ml-2"></i>
-                                @endif
-                                <span class="ml-auto text-xs text-gray-400">
-                                    {{ $ticket->created_at->diffForHumans() }}
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class="text-center text-gray-500 py-4">
-                        <i class="fas fa-inbox fa-2x mb-2"></i>
-                        <p>Belum ada laporan terbaru</p>
-                    </div>
-                @endif
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">Statistik Keamanan</h3>
-                <div class="text-center text-gray-500 py-10">
-                    <i class="fas fa-shield-alt fa-3x mb-2"></i>
-                    <p>Panel monitoring keamanan</p>
+        <div class="mt-8 bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">Laporan Terbaru</h3>
+            @if($recentTickets && $recentTickets->count() > 0)
+                <ul class="space-y-3">
+                    @foreach($recentTickets as $ticket)
+                        <li class="flex items-center text-sm text-gray-600">
+                            @if($ticket->type == 'penipuan')
+                                <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                                Laporan penipuan: {{ Str::limit($ticket->subject, 40) }}
+                            @elseif($ticket->type == 'bantuan')
+                                <i class="fas fa-question-circle text-yellow-500 mr-3"></i>
+                                Permintaan bantuan: {{ Str::limit($ticket->subject, 40) }}
+                            @endif
+                            @if($ticket->status == 'closed')
+                                <i class="fas fa-check-circle text-green-500 ml-2"></i>
+                            @endif
+                            <span class="ml-auto text-xs text-gray-400">
+                                {{ $ticket->created_at->diffForHumans() }}
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <div class="text-center text-gray-500 py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p>Belum ada laporan terbaru</p>
                 </div>
-            </div>
+            @endif
         </div>
     @else
         {{-- Regular User Dashboard --}}
