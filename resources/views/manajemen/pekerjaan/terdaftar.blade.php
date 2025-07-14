@@ -158,6 +158,93 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- Mobile Card View --}}
+        <div class="block lg:hidden space-y-4">
+            @forelse($pekerjaans as $pekerjaan)
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ $pekerjaan->nama }}</h3>
+                            <p class="text-sm text-gray-600 mb-2">{{ Str::limit($pekerjaan->deskripsi, 80) }}</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <span>{{ Str::limit($pekerjaan->alamat, 40) }}</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                @if($pekerjaan->status == 'Open') bg-green-100 text-green-800
+                                @elseif($pekerjaan->status == 'Done') bg-gray-100 text-gray-800
+                                @elseif($pekerjaan->status == 'In Progress') bg-blue-100 text-blue-800
+                                @else bg-yellow-100 text-yellow-800
+                                @endif">
+                                {{ $pekerjaan->status }}
+                            </span>
+                            @if($pekerjaan->is_active == 0)
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    Inactive
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Gaji</div>
+                            <div class="text-sm font-medium text-gray-900">
+                                Rp {{ number_format($pekerjaan->min_gaji, 0, ',', '.') }}
+                                @if($pekerjaan->min_gaji != $pekerjaan->max_gaji)
+                                    <div class="text-xs text-gray-600">
+                                        - Rp {{ number_format($pekerjaan->max_gaji, 0, ',', '.') }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Tanggal Mulai</div>
+                            <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($pekerjaan->start_job)->format('d M Y') }}</div>
+                            <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($pekerjaan->start_job)->format('H:i') }}</div>
+                            @if($pekerjaan->deadline_job)
+                                <div class="text-xs text-red-500">
+                                    Deadline: {{ \Carbon\Carbon::parse($pekerjaan->deadline_job)->format('d M Y') }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Pelamar</div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-semibold text-gray-900">{{ $pekerjaan->pelamar->count() }}</span>
+                                <span class="text-xs text-gray-500 ml-1">pelamar</span>
+                            </div>
+                            <div class="text-xs text-gray-500">Diterima: {{ $pekerjaan->jumlah_pelamar_diterima }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Max Pekerja</div>
+                            <div class="text-sm font-medium text-gray-900">{{ $pekerjaan->max_pekerja }} orang</div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 pt-3 border-t border-gray-200">
+                        <button class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors" onclick="viewDetails({{ $pekerjaan->id }})">
+                            <i class="fas fa-eye mr-1"></i> Detail
+                        </button>
+                        <a href="{{ route('manajemen.pekerjaan.manage', $pekerjaan->id) }}" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-2 px-3 rounded-md text-center transition-colors">
+                            <i class="fas fa-cog mr-1"></i> Kelola
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-12">
+                    <i class="fas fa-briefcase text-gray-300 text-4xl mb-4"></i>
+                    <p class="text-lg font-medium text-gray-500 mb-2">Belum ada pekerjaan yang terdaftar</p>
+                    <p class="text-sm text-gray-400">Mulai buat lowongan pekerjaan pertama Anda</p>
+                </div>
+            @endforelse
+        </div>
     </div>
 </div>
 
