@@ -59,9 +59,9 @@
 
                 {{-- Tombol Aksi --}}
                 <div class="flex justify-end pt-4">
-                    <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg mr-3 transition-colors duration-300">
+                    {{-- <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg mr-3 transition-colors duration-300">
                         Batal
-                    </button>
+                    </button> --}}
                     <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed" @if($jobs->isEmpty()) disabled @endif>
                         <i class="fas fa-upload mr-2"></i>Upload Laporan
                     </button>

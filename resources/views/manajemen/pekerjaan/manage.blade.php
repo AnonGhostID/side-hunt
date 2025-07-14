@@ -27,9 +27,12 @@
                     </span>
                 </p>
                 @if($pekerjaan->status == 'Open')
-                    <form action="{{ route('manajemen.pekerjaan.updateStatus', $pekerjaan->id) }}" method="POST">
+                    @php
+                        $hasAcceptedWorker = $pekerjaan->pelamar()->where('status', 'diterima')->exists();
+                    @endphp
+                    <form id="updateStatusForm" action="{{ route('manajemen.pekerjaan.updateStatus', $pekerjaan->id) }}" method="POST">
                         @csrf
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button type="button" onclick="checkAcceptedWorker({{ $hasAcceptedWorker ? 'true' : 'false' }})" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Set On Progress
                         </button>
                     </form>
@@ -233,6 +236,39 @@
         </div>
     </div>
 
+    {{-- Modal for No Accepted Worker Warning --}}
+    <div id="noWorkerModal" class="fixed inset-0 z-50 hidden overflow-auto bg-black bg-opacity-75 flex items-center justify-center p-4">
+        <div class="relative max-w-md w-full bg-white rounded-lg shadow-xl">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-medium text-gray-900">Peringatan</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-500" onclick="closeNoWorkerModal()">
+                    <span class="sr-only">Tutup</span>
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-exclamation-triangle text-yellow-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-gray-700">
+                            Belum ada pekerja yang diterima, anda tidak dapat merubah status pekerjaan ini
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="flex justify-end p-6 border-t bg-gray-50 rounded-b-lg">
+                <button type="button" onclick="closeNoWorkerModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <style>
         .rating-stars {
             display: flex;
@@ -289,8 +325,12 @@
         
         // Add keyboard navigation for ESC key
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && !document.getElementById('confirmationModal').classList.contains('hidden')) {
-                closeConfirmationModal();
+            if (event.key === 'Escape') {
+                if (!document.getElementById('confirmationModal').classList.contains('hidden')) {
+                    closeConfirmationModal();
+                } else if (!document.getElementById('noWorkerModal').classList.contains('hidden')) {
+                    closeNoWorkerModal();
+                }
             }
         });
 
@@ -300,6 +340,29 @@
         function closeDeleteModal() {
             document.getElementById('deleteJobModal').classList.add('hidden');
         }
+
+        // Function to check if there are accepted workers before allowing status change
+        function checkAcceptedWorker(hasAcceptedWorker) {
+            if (!hasAcceptedWorker) {
+                document.getElementById('noWorkerModal').classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                // If there are accepted workers, submit the form
+                document.getElementById('updateStatusForm').submit();
+            }
+        }
+
+        function closeNoWorkerModal() {
+            document.getElementById('noWorkerModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Close modal when clicking outside the content
+        document.getElementById('noWorkerModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeNoWorkerModal();
+            }
+        });
     </script>
 </main>
 @endsection
