@@ -17,7 +17,10 @@ class PelamarFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'user_id' => fake()->randomNumber(1,49),
+            'job_id' => fake()->randomNumber(1,99),
+            'status' => fake()->randomElement(['tunda', 'interview', 'ditolak','Menunggu Pekerjaan','Sedang Bekerja','Menuggu Pembayaran','Gagal','selesai']),
+            'Tipe_Group' => fake()->randomElement(['Sendiri'])
         ];
     }
 }

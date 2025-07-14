@@ -1,9 +1,16 @@
 <?php
 
 namespace Database\Seeders;
+
+use App\Http\Controllers\ChatController;
+use App\Models\chat;
+use App\Models\excel;
+use App\Models\to_excel;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Users;
+use App\Models\Pekerjaan;
 use App\Models\KriteriaJob;
+use App\Models\Pelamar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -16,13 +23,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = Users::factory()->count(40)->create(
+            ['role' => 'user',
+                'is_ban' => 1,
+            ]
+        );
+
+
+
+        // dd($user[0]);
+
+        $mitra = Users::factory()->count(10)->create(
+            ['role' => 'mitra',
+                'is_ban' => 1,
+            ]
+        );
         // $this->call([
         //     UserSeeder::class,
         //     SideJobSeeder::class,
         // ]);
 
         // Create admin user
-        Users::create([
+        // Users::factory()->count(40)->create();
+        Users::factory()->create([
             'nama' => 'admin',
             'email' => 'admin@example.com',
             'role' => 'admin',
@@ -43,7 +66,7 @@ class DatabaseSeeder extends Seeder
 
         // Create owner1, owner2, owner3
         for ($i = 1; $i <= 3; $i++) {
-            Users::create([
+            Users::factory()->create([
                 'nama' => 'owner' . $i,
                 'email' => 'owner' . $i . '@example.com',
                 'role' => 'mitra',
@@ -106,13 +129,69 @@ class DatabaseSeeder extends Seeder
             "membuat makanan fermentasi tradisional"
         ];
 
-        foreach($hobi_offline as $i){
-            KriteriaJob::factory()->create([
-                'nama' => ucwords($i)
+        $data_pekerjaan = json_decode(
+            file_get_contents(public_path('Dewa/json/data_pekerjaan.json')),
+            true
+        );
+
+        // dd($data_pekerjaan);
+
+
+        foreach ($data_pekerjaan as $data) {
+            Pekerjaan::factory()->count(1)->create([
+                "nama" => $data['nama'],
+                "deskripsi" => $data['deskripsi'],
+                "alamat" => $data['alamat'],
+                "min_gaji" => $data['min_gaji'],
+                "max_gaji" => $data['max_gaji'],
+                "max_pekerja" => $data['max_pekerja'],
+                "jumlah_pelamar_diterima" => $data['jumlah_pelamar_diterima'],
+                "is_active" => $data['is_active'],
+                "petunjuk_alamat" => $data['petunjuk_alamat'],
+                "foto_job" => $data['foto_job'],
+                "pembuat" => $mitra[fake()->numberBetween(0, 9)]->id
             ]);
         }
-        
-        // Call the PekerjaanSeeder to create 15 Indonesian onsite daily jobs
-        $this->call(PekerjaanSeeder::class);
+
+
+
+
+        $all_pekerjaan = Pekerjaan::all();
+        foreach ($all_pekerjaan as $pekerjaan) {
+            $users = collect(range(0, 39))->shuffle()->take(8)->all();
+            // dd($users);
+            // dd($pekerjaan);
+            foreach ($users as $s) {
+                // dd($user[$s]->id);
+                $pelamar = Pelamar::factory()->create([
+                    'job_id' => $pekerjaan['id'],
+                    'user_id' => $user[$s]->id,
+                    'status' => 'tunda'
+                ]);
+                (new ChatController())->update_lamaran($pelamar->id, $user[$s]->id, $pekerjaan['pembuat']);
+            }
+        }
+
+        $user = Users::factory()->count(1)->create(
+            [
+                'role' => 'user',
+                'email' => 'userban@gmail.com',
+                'is_ban' => true
+
+            ]
+        );
+
+        $user = Users::factory()->count(1)->create(
+            [
+                'role' => 'user',
+                'email' => 'mitraban@gmail.com',
+                'is_ban' => false
+
+            ]
+        );
+    }
+    public function is_own_id($id)
+    {
+        return session('account')['id'] == $id;
     }
 }

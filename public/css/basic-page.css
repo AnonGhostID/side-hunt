@@ -41,11 +41,11 @@ body {
 }
 
 
-.bg-prim-me{
+.bg-prim-me {
     background-color: #1B4841 !important;
 }
 
-.cl-prim-me{
+.cl-prim-me {
     color: #1B4841 !important;
 }
 
@@ -64,6 +64,11 @@ body {
 
 .bg-darker {
     background-color: #545454 !important;
+}
+
+.SpecialChat {
+    width: 50% !important;
+    min-width: 50% !important;
 }
 
 .navbar {
@@ -310,6 +315,7 @@ body {
 .diff-width {
     width: 60% !important;
 }
+
 .w-fit-md {
     width: fit-content !important;
 }
@@ -325,14 +331,19 @@ body {
     }
 
     .w-full-ls {
-        width: 100% !important ;
+        width: 100% !important;
         align-items: end;
+
         /* background-color: #19A9D2; */
-        *{
+        * {
             border: none;
         }
     }
-    
+
+    .SpecialChat {
+        min-width: 100% !important;
+    }
+
 }
 
 .clear-p {
@@ -359,11 +370,11 @@ body {
 .no-outline:focus,
 .no-outline:active,
 .no-outline:focus:active {
-  box-shadow: none !important;
-  outline: none !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-.widthHeightFull{
+.widthHeightFull {
     width: 100% !important;
     min-width: 100% !important;
     max-width: 100% !important;
@@ -371,4 +382,3 @@ body {
     min-height: 100% !important;
     max-height: 100% !important;
 }
-

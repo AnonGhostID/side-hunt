@@ -15,7 +15,6 @@ class Pekerjaan extends Model
         'min_gaji',
         'max_gaji',
         'max_pekerja',
-        'jumlah_pelamar_diterima',
         'deskripsi',
         'alamat',
         'petunjuk_alamat',
@@ -25,7 +24,9 @@ class Pekerjaan extends Model
         'pembuat',
         'start_job',
         'end_job',
+        'deadline_job',
         'kriteria',
+        'foto_job'
     ];
     protected $casts = [
         'nama' => 'string',
@@ -49,12 +50,6 @@ class Pekerjaan extends Model
 
     public function pelamar()
     {
-        return $this->hasMany(Pelamar::class, 'job_id');
-    }
-
-    // Computed property to get count of accepted applicants
-    public function getJumlahPelamarDiterimaAttribute()
-    {
-        return $this->pelamar()->where('status', 'diterima')->count();
+        return $this->belongsToMany(Pekerjaan::class, 'pelamars', 'user_id', 'job_id');
     }
 }

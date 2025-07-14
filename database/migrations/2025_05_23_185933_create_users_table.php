@@ -16,13 +16,16 @@ return new class extends Migration
             $table->string('nama')->nullable();
             $table->string('email')->unique();
             $table->string('alamat')->nullable();
-            $table->enum('role', ['admin', 'user', 'mitra']);
+            $table->enum('role', ['user', 'mitra','admin']);
             $table->string('telpon')->unique()->nullable();
             $table->integer('dompet')->default('0');
             $table->boolean('isAdmin')->default('0');
+            $table->boolean('is_ban')->default(false);
+
+            $table->string('VerificationCode')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->longText('preferensi_user')->nullable();
-            $table->string('avatar')->nullable();
+            $table->string('avatar_url')->nullable();
             // $table->string('avatar')->default(config('chatify.user_avatar.default'));
             $table->boolean('dark_mode')->default(0);
             $table->string('messenger_color')->nullable();

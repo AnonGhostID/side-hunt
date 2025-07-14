@@ -1,5 +1,5 @@
+<!DOCTYPE html>
 @vite(['resources/js/app.js'])
-<!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
@@ -33,6 +33,7 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @yield('css')
 
+
 </head>
 <style>
     @yield('peta');
@@ -52,12 +53,21 @@
                     </div>
 
                 </a>
+                <div class="d-flex flex-row gap-2">
+                    <div class="d-flex d-md-none">
+                        <button type="button" class="btn bg-transparent" data-bs-toggle="offcanvas"
+                            data-bs-target="#staticBackdropChat" onclick="window.location.href='/chat/all'"
+                            aria-controls="staticBackdropChat">
+                            <i class="bi bi-chat-right-text-fill text-white"></i>
+                        </button>
+                    </div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                </div>
 
                 <div class="collapse h-auto normal navbar-collapse slide-down flex-column flex-md-row gap-3 gap-md-0"
                     id="navbarSupportedContent">
@@ -79,7 +89,8 @@
 
                             <div class="d-flex flex-row user gap-2 align-items-center justify-content-center"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                <p class="m-0 p-0">Halo {{{explode(" ", session('account')['nama'])[0]}}},</p>
+                                <p class="m-0 p-0">({{{ucwords(session('account')['role'])}}}) Halo {{{explode(" ",
+                                    session('account')['nama'])[0]}}}, </p>
                                 <svg width="30" height="29" viewBox="0 0 30 29" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <rect width="30" height="29" rx="14.5" fill="white" />
@@ -103,6 +114,13 @@
                                     </a></li>
                             </ul>
                         </div>
+                        <div class="d-none d-md-flex">
+                            <button type="button" class="btn bg-transparent" data-bs-toggle="offcanvas"
+                                data-bs-target="#staticBackdropChat" aria-controls="staticBackdropChat">
+                                <i class="bi bi-chat-left-text-fill text-white"
+                                    onclick="window.location.href='/chat/all'"></i>
+                            </button>
+                        </div>
 
                         @endif
                     </ul>
@@ -120,32 +138,39 @@
                                 <p>Cari Pekerjaan</p>
                             </a>
                         </li>
+
                         @if(session()->has('account'))
-                        @if(session('account')->role=='mitra' || session('account')->role=='user' || session('account')->role=='admin')
                         <li class="nav-item ">
-                            <a class="nav-link {{{($active_navbar=='Management')? 'active':''}}}"
-                                aria-current="page" href="/management/">
+                            <a class="nav-link {{{($active_navbar=='Daftar Lamaran')? 'active':''}}}"
+                                aria-current="page" href="/daftar-lamaran/">
+                                <p>Daftar Lamaran</p>
+                            </a>
+                        </li>
+                        @if(session('account')->role=='mitra')
+                        <li class="nav-item ">
+                            <a class="nav-link {{{($active_navbar=='Management')? 'active':''}}}" aria-current="page"
+                                href="/management/">
                                 <p>Management</p>
                             </a>
                         </li>
-                        @endif
-                        @endif
-                        @if(session('account')!=null)
-
                         <li class="nav-item dropdown position-relative">
                             <a class="nav-link d-flex w-auto justify-content-start align-content-center flex-row gap-1 {{{($active_navbar=='Beri Lowongan Kerja')? 'active':''}}}"
                                 href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <p>Pekerjaan</p>
-                                <i class="bi bi-caret-down-fill"></i>
+                                <div class="w-auto h-50 d-flex justify-content-center align-items-center">
+                                    <p>Pekerjaan</p>
+                                </div>
+                                <div class="w-auto h-50 d-flex justify-content-center align-items-center">
+                                    <i class="bi bi-caret-down-fill"></i>
+                                </div>
                             </a>
                             <ul class="dropdown-menu normal ms-4 ms-md-0 bg-darker hover-bg-dark">
-                                <li><a class="dropdown-item" href="{{ route('dewa.mitra.lowongan.terdaftar') }}">
+                                <li><a class="dropdown-item" href="/daftar-Pekerjaan/">
                                         <div class="d-flex flex-row gap-3">
                                             <i class="bi bi-journal-text"></i>
                                             <p>Lowongan Terdaftar</p>
                                         </div>
                                     </a></li>
-                                <li><a class="dropdown-item" href="{{ route('dewa.mitra.lowongan.terdaftar') }}">
+                                <li><a class="dropdown-item" href="/daftar-Pelamar/all">
                                         <div class="d-flex flex-row gap-3">
                                             <i class="bi bi-people"></i>
                                             <p>Daftar Pelamar</p>
@@ -165,45 +190,46 @@
 
                             </ul>
                         </li>
-
-
                         @endif
+                        @endif
+
                     </ul>
 
 
                 </div>
             </div>
         </nav>
-        @yield('add-onn')
-        <div class="main-content">
-            @yield('content')
-        </div>
+    </div>
+    @yield('add-onn')
+    <div class="main-content">
+        @yield('content')
+    </div>
 
 
-        <div class="bottom mt-4">
-            <div class="semi-bottom normal">
-                <div class="container bottom">
-                    <div>
-                        <p>Email</p>
-                        <p>sidehunt@gmail.com</p>
-                    </div>
-
-                    <div>
-                        <p>Phone</p>
-                        <p>0895339385652</p>
-                    </div>
-                    <div class="lebih-panjang">
-                        <p>Addresss</p>
-                        <p>Jl. RE Martadinata, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kab. Bondowoso, Jawa Timur 68211
-                        </p>
-                    </div>
-
+    <div class="bottom mt-4">
+        <div class="semi-bottom normal">
+            <div class="container bottom">
+                <div>
+                    <p>Email</p>
+                    <p>sidehunt@gmail.com</p>
                 </div>
-            </div>
-            <div class="copyright">
-                <p>@Copyright 2025</p>
+
+                <div>
+                    <p>Phone</p>
+                    <p>0895339385652</p>
+                </div>
+                <div class="lebih-panjang">
+                    <p>Addresss</p>
+                    <p>Jl. RE Martadinata, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kab. Bondowoso, Jawa Timur 68211
+                    </p>
+                </div>
+
             </div>
         </div>
+        <div class="copyright">
+            <p>@Copyright 2025</p>
+        </div>
+    </div>
 
     </div>
 </body>
@@ -331,7 +357,7 @@
     function reverseGeocode(lat, lon) {
         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
             .then(response => response.json())
-            .then data => {
+            .then(data => {
                 if (data.address) {
                     alert("Nama jalan: " + (data.address.road || "Tidak ditemukan"));
                 } else {

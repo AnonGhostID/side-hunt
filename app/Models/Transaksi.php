@@ -23,17 +23,17 @@ class Transaksi extends Model
 
     public function pembuat()
     {
-        return $this->belongsTo(User::class, 'pembuat_id');
+        return $this->belongsTo(Users::class, 'pembuat_id');
     }
 
     public function pekerja()
     {
-        return $this->belongsTo(User::class, 'pekerja_id');
+        return $this->belongsTo(Users::class, 'pekerja_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Users::class, 'user_id');
     }
 
     public function job()

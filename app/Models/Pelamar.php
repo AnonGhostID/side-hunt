@@ -14,11 +14,9 @@ class Pelamar extends Model
         'user_id',
         'job_id',
         'status',
-    ];
+        'Tipe_Group',
+        'Data_Team'
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function user()
@@ -29,20 +27,5 @@ class Pelamar extends Model
     public function sidejob()
     {
         return $this->belongsTo(Pekerjaan::class, 'job_id');
-    }
-    
-    public function getStatusPekerjaan()
-    {
-        if ($this->status == 'diterima') {
-            // Check if the related job is marked as completed
-            if ($this->sidejob && $this->sidejob->status == 'Selesai') {
-                return 'Selesai';
-            }
-            return 'Dalam Pengerjaan';
-        } elseif ($this->status == 'pending') {
-            return 'Menunggu diterima oleh Mitra';
-        } else {
-            return ucfirst($this->status);
-        }
     }
 }

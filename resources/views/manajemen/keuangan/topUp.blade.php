@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
                             <span class="text-sm text-gray-500">Jumlah Top Up:</span>
                             <p class="font-semibold text-lg">Rp {{ number_format($payment->amount, 0, ',', '.') }}</p>
@@ -113,7 +113,7 @@
 @elseif(isset($view_type) && $view_type === 'success')
     {{-- SUCCESS STATE --}}
     {{-- Security: This should only be accessible for paid/settled payments --}}
-    @if(!in_array($payment->status, ['completed']))
+    @if(!in_array($payment->status, ['paid', 'settled']))
         <script>
             alert('Akses tidak diizinkan: Pembayaran belum berhasil');
             window.location.href = '{{ route("manajemen.topUp") }}';

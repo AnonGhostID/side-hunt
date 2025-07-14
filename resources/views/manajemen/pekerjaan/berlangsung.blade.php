@@ -24,8 +24,8 @@
             </button> --}}
         </div>
 
-        {{-- Desktop Table View --}}
-        <div class="hidden lg:block overflow-x-auto bg-white rounded-lg shadow">
+        {{-- Tabel Data Pekerjaan --}}
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
@@ -38,206 +38,62 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                    @forelse($pekerjaanBerlangsung as $pelamar)
+                    {{-- Contoh Data Row 1 --}}
                     <tr>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @if($pelamar->sidejob)
-                                <p class="font-semibold">{{ $pelamar->sidejob->nama }}</p>
-                                <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
-                            @else
-                                <p class="font-semibold">Pekerjaan tidak ditemukan</p>
-                                <p class="text-xs text-gray-500">Kategori: -</p>
-                            @endif
+                            <p class="font-semibold">Desain UI/UX Aplikasi Mobile</p>
+                            <p class="text-xs text-gray-500">Kategori: Desain Grafis</p>
                         </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">PT. Teknologi Maju</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Andi Pratama</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
-                                {{ $pelamar->sidejob->pembuatUser->nama }}
-                            @else
-                                Tidak diketahui
-                            @endif
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @php
-                                $statusPekerjaan = $pelamar->getStatusPekerjaan();
-                            @endphp
-                            @if($statusPekerjaan == 'Selesai')
-                            <span class="relative inline-block px-3 py-1 font-semibold text-blue-900 leading-tight">
-                                <span aria-hidden class="absolute inset-0 bg-blue-200 opacity-50 rounded-full"></span>
-                                <span class="relative">{{ $statusPekerjaan }}</span>
-                            </span>
-                            @elseif($pelamar->status == 'diterima')
                             <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                                <span class="relative">{{ $statusPekerjaan }}</span>
+                                <span class="relative">Dalam Pengerjaan</span>
                             </span>
-                            @else
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">30 Mei 2025</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            <a href="#" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Edit Status (Admin)">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="text-red-500 hover:text-red-700" title="Batalkan (Admin)">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {{-- Contoh Data Row 2 --}}
+                    <tr>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            <p class="font-semibold">Pengembangan Backend E-commerce</p>
+                            <p class="text-xs text-gray-500">Kategori: Web Development</p>
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">CV. Jaya Abadi</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Siti Aminah</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             <span class="relative inline-block px-3 py-1 font-semibold text-yellow-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-yellow-200 opacity-50 rounded-full"></span>
-                                <span class="relative">{{ $statusPekerjaan }}</span>
+                                <span class="relative">Menunggu Review</span>
                             </span>
-                            @endif
                         </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">15 Juni 2025</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @php
-                                $formattedDate = 'Tidak ada deadline';
-                                if ($pelamar->sidejob && !empty($pelamar->sidejob->end_job)) {
-                                    $deadline = \Carbon\Carbon::parse($pelamar->sidejob->end_job);
-                                    $formattedDate = $deadline->locale('id')->format('d-M-Y');
-                                }
-                            @endphp
-                            {{ $formattedDate }}
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @if($statusPekerjaan == 'Selesai')
-                                @php
-                                    $user = session('account');
-                                    $jobId = $pelamar->sidejob->id ?? null;
-                                    $workerId = $pelamar->user_id ?? null;
-                                    $employerId = $pelamar->sidejob->pembuat ?? null;
-                                    
-                                    // Check if current user can rate
-                                    $canRateEmployer = $user->isUser() && $jobId && $employerId && 
-                                                     \App\Models\Rating::canRate($user->id, $employerId, $jobId, 'worker_to_employer');
-                                    $canRateWorker = $user->isMitra() && $jobId && $workerId && 
-                                                   \App\Models\Rating::canRate($user->id, $workerId, $jobId, 'employer_to_worker');
-                                @endphp
-                                
-                                @if($canRateEmployer)
-                                    <button onclick="openRatingModal({{ $jobId }}, {{ $employerId }}, '{{ $pelamar->sidejob->pembuatUser->nama ?? 'Tidak diketahui' }}', 'employer')" class="text-yellow-500 hover:text-yellow-700" title="Beri Rating Pemberi Kerja">
-                                        <i class="fas fa-star"></i> Rating
-                                    </button>
-                                @elseif($canRateWorker)
-                                    <button onclick="openRatingModal({{ $jobId }}, {{ $workerId }}, '{{ $pelamar->user->nama ?? 'Tidak diketahui' }}', 'worker')" class="text-yellow-500 hover:text-yellow-700" title="Beri Rating Pekerja">
-                                        <i class="fas fa-star"></i> Rating
-                                    </button>
-                                @else
-                                    <span class="text-gray-400">
-                                        <i class="fas fa-star"></i> Rated
-                                    </span>
-                                @endif
-                            @else
-                                <a href="#" class="text-red-500 hover:text-red-700" title="Report">
-                                    <i class="fas fa-flag"></i> Report
-                                </a>
-                            @endif
+                            <a href="#" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
                         </td>
                     </tr>
-                    @empty
+                    {{-- Tambahkan lebih banyak baris data di sini sesuai kebutuhan --}}
                     <tr>
                         <td colspan="6" class="px-5 py-10 border-b border-gray-200 text-sm text-center text-gray-500">
-                            Tidak ada pekerjaan yang sedang berlangsung.
+                            Tidak ada pekerjaan lain yang sedang berlangsung.
                         </td>
                     </tr>
-                    @endforelse
                 </tbody>
             </table>
-        </div>
-
-        {{-- Mobile Card View --}}
-        <div class="block lg:hidden space-y-4">
-            @forelse($pekerjaanBerlangsung as $pelamar)
-            <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                {{-- Job Title & Category --}}
-                <div class="mb-3">
-                    @if($pelamar->sidejob)
-                        <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $pelamar->sidejob->nama }}</h3>
-                        <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
-                    @else
-                        <h3 class="font-semibold text-gray-900 text-lg mb-1">Pekerjaan tidak ditemukan</h3>
-                        <p class="text-xs text-gray-500">Kategori: -</p>
-                    @endif
-                </div>
-
-                {{-- Status Badge --}}
-                <div class="mb-3">
-                    @php
-                        $statusPekerjaan = $pelamar->getStatusPekerjaan();
-                    @endphp
-                    @if($statusPekerjaan == 'Selesai')
-                    <span class="inline-block px-3 py-1 font-semibold text-blue-900 leading-tight bg-blue-200 rounded-full text-sm">
-                        {{ $statusPekerjaan }}
-                    </span>
-                    @elseif($pelamar->status == 'diterima')
-                    <span class="inline-block px-3 py-1 font-semibold text-green-900 leading-tight bg-green-200 rounded-full text-sm">
-                        {{ $statusPekerjaan }}
-                    </span>
-                    @else
-                    <span class="inline-block px-3 py-1 font-semibold text-yellow-900 leading-tight bg-yellow-200 rounded-full text-sm">
-                        {{ $statusPekerjaan }}
-                    </span>
-                    @endif
-                </div>
-
-                {{-- Details Grid --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
-                    <div>
-                        <span class="text-gray-500">Pemberi Kerja:</span>
-                        <div class="font-medium">
-                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
-                                {{ $pelamar->sidejob->pembuatUser->nama }}
-                            @else
-                                Tidak diketahui
-                            @endif
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Pelamar:</span>
-                        <div class="font-medium">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</div>
-                    </div>
-                    <div class="sm:col-span-2">
-                        <span class="text-gray-500">Deadline:</span>
-                        <div class="font-medium">
-                            @php
-                                $formattedDate = 'Tidak ada deadline';
-                                if ($pelamar->sidejob && !empty($pelamar->sidejob->end_job)) {
-                                    try {
-                                        $date = \Carbon\Carbon::parse($pelamar->sidejob->end_job);
-                                        $formattedDate = $date->locale('id')->format('d-M-Y');
-                                        
-                                        if ($date->isPast()) {
-                                            $formattedDate .= ' (Lewat)';
-                                        } elseif ($date->isToday()) {
-                                            $formattedDate .= ' (Hari ini)';
-                                        } elseif ($date->isTomorrow()) {
-                                            $formattedDate .= ' (Besok)';
-                                        }
-                                    } catch (\Exception $e) {
-                                        $formattedDate = 'Format tanggal tidak valid';
-                                    }
-                                }
-                            @endphp
-                            {{ $formattedDate }}
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Action Buttons --}}
-                <div class="flex flex-col sm:flex-row gap-2">
-                    @if($pelamar->sidejob)
-                        <a href="{{ route('manajemen.pekerjaan.manage', $pelamar->sidejob->id) }}" 
-                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm text-center">
-                            <i class="fas fa-cog mr-1"></i>Kelola
-                        </a>
-                        @if($statusPekerjaan == 'Selesai')
-                            <button onclick="openRatingModal({{ $pelamar->user_id }}, {{ $pelamar->sidejob->id }})" 
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm">
-                                <i class="fas fa-star mr-1"></i>Rating
-                            </button>
-                        @endif
-                    @else
-                        <span class="text-gray-400 text-sm">Tidak ada aksi tersedia</span>
-                    @endif
-                </div>
-            </div>
-            @empty
-            <div class="bg-white rounded-lg shadow-md p-8 text-center">
-                <div class="text-gray-500 mb-2">
-                    <i class="fas fa-briefcase text-4xl text-gray-300"></i>
-                </div>
-                <p class="text-gray-500">Tidak ada pekerjaan yang sedang berlangsung.</p>
-            </div>
-            @endforelse
         </div>
 
         {{-- Pagination (jika diperlukan) --}}
@@ -260,193 +116,13 @@
             </nav>
         </div>
 
-        {{-- Rating Modal --}}
-        <div id="ratingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <div class="mt-3">
-                    <h3 id="modalTitle" class="text-lg font-medium text-gray-900 mb-4">Beri Rating</h3>
-                    <form id="ratingForm">
-                        <div class="mb-4">
-                            <label id="targetLabel" class="block text-sm font-medium text-gray-700 mb-2">Target Rating</label>
-                            <p id="targetName" class="text-sm text-gray-600 bg-gray-50 p-2 rounded"></p>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                            <div class="rating-stars">
-                                <input type="radio" name="rating" value="5" id="star5" required>
-                                <label for="star5" title="5 stars">&#9733;</label>
-                                <input type="radio" name="rating" value="4" id="star4" required>
-                                <label for="star4" title="4 stars">&#9733;</label>
-                                <input type="radio" name="rating" value="3" id="star3" required>
-                                <label for="star3" title="3 stars">&#9733;</label>
-                                <input type="radio" name="rating" value="2" id="star2" required>
-                                <label for="star2" title="2 stars">&#9733;</label>
-                                <input type="radio" name="rating" value="1" id="star1" required>
-                                <label for="star1" title="1 star">&#9733;</label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="komentar" class="block text-sm font-medium text-gray-700 mb-2">Komentar (Opsional)</label>
-                            <textarea id="komentar" name="komentar" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Berikan komentar tentang pemberi kerja..."></textarea>
-                        </div>
-                        
-                        <div class="flex justify-end space-x-3">
-                            <button type="button" onclick="closeRatingModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                                Batal
-                            </button>
-                            <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
-                                <i class="fas fa-star mr-2"></i> Beri Rating
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
     </div>
 </div>
 @endsection
 
 @push('scripts')
-<style>
-    .rating-stars {
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
-    }
-
-    .rating-stars input[type="radio"] {
-        display: none;
-    }
-
-    .rating-stars label {
-        font-size: 1.5rem;
-        color: #ddd;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-
-    .rating-stars label:hover,
-    .rating-stars label:hover ~ label,
-    .rating-stars input[type="radio"]:checked ~ label {
-        color: #ffc107;
-    }
-
-    .rating-stars input[type="radio"]:checked ~ label {
-        color: #ffc107;
-    }
-</style>
-
 <script>
-    let currentJobId = null;
-    let currentTargetId = null;
-    let currentRatingType = null;
-
-    function openRatingModal(jobId, targetId, targetName, ratingType) {
-        currentJobId = jobId;
-        currentTargetId = targetId;
-        currentRatingType = ratingType;
-        
-        // Update modal content based on rating type
-        const modalTitle = document.getElementById('modalTitle');
-        const targetLabel = document.getElementById('targetLabel');
-        const targetNameEl = document.getElementById('targetName');
-        const commentPlaceholder = document.getElementById('komentar');
-        
-        if (ratingType === 'employer') {
-            modalTitle.textContent = 'Beri Rating Pemberi Kerja';
-            targetLabel.textContent = 'Pemberi Kerja';
-            commentPlaceholder.placeholder = 'Berikan komentar tentang pemberi kerja...';
-        } else {
-            modalTitle.textContent = 'Beri Rating Pekerja';
-            targetLabel.textContent = 'Pekerja';
-            commentPlaceholder.placeholder = 'Berikan komentar tentang pekerja...';
-        }
-        
-        targetNameEl.textContent = targetName;
-        document.getElementById('ratingModal').classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-        
-        // Reset form
-        document.getElementById('ratingForm').reset();
-    }
-
-    function closeRatingModal() {
-        document.getElementById('ratingModal').classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-        currentJobId = null;
-        currentTargetId = null;
-        currentRatingType = null;
-    }
-
-    // Handle form submission
-    document.getElementById('ratingForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const rating = formData.get('rating');
-        const comment = formData.get('komentar');
-        
-        // Prepare data for submission
-        const data = {
-            job_id: currentJobId,
-            rating: rating,
-            comment: comment
-        };
-        
-        // Add target user based on rating type
-        if (currentRatingType === 'employer') {
-            data.employer_id = currentTargetId;
-        } else {
-            data.worker_id = currentTargetId;
-        }
-        
-        try {
-            const url = currentRatingType === 'employer' 
-                ? '{{ route("manajemen.rating.worker.store") }}'
-                : '{{ route("manajemen.pekerjaan.rating.store", ":jobId") }}'.replace(':jobId', currentJobId);
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.json();
-            
-            if (response.ok && result.success) {
-                alert('Rating berhasil diberikan!');
-                closeRatingModal();
-                // Refresh the page to update the UI
-                window.location.reload();
-            } else {
-                alert(result.message || 'Gagal memberikan rating. Silakan coba lagi.');
-            }
-        } catch (error) {
-            console.error('Error submitting rating:', error);
-            alert('Terjadi kesalahan. Silakan coba lagi.');
-        }
-    });
-
-    // Close modal when clicking outside
-    document.getElementById('ratingModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeRatingModal();
-        }
-    });
-
-    // Close modal with ESC key
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && !document.getElementById('ratingModal').classList.contains('hidden')) {
-            closeRatingModal();
-        }
-    });
-
+    // Script khusus untuk halaman ini jika ada
     console.log('Halaman Manajemen Pekerjaan Berlangsung dimuat.');
 </script>
 @endpush

@@ -15,11 +15,15 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('job_id');
-            $table->enum('status', ['pending', 'diterima', 'ditolak'])->default('pending');
+            $table->dateTime('jadwal_interview')->nullable();
+            $table->string('link_Interview')->nullable();
+            $table->string('alasan')->nullable();
+            $table->integer('gaji_deals')->nullable();
+            $table->enum('status', ['tunda', 'interview', 'ditolak','Menunggu Pekerjaan','Sedang Bekerja','Menuggu Pembayaran','Gagal','selesai'])->default('tunda');
+            $table->enum('Tipe_Group', ['Sendiri', 'Team'])->default('Sendiri');
+            $table->boolean('is_delete')->default(false);
+            $table->json('Data_Team')->nullable();
             $table->timestamps();
-
-            // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            // $table->foreign('job_id')->references('id')->on('pekerjaan')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('job_id')->references('id')->on('pekerjaans')->onDelete('cascade');
         });

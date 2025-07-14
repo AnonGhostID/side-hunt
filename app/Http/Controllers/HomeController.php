@@ -49,14 +49,14 @@ class HomeController extends Controller
         // return view('pekerjaan.list', compact('sidejob'));
         if (session()->has('account')) {
             // dd(session('account')->preferensi_user);
-            if (session('account')->preferensi_user == null) {
+            if (session('account')->preferensi_user == null && session('account')['role']!='admin') {
                 return redirect('/question-new-user')->with('success', ['Isi Data Terlebih Dahulu', 'Izin Mengganggu waktunya sebentar']);
             }
             else{
-                return view('Dewa.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman'));
+                return view('Dewa.non_auth.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman'));
             }
         } else {
-            return view('Dewa.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman'));
+            return view('Dewa.non_auth.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman'));
         }
     }
 
@@ -74,9 +74,9 @@ class HomeController extends Controller
         if (session('account') == null) {
             $active_navbar = 'Register';
             $nama_halaman = 'Register';
-            return view('Dewa.register', compact('active_navbar', 'nama_halaman'));
+            return view('Dewa.non_auth.register', compact('active_navbar', 'nama_halaman'));
         } else {
-            return redirect('/Index')->with('success', ['Anda Sedang Login', 'Logout terlebih dahulu']);
+            return redirect('/Index')->with('fail', ['Anda Sedang Login', 'Logout terlebih dahulu']);
         }
     }
     public function Login()
@@ -87,7 +87,7 @@ class HomeController extends Controller
         } else {
             $active_navbar = 'Login';
             $nama_halaman = 'Login';
-            return view('Dewa.login', compact('active_navbar', 'nama_halaman'));
+            return view('Dewa.non_auth.Login', compact('active_navbar', 'nama_halaman'));
         }
     }
 
@@ -116,8 +116,10 @@ class HomeController extends Controller
     {
         $nama_halaman = 'Form New User';
         $active_navbar = 'Form New User';
-        $kriteria = KriteriaJob::all();
+        $path = public_path('Dewa/json/dummy_skills.json');
+        $kriteria = json_decode(file_get_contents($path), true)['skills']; 
+        // $kriteria = KriteriaJob::all();
 
-        return view('Dewa.formQuestionUser', compact('active_navbar', 'nama_halaman', 'kriteria'));
+        return view('Dewa.need_auth.formQuestionUser', compact('active_navbar', 'nama_halaman', 'kriteria'));
     }
 }

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Namu\WireChat\Traits\Chatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class Users extends Model implements AuthenticatableContract
 {
-    use HasFactory, Notifiable, Authenticatable;
+    use HasFactory, Notifiable, Authenticatable, Chatable;
     // use HasFactory, Notifiable;
     protected $table = 'users'; // pastikan ini eksplisit
 
@@ -28,10 +30,10 @@ class Users extends Model implements AuthenticatableContract
         'password',
         'role',
         'preferensi_user',
+        'email_verified_at',
 
         //adam
         'dompet',
-        'email_verified_at',
     ];
 
     /**
@@ -66,90 +68,61 @@ class Users extends Model implements AuthenticatableContract
     {
         return $this->belongsToMany(Users::class, 'pelamars');
     }
-
-    /**
-     * Get all financial transactions for this user
-     */
-    public function financialTransactions()
+    public function hasVerifiedEmail(): bool
     {
-        return $this->hasMany(FinancialTransaction::class);
+        return !is_null($this->email_verified_at);
     }
 
-    /**
-     * Get payments (top-ups) for this user
-     */
+    public function getDisplayNameAttribute(): ?string
+    {
+      return $this->nama ?? 'user';
+    }
+
     public function payments()
     {
-        return $this->hasMany(FinancialTransaction::class)->payments();
+        return $this->hasMany(Payment::class);
     }
 
     /**
-     * Get payouts (withdrawals) for this user
-     */
-    public function payouts()
-    {
-        return $this->hasMany(FinancialTransaction::class)->payouts();
-    }
-
-    /**
-     * Ratings given by this user
-     */
-    public function ratingsGiven()
-    {
-        return $this->hasMany(Rating::class, 'rater_id');
-    }
-
-    /**
-     * Ratings received by this user
-     */
-    public function ratingsReceived()
-    {
-        return $this->hasMany(Rating::class, 'rated_id');
-    }
-
-    /**
-     * Get average rating for this user
-     */
-    public function getAverageRating($type = null)
-    {
-        return Rating::getAverageRating($this->id, $type);
-    }
-
-    /**
-     * Get rating count for this user
-     */
-    public function getRatingCount($type = null)
-    {
-        return Rating::getRatingCount($this->id, $type);
-    }
-
-    /**
-     * Cek user admin.
+     * Check if the user is an admin.
      *
      * @return bool
      */
     public function isAdmin(): bool
     {
-        return $this->role == 'admin';
-    }
-
-    /**
-     * Cek user mitra
-     *
-     * @return bool
-     */
-    public function isMitra(): bool
-    {
         return $this->role == 'mitra';
     }
 
-    /**
-     * Cek user mitra
-     *
-     * @return bool
-     */
-    public function isUser(): bool
+    public function searchChatables(string $query)
     {
-        return $this->role == 'user';
+     $searchableFields = ['nama'];
+     return Users::where(function ($queryBuilder) use ($searchableFields, $query) {
+        foreach ($searchableFields as $field) {
+                $queryBuilder->orWhere($field, 'LIKE', '%'.$query.'%');
+        }
+      })
+        ->limit(20)
+        ->get();
+    }
+
+    public function getCoverUrlAttribute(): ?string
+    {
+      return $this->avatar_url ?? null;
+    }
+
+    public function getProfileUrlAttribute(): ?string
+    {
+        //belum ada
+      return route('profile', ['id' => $this->id]);
+    }
+
+    public function canCreateGroups(): bool
+    {
+      return $this->hasVerifiedEmail();
+    }
+
+    public function canCreateChats(): bool
+    {
+     return $this->hasVerifiedEmail();
     }
 }

@@ -1,14 +1,16 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PekerjaanController;
+use App\Http\Controllers\PelamarController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SideJobController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ManagementPageController;
 use App\Http\Controllers\TopUpController;
-use App\Http\Controllers\PayoutController;
+use App\Models\Pelamar;
 use App\Models\Users;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,17 +19,34 @@ Route::get('/', function () {
     return redirect('/Index');
 });
 
+Route::get('/tes', function () {
+    return view('Dewa.tes');
+});
+
+Route::get('/see', function () {
+    return view('Dewa.notifikasi_ke_email.pekerjaan.lolos_siap_bekerja');
+});
+
 
 //Auth
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/Index', [HomeController::class, 'index'])->name('home');
-Route::get('/Login', [HomeController::class, 'Login']);
+Route::get('/Login', [HomeController::class, 'Login'])->name(name: 'Login');
+Route::get('/Verify-Email', [UsersController::class, 'verify_view']);
+Route::post('/verify_email', [UsersController::class, 'submit_verify_email']);
+Route::get('/forget/password', action: [UsersController::class, 'forget_password']);
+Route::post('/send_change_password', action: [UsersController::class, 'send_code_change_password']);
+Route::get('/reset_password/{token}/{email}', action: [UsersController::class, 'view_Reset_Password']);
+Route::post('/reset-new-password', action: [UsersController::class, 'reset_password']);
+
 Route::get('/Register', [HomeController::class, 'Register']);
 Route::get('/Logout', [UsersController::class, 'logout']);
-Route::get('/NotAllowed', function(){
+Route::get('/Pekerjaan/{id}', [PekerjaanController::class, 'view_pekerjaan']);
+
+Route::get('/NotAllowed', function () {
     $nama_halaman = 'Akses Ditolak';
     $active_navbar = 'none';
-    return view('Dewa.NotAllowedPage', compact('nama_halaman','active_navbar'));
+    return view('Dewa.NotAllowedPage', compact('nama_halaman', 'active_navbar'));
 });
 
 
@@ -35,15 +54,24 @@ Route::get('/NotAllowed', function(){
 Route::post('/Login_account', [UsersController::class, 'Login_Account']);
 Route::post('/Register_account', action: [UsersController::class, 'create']);
 Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
-Route::get('/kerja/create', [PekerjaanController::class, 'create'])->middleware(['role:mitra|admin']);
-Route::get('/kerja/{id}', [PekerjaanController::class, 'show'])->name('pekerjaan.show');
-Route::post('/kerja/lamar/{id}', [PekerjaanController::class, 'lamarPekerjaan'])->name('pekerjaan.lamar')->middleware(['role:user']);
+
 
 Route::middleware(['role:user|mitra|admin'])->group(function () {
+    Route::get('/chat/{id_target}', [ChatController::class, 'index']);
+    Route::post('/make_chat', action: [ChatController::class, 'store']);
+});
+Route::middleware(['role:user|mitra'])->group(function () {
+    Route::get('/daftar-lamaran/', action: [PekerjaanController::class, 'Daftar_Lamaran']);
     Route::post('/user/preferensi/save', action: [UsersController::class, 'save_preverensi']);
     Route::post('/kerja/add', action: [PekerjaanController::class, 'store']);
+    // Route::post('/kerja/add', action: [PekerjaanController::class, 'store']);
     Route::post('/Profile/Edit', [UsersController::class, 'Profile_Edit']);
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('user.transaksi');
+    Route::post('/Lamar/{idPekerjaan}', action: [PelamarController::class, 'store']);
+    Route::get('/Chat/Kerja/{idPekerjaan}', action: [ChatController::class, 'Lamaran']);
+
+    // Route::get('/Chat/{id_target}', action: [ChatController::class, 'index']);
+
     //Kerja
     Route::get('/question-new-user', action: [HomeController::class, 'new_user']);
 
@@ -51,29 +79,34 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
 
     //Profile
     Route::get('/Profile', [UsersController::class, 'Profile']);
-    
-    // Routes for mitra and user only
-    Route::middleware(['role:user|mitra|admin'])->group(function () {
+    Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
+
+    Route::middleware(['role:mitra'])->group(function () {
+        Route::get('/kerja/create', action: [PekerjaanController::class, 'create']);
+        Route::post('/lamaran/delete/{id_lamaran}', action: [PelamarController::class, 'delete']);
+        Route::get('/daftar-Pekerjaan/', action: [PekerjaanController::class, 'Daftar_Pekerjaan']);
+
+        Route::get('/daftar-Pelamar/{id}', action: [PekerjaanController::class, 'Daftar_Pelamar']);
+        Route::get('/Pelamar/Profile/{idPelamar}', [PelamarController::class, 'Profile_Pelamar']);
+
+        Route::post('/pelamar/tolak', action: [PelamarController::class, 'tolak']);
+        Route::post('/pelamar/terima', action: [PelamarController::class, 'terima']);
+        Route::post('/pelamar/interview', action: [PelamarController::class, 'interview_pelamar']);
+
+
         Route::prefix('management')->name('manajemen.')->group(function () {
             Route::get('/', [ManagementPageController::class, 'dashboard'])->name('dashboard');
-    
+
             // Pekerjaan
             Route::get('/pekerjaan-berlangsung', [ManagementPageController::class, 'pekerjaanBerlangsung'])->name('pekerjaan.berlangsung');
-            Route::get('/pekerjaan-terdaftar', [ManagementPageController::class, 'pekerjaanTerdaftar'])->name('pekerjaan.terdaftar');
             Route::get('/upload-laporan', [ManagementPageController::class, 'uploadLaporan'])->name('laporan.upload');
-            Route::post('/upload-laporan', [ManagementPageController::class, 'storeLaporan'])->name('laporan.store');
             Route::get('/riwayat-pekerjaan', [ManagementPageController::class, 'riwayatPekerjaan'])->name('pekerjaan.riwayat');
-            Route::get('/pekerjaan/{id}/manage', [ManagementPageController::class, 'managePekerjaan'])->name('pekerjaan.manage');
-            Route::post('/pekerjaan/{id}/update-status', [PekerjaanController::class, 'updateStatus'])->name('pekerjaan.updateStatus');
-            Route::post('/pekerjaan/{id}/terima-hasil', [PekerjaanController::class, 'terimaHasilPekerjaan'])->name('pekerjaan.terimaHasil');
-            Route::post('/pekerjaan/{id}/rating', [ManagementPageController::class, 'storeJobRating'])->name('pekerjaan.rating.store');
-            Route::post('/rating/worker', [ManagementPageController::class, 'storeWorkerRating'])->name('rating.worker.store');
-    
+
             // Keuangan
             // Route::get('/gateway-pembayaran', [ManagementPageController::class, 'gatewayPembayaran'])->name('pembayaran.gateway');
             Route::get('/Top-Up', [ManagementPageController::class, 'topUp'])->name('topUp');
             Route::post('/Top-Up', [TopUpController::class, 'store'])->name('topup.store');
-    
+
             // TopUp Controller disini
             Route::get('/Top-Up/{external_id}', [TopUpController::class, 'payment'])->name('topup.payment');
             Route::post('/Top-Up/check-status', [TopUpController::class, 'checkStatus'])->name('topup.check-status');
@@ -81,67 +114,66 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::post('/Top-Up/cancel/{external_id}', [TopUpController::class, 'cancel'])->name('topup.cancel');
             //
             Route::get('/tarik-saldo', [ManagementPageController::class, 'tarikSaldo'])->name('tarik_saldo');
-            Route::post('/tarik-saldo', [\App\Http\Controllers\PayoutController::class, 'store'])->name('payout.store');
-            Route::get('/tarik-saldo/history', [\App\Http\Controllers\PayoutController::class, 'history'])->name('payout.history');
-            Route::get('/tarik-saldo/balance', [\App\Http\Controllers\PayoutController::class, 'checkBalance'])->name('payout.balance');
-            Route::get('/tarik-saldo/detail/{id}', [\App\Http\Controllers\PayoutController::class, 'show'])->name('payout.show');
             Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
             // AJAX endpoint for fetching riwayat transaksi data without page reload
             Route::get('/riwayat-transaksi/data', [ManagementPageController::class, 'riwayatTransaksiData'])->name('transaksi.riwayat.data');
             Route::get('/refund-dana', [ManagementPageController::class, 'refundDana'])->name('dana.refund');
             Route::get('/laporan-keuangan', [ManagementPageController::class, 'laporanKeuangan'])->name('keuangan.laporan');
-    
-            // Pelaporan & Bantuan (Unified)
+
+            // Pelaporan & Bantuan
+            Route::get('/lapor-penipuan', [ManagementPageController::class, 'laporPenipuanForm'])->name('pelaporan.penipuan.form');
+            Route::post('/lapor-penipuan', [ManagementPageController::class, 'storePenipuanReport'])->name('pelaporan.penipuan.store');
             Route::get('/panel-bantuan', [ManagementPageController::class, 'panelBantuan'])->name('bantuan.panel');
-            Route::post('/panel-bantuan', [ManagementPageController::class, 'storeBantuanDanPenipuan'])->name('bantuan.store');
-            
-            // Conversation routes
-            Route::post('/ticket/{ticketId}/message', [ManagementPageController::class, 'sendMessage'])->name('ticket.message.send');
-            Route::get('/ticket/{ticketId}/messages', [ManagementPageController::class, 'getTicketMessages'])->name('ticket.messages.get');
-            Route::post('/ticket/{id}/close', [ManagementPageController::class, 'closeTicket'])->name('ticket.close');
-            Route::post('/ticket/{id}/reopen', [ManagementPageController::class, 'reopenTicket'])->name('ticket.reopen');
-    
-            // Rute Notifikasi
-            Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
-            Route::get('/notifications/page', [App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.page');
-            Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
-            Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
-            Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-            Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('notifications.delete');
-            Route::get('/notifications/poll', [App\Http\Controllers\NotificationController::class, 'poll'])->name('notifications.poll');
 
             // Fitur Lainnya
+            Route::get('/notifikasi-pekerjaan', [ManagementPageController::class, 'notifikasiStatusPekerjaan'])->name('notifikasi.pekerjaan');
+            Route::get('/notifikasi-pelamaran', [ManagementPageController::class, 'notifikasiStatusPelamaran'])->name('notifikasi.pelamaran');
             Route::get('/chat', [ManagementPageController::class, 'chatPengguna'])->name('chat');
+            Route::get('/rating-user', [ManagementPageController::class, 'ratingUser'])->name('rating.user');
             Route::get('/track-record-pelamar', [ManagementPageController::class, 'trackRecordPelamar'])->name('pelamar.track-record');
             Route::post('/transaksi/{jobId}', [TransaksiController::class, 'buatTransaksi'])->name('transaksi.buat');
-            Route::post('/pekerjaan/{id}/delete', [ManagementPageController::class, 'deletePekerjaan'])->name('pekerjaan.delete');
-        });
-    });
 
-    // Admin-only routes
-    Route::middleware(['role:admin'])->group(function () {
-        Route::prefix('management/admin')->name('manajemen.admin.')->group(function () {
-            Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
-            Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
-            Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
+
+            // Rute Khusus Admin (Contoh)
+            Route::prefix('admin')->name('admin.') // Buat middleware 'admin' jika belum ada
+                ->group(function () {
+                    Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
+                    Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
+                    Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
+                    // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
+                    // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
+                    Route::get('/admin', [HomeController::class, 'admin'])->name('admin.index'); // Index
+                    Route::get('/admin/user/{id}/edit', [UsersController::class, 'showAdmin'])->name('admin.show.profile');
+                    Route::match(['get', 'put'], '/admin/user/{id}', [UsersController::class, 'update'])->name('admin.update.profile');
+                    Route::get('/admin/user/edit/{id}', [UsersController::class, 'edit'])->name('admin.edit.profile');
+                    Route::get('/admin/user/delete/{id}', [UsersController::class, 'delete'])->name('admin.delete.profile');
+                    Route::get('/admin/transaksi/setujui/{kode}', [TransaksiController::class, 'setujuiTransaksi'])->name('admin.transaksi.setuju');
+                    Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
+                    // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
+                    // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
+                });
+            // ->group(function () {
+            //     Route::get('/pemantauan-laporan', [ManagementPageController::class, 'pemantauanLaporanAdmin'])->name('laporan.pemantauan');
+            //     Route::get('/users', [ManagementPageController::class, 'usersListAdmin'])->name('users.list');
+            //     Route::get('/users/tambah', [ManagementPageController::class, 'usersTambahAdmin'])->name('users.tambah');
+            // Route::get('/users/{user}/edit', [ManagementPageController::class, 'usersEditAdmin'])->name('users.edit');
+            // Route::put('/users/{user}', [ManagementPageController::class, 'usersUpdateAdmin'])->name('users.update');
+            // Route::patch('/users/{user}/activate', [ManagementPageController::class, 'usersActivateAdmin'])->name('users.activate');
+            // Route::patch('/users/{user}/deactivate', [ManagementPageController::class, 'usersDeactivateAdmin'])->name('users.deactivate');
+            // });
         });
-        
-        Route::get('/admin', [HomeController::class, 'admin'])->name('admin.index');
-        Route::get('/admin/user/{id}/edit', [UsersController::class, 'showAdmin'])->name('admin.show.profile');
-        Route::match(['get', 'put'], '/admin/user/{id}', [UsersController::class, 'update'])->name('admin.update.profile');
-        Route::get('/admin/user/edit/{id}', [UsersController::class, 'edit'])->name('admin.edit.profile');
-        Route::get('/admin/user/delete/{id}', [UsersController::class, 'delete'])->name('admin.delete.profile');
-        Route::get('/admin/transaksi/setujui/{kode}', [TransaksiController::class, 'setujuiTransaksi'])->name('admin.transaksi.setuju');
-        Route::post('/admin/transaksi/tolak/{kode}', [TransaksiController::class, 'tolakTransaksi'])->name('admin.transaksi.tolak');
     });
 });
+
+Route::get('/cekkossaine', function () {
+    return view('Dewa.cekcossaine');
+});
+
+Route::post('/CekKos', [PekerjaanController::class, 'ForTest']);
+
+
 
 //Only Mitra
-Route::middleware(['role:mitra|admin'])->group(function () {
-    Route::get('/dewa/mitra/lowongan-terdaftar', [PekerjaanController::class, 'lowonganTerdaftar'])->name('dewa.mitra.lowongan.terdaftar');
-    Route::patch('/dewa/mitra/pelamar/{pelamar}/terima', [PekerjaanController::class, 'terima'])->name('dewa.mitra.pelamar.terima');
-    Route::patch('/dewa/mitra/pelamar/{pelamar}/tolak', [PekerjaanController::class, 'tolak'])->name('dewa.mitra.pelamar.tolak');
-});
 
 //End Dewa
 
@@ -170,10 +202,13 @@ Route::middleware(['role:mitra|admin'])->group(function () {
 // });
 
 // Route::middleware(['role', 'mitra'])->group(function () {
-    
+
 
 //Sidejob
 // Route::get('/sidejob/{id}', [SideJobController::class, 'showAdmin'])->name('admin.sidejob.show');
 // Route::get('/sidejob/edit/{id}', [SideJobController::class, 'editAdmin'])->name('admin.sidejob.edit');
 
 // });
+
+
+require __DIR__ . '/auth.php';

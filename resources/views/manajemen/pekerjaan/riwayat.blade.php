@@ -33,8 +33,8 @@
             </div>
         </div>
 
-        {{-- Desktop Table View --}}
-        <div class="hidden lg:block overflow-x-auto bg-white rounded-lg shadow">
+        {{-- Tabel Data Riwayat Pekerjaan --}}
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
@@ -48,71 +48,28 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                    @forelse($riwayatPekerjaan as $pelamar)
+                    {{-- Contoh Data Row 1 --}}
                     <tr>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @if($pelamar->sidejob)
-                                <p class="font-semibold">{{ $pelamar->sidejob->nama }}</p>
-                                <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
-                            @else
-                                <p class="font-semibold">Pekerjaan tidak ditemukan</p>
-                                <p class="text-xs text-gray-500">Kategori: -</p>
-                            @endif
+                            <p class="font-semibold">Penulisan Artikel SEO (10 Artikel)</p>
+                            <p class="text-xs text-gray-500">Kategori: Penulisan Konten</p>
                         </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
-                                {{ $pelamar->sidejob->pembuatUser->nama }}
-                            @else
-                                Tidak diketahui
-                            @endif
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">PT. Digital Kreatif</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Budi Santoso</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
                                 <span class="relative">Selesai</span>
                             </span>
                         </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">15 April 2024</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @php
-                                $formattedDate = 'Tidak ada tanggal';
-                                if ($pelamar->updated_at) {
-                                    $date = \Carbon\Carbon::parse($pelamar->updated_at);
-                                    $formattedDate = $date->locale('id')->format('d-M-Y');
-                                }
-                            @endphp
-                            {{ $formattedDate }}
-                        </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
-                            @php
-                                $user = session('account');
-                                // Determine which rating to display based on user role
-                                if ($user->isUser()) {
-                                    // User is worker, show rating received from employer
-                                    $displayRating = $pelamar->employerToWorkerRating;
-                                } else {
-                                    // User is employer, show rating received from worker
-                                    $displayRating = $pelamar->workerToEmployerRating;
-                                }
-                            @endphp
-                            
-                            @if($displayRating)
-                                @for($i = 1; $i <= 5; $i++)
-                                    @if($i <= $displayRating->rating)
-                                        <i class="fas fa-star text-yellow-400"></i>
-                                    @else
-                                        <i class="far fa-star text-yellow-400"></i>
-                                    @endif
-                                @endfor
-                                ({{ $displayRating->rating }}.0)
-                                @if($displayRating->comment)
-                                    <div class="text-xs text-gray-500 mt-1" title="{{ $displayRating->comment }}">
-                                        "{{ Str::limit($displayRating->comment, 50) }}"
-                                    </div>
-                                @endif
-                            @else
-                                <span class="text-gray-400">Belum ada rating</span>
-                            @endif
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="far fa-star text-yellow-400"></i>
+                            (4.0)
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             <a href="#" class="text-blue-500 hover:text-blue-700" title="Lihat Detail Riwayat">
@@ -120,136 +77,37 @@
                             </a>
                         </td>
                     </tr>
-                    @empty
+                    {{-- Contoh Data Row 2 --}}
                     <tr>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            <p class="font-semibold">Input Data Produk ke Excel</p>
+                            <p class="text-xs text-gray-500">Kategori: Entri Data</p>
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Toko Online CepatLaku</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">Rina Wati</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            <span class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
+                                <span aria-hidden class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
+                                <span class="relative">Dibatalkan</span>
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">10 Maret 2024</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">N/A</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            <a href="#" class="text-blue-500 hover:text-blue-700" title="Lihat Detail Riwayat">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {{-- Tambahkan lebih banyak baris data di sini sesuai kebutuhan --}}
+                    {{-- Contoh jika tidak ada data --}}
+                    {{-- <tr>
                         <td colspan="7" class="px-5 py-10 border-b border-gray-200 text-sm text-center text-gray-500">
                             Tidak ada riwayat pekerjaan yang ditemukan.
                         </td>
-                    </tr>
-                    @endforelse
+                    </tr> --}}
                 </tbody>
             </table>
-        </div>
-
-        {{-- Mobile Card View --}}
-        <div class="block lg:hidden space-y-4">
-            @forelse($riwayatPekerjaan as $pelamar)
-            <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                {{-- Job Title & Category --}}
-                <div class="mb-3">
-                    @if($pelamar->sidejob)
-                        <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $pelamar->sidejob->nama }}</h3>
-                        <p class="text-xs text-gray-500">Kategori: {{ $pelamar->sidejob->kriteria ?? 'Umum' }}</p>
-                    @else
-                        <h3 class="font-semibold text-gray-900 text-lg mb-1">Pekerjaan tidak ditemukan</h3>
-                        <p class="text-xs text-gray-500">Kategori: -</p>
-                    @endif
-                </div>
-
-                {{-- Status Badge --}}
-                <div class="mb-3">
-                    <span class="inline-block px-3 py-1 font-semibold text-green-900 leading-tight bg-green-200 rounded-full text-sm">
-                        Selesai
-                    </span>
-                </div>
-
-                {{-- Details Grid --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
-                    <div>
-                        <span class="text-gray-500">Pemberi Kerja:</span>
-                        <div class="font-medium">
-                            @if($pelamar->sidejob && isset($pelamar->sidejob->pembuatUser))
-                                {{ $pelamar->sidejob->pembuatUser->nama }}
-                            @else
-                                Tidak diketahui
-                            @endif
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Pelamar:</span>
-                        <div class="font-medium">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</div>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Tanggal Selesai:</span>
-                        <div class="font-medium">
-                            @php
-                                $formattedDate = 'Tidak ada tanggal';
-                                if ($pelamar->updated_at) {
-                                    $date = \Carbon\Carbon::parse($pelamar->updated_at);
-                                    $formattedDate = $date->locale('id')->format('d-M-Y');
-                                }
-                            @endphp
-                            {{ $formattedDate }}
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Rating:</span>
-                        <div class="font-medium">
-                            @php
-                                $jobRating = null;
-                                $workerRating = null;
-
-                                if ($pelamar->sidejob) {
-                                    $jobRating = App\Models\Rating::where('job_id', $pelamar->sidejob->id)
-                                        ->where('worker_id', $pelamar->user_id)
-                                        ->where('type', 'job')
-                                        ->first();
-
-                                    $workerRating = App\Models\Rating::where('job_id', $pelamar->sidejob->id)
-                                        ->where('worker_id', $pelamar->user_id)
-                                        ->where('type', 'worker')
-                                        ->first();
-                                }
-                            @endphp
-
-                            @if($jobRating || $workerRating)
-                                <div class="space-y-1">
-                                    @if($jobRating)
-                                        <div class="flex items-center">
-                                            <span class="text-yellow-500 mr-1">★</span>
-                                            <span>{{ $jobRating->rating }}/5 (Job)</span>
-                                        </div>
-                                    @endif
-                                    @if($workerRating)
-                                        <div class="flex items-center">
-                                            <span class="text-yellow-500 mr-1">★</span>
-                                            <span>{{ $workerRating->rating }}/5 (Worker)</span>
-                                        </div>
-                                    @endif
-                                </div>
-                            @else
-                                <span class="text-gray-400">Belum ada rating</span>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Action Buttons --}}
-                <div class="flex flex-col sm:flex-row gap-2">
-                    @if($pelamar->sidejob)
-                        <a href="{{ route('manajemen.pekerjaan.manage', $pelamar->sidejob->id) }}" 
-                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm text-center">
-                            <i class="fas fa-eye mr-1"></i>Detail
-                        </a>
-                        @if(App\Models\LaporanJobHasil::where('job_id', $pelamar->sidejob->id)->where('pekerja_id', $pelamar->user_id)->exists())
-                            <button onclick="showLaporanModal({{ $pelamar->sidejob->id }}, {{ $pelamar->user_id }})" 
-                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm">
-                                <i class="fas fa-file-alt mr-1"></i>Lihat Laporan
-                            </button>
-                        @endif
-                    @else
-                        <span class="text-gray-400 text-sm">Tidak ada aksi tersedia</span>
-                    @endif
-                </div>
-            </div>
-            @empty
-            <div class="bg-white rounded-lg shadow-md p-8 text-center">
-                <div class="text-gray-500 mb-2">
-                    <i class="fas fa-history text-4xl text-gray-300"></i>
-                </div>
-                <p class="text-gray-500">Tidak ada riwayat pekerjaan yang ditemukan.</p>
-            </div>
-            @endforelse
         </div>
 
         {{-- Pagination (jika diperlukan) --}}

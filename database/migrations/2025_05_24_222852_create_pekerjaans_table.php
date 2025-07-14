@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pekerjaans', function (Blueprint $table) {
             $table->id()->restrictOnDelete()->autoIncrement();
             $table->string('nama');
-            $table->string('deskripsi');
+            $table->longText('deskripsi');
             // $table->date('tanggal_buat');
             $table->string('alamat');
             $table->string('koordinat');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('max_pekerja')->default('0');
             $table->integer('jumlah_pelamar_diterima')->default('0'); 
             $table->integer('is_active')->default(1);
-            $table->string('kriteria');
+            $table->text('kriteria');
             $table->string('status')->default('Open');
             $table->string('petunjuk_alamat');
             $table->string('latitude');

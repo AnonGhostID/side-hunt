@@ -6,30 +6,104 @@ use App\Http\Controllers\Controller;
 use App\Models\KriteriaJob;
 use App\Models\Pekerjaan;
 use App\Models\Pelamar;
-use App\Models\Notification;
-use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 
 class PekerjaanController extends Controller
 {
     public function index()
     {
-        $all = Pekerjaan::all();
+        $all = Pekerjaan::orderBy('nama', 'asc')->get();
+        $all_rekomendasi = Pekerjaan::all();
         // dd($all[0]);
         $match = ($this->getThe20ies());
         $active_navbar = 'Cari Pekerjaan';
         $nama_halaman = 'Cari Pekerjaan';
 
 
-        return view("Dewa.Mitra.pekerjaan-cari", compact("active_navbar", 'nama_halaman', 'all', 'match'));
+        return view("Dewa.pekerjaan.cari", compact("active_navbar", 'nama_halaman', 'all', 'match', 'all_rekomendasi'));
     }
+
+
     public function create()
     {
         $active_navbar = 'Beri Lowongan Kerja';
         $nama_halaman = 'Tambah Pekerjaan';
-        $kriteria = KriteriaJob::all();
-        return view("Dewa.Mitra.pekerjaan-add", compact("active_navbar", 'nama_halaman', 'kriteria'));
+        $path = public_path('Dewa/json/dummy_skills.json');
+        $kriteria = json_decode(file_get_contents($path), true)['skills'];
+        return view("Dewa.pekerjaan.add", compact("active_navbar", 'nama_halaman', 'kriteria'));
+    }
+    public function Daftar_Pelamar($id)
+    {
+        $pekerjaan =Pekerjaan::where('id', $id)
+        ->where('pembuat', session('account')['id'])
+        ->first();
+        $back = null;
+        if($id!='all'&&$pekerjaan==null){
+            return Redirect()->back()->with('fail',['Akses Ditolak','Pekerjaan Ini tidak termasuk Milik Anda!']);
+        }
+        $active_navbar = 'Pekerjaan';
+        $nama_halaman = 'Daftar Pelamar Pekerjaan';
+        $pelamars = Pekerjaan::join('pelamars', 'pekerjaans.id', '=', 'pelamars.job_id')
+            ->join('users', 'pelamars.user_id', '=', 'users.id')
+            ->where('pekerjaans.pembuat', session('account')['id'])
+            ->where('pelamars.is_delete', false);
+        if ($id != 'all') {
+            $pelamars->where('pelamars.job_id', $id);
+        }
+
+        $pelamars = $pelamars->select(
+            'pekerjaans.*',
+            'pelamars.created_at as daftar',
+            'users.nama as nama_pelamar',
+            'users.preferensi_user',
+            'pelamars.status as status_job',
+            'pelamars.id as id_pelamars',
+            'pelamars.user_id as id_pelamar',
+            'pelamars.link_Interview as link',
+            'pelamars.jadwal_interview as jadwal',
+            'pelamars.alasan as alasan',
+        )->get();
+
+        foreach($pelamars as $pelamar){
+            $skills = [];
+            if (!empty($pelamar->preferensi_user)) {
+                $preferensi = json_decode($pelamar->preferensi_user);
+                if (!empty($preferensi->kriteria)) {
+                    foreach($preferensi->kriteria as $skill){
+                        if($skill != ""){
+                            $skills[] = $skill;
+                        }
+                    }
+                }
+            }
+            $pelamar->preferensi_user=(implode(", ", $skills));;
+        }
+
+        $direction = $id;
+        // dd($pelamars);
+        // dd($pekerjaan);
+        // dd($back);
+            return view('Dewa.pekerjaan.daftar-pelamar', compact("active_navbar", 'nama_halaman', 'pelamars','pekerjaan','direction'));
+
+    }
+
+    public function view_pekerjaan($id)
+    {
+        $active_navbar = 'Cari Pekerjaan';
+        $nama_halaman = 'Lihat Pekerjaan';
+        $data_pekerjaan = Pekerjaan::where('id', $id)->get();
+        $kriteria = explode(",", $data_pekerjaan[0]['kriteria']);
+        $data_pekerjaan[0]['kriteria'] = $kriteria;
+        if (session()->has('account')) {
+            $history = Pelamar::where('user_id', session('account')['id'])
+                ->where('job_id', $id)
+                ->get();
+            return view('Dewa.pekerjaan.lihat', compact("active_navbar", 'nama_halaman', 'data_pekerjaan', 'history'));
+        } else {
+            return view('Dewa.pekerjaan.lihat', compact("active_navbar", 'nama_halaman', 'data_pekerjaan'));
+        }
     }
 
     public function store(Request $request)
@@ -40,7 +114,7 @@ class PekerjaanController extends Controller
             'min_gaji' => 'required|integer|max:99999999999999999999', // maksimal 20 digit
             'max_gaji' => 'required|integer|max:99999999999999999999', // maksimal 20 digit
             'max_pekerja' => 'required|integer|max:9999999999', // maksimal 10 digit
-            'deskripsi' => 'required|string|max:1000',
+            'deskripsi' => 'required|string|max:5000',
             'alamat' => 'required|string|max:100',
             'petunjuk_alamat' => 'required|string|max:100',
             'koordinat' => 'required|string',
@@ -68,7 +142,7 @@ class PekerjaanController extends Controller
 
             'deskripsi.required' => 'Deskripsi wajib diisi.',
             'deskripsi.string' => 'Deskripsi harus berupa teks.',
-            'deskripsi.max' => 'Deskripsi maksimal 1000 karakter.',
+            'deskripsi.max' => 'Deskripsi maksimal 3000 karakter.',
 
             'alamat.required' => 'Alamat wajib diisi.',
             'alamat.string' => 'Alamat harus berupa teks.',
@@ -104,23 +178,8 @@ class PekerjaanController extends Controller
         ]);
         if ($request->koordinat != null) {
             $request['pembuat'] = session('account')['id'];
-            $kriteria = [];
-            // dd($request->kriteria);     
-            foreach ($request->kriteria as $nama) {
-                $cek = (new KriteriaJobController())->cek_exist($nama);
-                if ($cek == false) {
-                    $new = (new KriteriaJobController())->store(trim($nama));
-                    // dD($new);
-                    $kriteria[] = $new->id;
-                } else {
-                    $kriteria[] = $cek;
-                }
-            }
-
-            $request['kriteria'] = implode(",", $kriteria);
-
-            // dd($request['kriteria']);
-
+            $kriteria = implode(",", $request['kriteria']);
+            $request['kriteria'] = $kriteria;
 
             $data = collect($request->all())->mapWithKeys(function ($value, $key) {
                 return [$key => is_array($value) ? $value : (string)$value];
@@ -134,8 +193,8 @@ class PekerjaanController extends Controller
             if ($request->hasFile('foto_job')) {
                 $file = $request->file('foto_job');
                 $filename = $request->nama . "." . $file->getClientOriginalExtension();
-                $path = $file->storeAs('job', $filename, 'public');
-                $data['foto_job'] = $filename;
+                $path = 'storage/'.$file->storeAs('job', $filename, 'public');
+                $data['foto_job'] = $path;
             }
             if (Pekerjaan::create($data)) {
                 return redirect()->back()->with('success', ['Berhasil', 'Pekerjaan Berhasil didaftarkan']);
@@ -148,233 +207,209 @@ class PekerjaanController extends Controller
 
     public function terima(Pelamar $pelamar)
     {
-        $result = $this->updatePelamarStatus($pelamar, 'diterima');
-        
-        if (!$result) {
-            return redirect()->back()->with('error', 'Tidak dapat menerima pelamar karena sudah mencapai batas maksimal pekerja.');
-        }
-        
-        return redirect()->back()->with('success', 'Pelamar berhasil diterima.');
+        $pelamar->update(['status' => 'diterima']);
+        return redirect()->back();
     }
 
     public function tolak(Pelamar $pelamar)
     {
-        $this->updatePelamarStatus($pelamar, 'ditolak');
+        $pelamar->update(['status' => 'ditolak']);
         return redirect()->back();
     }
 
-    private function updatePelamarStatus(Pelamar $pelamar, string $status)
+    public function Daftar_Lamaran()
     {
-        $job = $pelamar->sidejob;
-        $oldStatus = $pelamar->status;
-
-        // If trying to accept (diterima), check if we exceed max_pekerja limit
-        if ($status === 'diterima' && $oldStatus !== 'diterima' && $job) {
-            $currentAccepted = $job->pelamar()->where('status', 'diterima')->count();
-            
-            // Check if accepting this pelamar would exceed the limit
-            if ($currentAccepted >= $job->max_pekerja) {
-                // Don't update status, return early (could throw exception or handle differently)
-                return false;
-            }
-        }
-
-        // Update pelamar status
-        $pelamar->update(['status' => $status]);
-
-        // Update jumlah_pelamar_diterima count in pekerjaan table
-        if ($job) {
-            $acceptedCount = $job->pelamar()->where('status', 'diterima')->count();
-            $job->update(['jumlah_pelamar_diterima' => $acceptedCount]);
-
-            // Create notification
-            Notification::createJobStatusNotification(
-                $pelamar->user_id,
-                $job->nama,
-                $status
-            );
-        }
-
-        return true;
+        $active_navbar = 'Daftar Lamaran';
+        $nama_halaman = 'Daftar Lamaran';
+        $pekerjaans = Pekerjaan::join('pelamars', 'pekerjaans.id', '=', 'pelamars.job_id')
+            ->where('pelamars.user_id', session('account')['id'])
+            ->select('pekerjaans.*', 'pelamars.*') // pilih kolom sesuai kebutuhanmu
+            ->get();
+        // dd($pekerjaans);
+        // $Pekerjaans = Pelamar::where('user_id', session('account')['id'])->get();
+        return view('Dewa.pekerjaan.dilamar', compact('active_navbar', 'nama_halaman', 'pekerjaans'));
     }
 
-    public function show($id)
+    public function Daftar_Pekerjaan()
     {
-        $job = Pekerjaan::findOrFail($id);
-        $active_navbar = 'Detail Pekerjaan';
-        $nama_halaman = 'Detail Pekerjaan';
-        
-        return view('Dewa.Mitra.pekerjaan-detail', compact('job', 'active_navbar', 'nama_halaman'));
-    }
-
-    public function lamarPekerjaan($id)
-    {
-        if (!session()->has('account')) {
-            return redirect('/Login')->with('error', 'Anda harus login terlebih dahulu');
-        }
-
-        $user = session('account');
-        $pekerjaan = Pekerjaan::findOrFail($id);
-
-        // Check if user is the job creator
-        if ($pekerjaan->pembuat == $user['id']) {
-            return redirect()->back()->with('error', 'Anda tidak dapat melamar pekerjaan yang Anda buat sendiri');
-        }
-
-        // Check if user has already applied
-        $existingApplication = Pelamar::where('user_id', $user['id'])
-                                     ->where('job_id', $id)
-                                     ->first();
-
-        if ($existingApplication) {
-            return redirect()->back()->with('error', 'Anda sudah melamar pekerjaan ini');
-        }
-
-        // Create new application
-        Pelamar::create([
-            'user_id' => $user['id'],
-            'job_id' => $id,
-            'status' => 'pending'
-        ]);
-
-        // Create notification for the job creator (mitra)
-        $applicant = Users::find($user['id']);
-        if ($applicant) {
-            Notification::createNewApplicationNotification(
-                $pekerjaan->pembuat,
-                $pekerjaan->nama,
-                $applicant->nama
-            );
-        }
-
-        return redirect()->back()->with('success', 'Lamaran berhasil dikirim!');
-    }
-
-    public function lowonganTerdaftar()
-    {
-        if (!session()->has('account')) {
-            return redirect('/Login');
-        }
-
-        $user = session('account');
-        
-        // Get jobs created by current user (mitra) with their applicants
-        $jobs = Pekerjaan::where('pembuat', $user['id'])
-                ->with(['pelamar.user'])
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-        $active_navbar = 'Lowongan Terdaftar';
+        $active_navbar = 'Pekerjaan';
         $nama_halaman = 'Lowongan Terdaftar';
 
-        return view('Dewa.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman'));
-    }
 
-    public function updateStatus(Request $request, $id)
-    {
-        $pekerjaan = Pekerjaan::findOrFail($id);
-
-        if ($pekerjaan->status == 'Open') {
-            $pekerjaan->status = 'Berlangsung';
-            $pekerjaan->save();
-            return redirect()->back()->with('success', 'Status pekerjaan berhasil diubah menjadi On Progress.');
-        }
-
-        return redirect()->back()->with('error', 'Status pekerjaan tidak dapat diubah.');
-    }
-
-    public function terimaHasilPekerjaan(Request $request, $id)
-    {
-        $pekerjaan = Pekerjaan::findOrFail($id);
-
-        if ($pekerjaan->status != 'Berlangsung') {
-            return redirect()->back()->with('error', 'Pekerjaan belum dalam status Berlangsung.');
-        }
-
-        $pelamarDiterima = $pekerjaan->pelamar()->where('status', 'diterima')->first();
-
-        if (!$pelamarDiterima) {
-            return redirect()->back()->with('error', 'Tidak ada pelamar yang diterima untuk pekerjaan ini.');
-        }
-
-        $userPelamar = $pelamarDiterima->user;
-
-        if (!$userPelamar) {
-            return redirect()->back()->with('error', 'Data user pelamar tidak ditemukan.');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Transfer min_gaji to pelamar's wallet
-            $userPelamar->dompet += $pekerjaan->min_gaji;
-            $userPelamar->save();
-
-            // Update job status to Selesai
-            $pekerjaan->status = 'Selesai';
-            $pekerjaan->save();
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Hasil pekerjaan berhasil diterima dan dana telah ditransfer.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal menerima hasil pekerjaan: ' . $e->getMessage());
-        }
+        $pekerjaans = Pekerjaan::select('pekerjaans.id', 'pekerjaans.nama', 'pekerjaans.alamat', 'pekerjaans.created_at', 'pekerjaans.latitude', 'pekerjaans.longitude', DB::raw('COUNT(pelamars.status) as total_pelamar'))
+            ->join('users', 'pekerjaans.pembuat', '=', 'users.id')
+            ->leftJoin('pelamars', 'pekerjaans.id', '=', 'pelamars.job_id')
+            ->where('pekerjaans.pembuat', session('account')['id'])
+            ->groupBy([
+                'pekerjaans.id',
+                'pekerjaans.nama',
+                'pekerjaans.alamat',
+                'pekerjaans.created_at',
+                'pekerjaans.latitude',
+                'pekerjaans.longitude'
+            ])
+            ->get();
+        // dd($pekerjaans);
+        return view('Dewa.pekerjaan.dibuat', compact('active_navbar', 'nama_halaman', 'pekerjaans'));
     }
 
     function cosineSimilarityPercent($text1, $text2)
     {
-        // 1. Hitung frekuensi kata dari masing-masing teks
-        $words1 = array_count_values(str_word_count(strtolower($text1), 1));
-        $words2 = array_count_values(str_word_count(strtolower($text2), 1));
+        // Normalize: lowercase and remove extra spaces
+        $text1 = strtolower(trim($text1));
+        $text2 = strtolower(trim($text2));
 
-        // 2. Gabungkan semua kata unik dari kedua teks
-        $allWords = array_unique(array_merge(array_keys($words1), array_keys($words2)));
+        // Create n-grams
+        $ngrams1 = $this->getCharacterNgrams($text1, 2);
+        $ngrams2 = $this->getCharacterNgrams($text2, 2);
 
-        // 3. Bangun vektor BoW untuk kedua teks
+        // Count frequency of each n-gram
+        $freq1 = array_count_values($ngrams1);
+        $freq2 = array_count_values($ngrams2);
+
+        // Union of keys
+        $allKeys = array_unique(array_merge(array_keys($freq1), array_keys($freq2)));
+
+        // Vectorize both n-gram sets
         $vec1 = [];
         $vec2 = [];
 
-        foreach ($allWords as $word) {
-            $vec1[] = $words1[$word] ?? 0;
-            $vec2[] = $words2[$word] ?? 0;
+        foreach ($allKeys as $key) {
+            $vec1[] = isset($freq1[$key]) ? $freq1[$key] : 0;
+            $vec2[] = isset($freq2[$key]) ? $freq2[$key] : 0;
         }
 
-        // 4. Hitung dot product dan magnitude dari vektor
+        // Cosine similarity
         $dotProduct = 0;
-        $magnitude1 = 0;
-        $magnitude2 = 0;
+        $mag1 = 0;
+        $mag2 = 0;
 
         for ($i = 0; $i < count($vec1); $i++) {
             $dotProduct += $vec1[$i] * $vec2[$i];
-            $magnitude1 += $vec1[$i] ** 2;
-            $magnitude2 += $vec2[$i] ** 2;
+            $mag1 += pow($vec1[$i], 2);
+            $mag2 += pow($vec2[$i], 2);
         }
 
-        // 5. Jika salah satu vektor nol (kosong), hasil 0%
-        if ($magnitude1 == 0 || $magnitude2 == 0) {
-            return 0.0;
+        if ($mag1 == 0 || $mag2 == 0) return 0.0;
+
+        $similarity = $dotProduct / (sqrt($mag1) * sqrt($mag2));
+        return round($similarity * 100, 2); // Convert to percent
+    }
+
+    function ForTest(Request $request)
+    {
+        // $this->runTests();
+        return $this->cosineSimilarity($request->text1, $request->text2);
+    }
+
+    public function cosineSimilarity($text1, $text2)
+    {
+        $tokens1 = $this->preprocess($text1);
+        $tokens2 = $this->preprocess($text2);
+
+        $vocab = $this->fuzzyUnion($tokens1, $tokens2);
+        $vec1 = array_fill_keys($vocab, 0);
+        $vec2 = array_fill_keys($vocab, 0);
+
+        foreach ($tokens1 as $t1) {
+            $match = $this->fuzzyMatch($t1, $vocab);
+            if ($match) $vec1[$match]++;
         }
 
-        // 6. Hitung cosine similarity dan ubah ke persen
-        $similarity = $dotProduct / (sqrt($magnitude1) * sqrt($magnitude2));
-        return round($similarity * 100, 2); // Misal 0.75 → 75.00%
+        foreach ($tokens2 as $t2) {
+            $match = $this->fuzzyMatch($t2, $vocab);
+            if ($match) $vec2[$match]++;
+        }
+
+        $dot = 0;
+        $mag1 = 0;
+        $mag2 = 0;
+        foreach ($vocab as $term) {
+            $dot += $vec1[$term] * $vec2[$term];
+            $mag1 += pow($vec1[$term], 2);
+            $mag2 += pow($vec2[$term], 2);
+        }
+
+        if ($mag1 == 0 || $mag2 == 0) return 0.0;
+        return round(($dot / (sqrt($mag1) * sqrt($mag2))) * 100, 2);
+    }
+
+    private function preprocess($text)
+    {
+        $text = strtolower($text);
+        $text = preg_replace('/[^a-z\s]/', '', $text);
+        $words = preg_split('/\s+/', $text);
+
+        $stopwords = ['aku', 'saya', 'yang', 'untuk', 'dengan', 'secara', 'atau', 'ke', 'dari', 'bisa', 'adalah', 'itu', 'ini', 'dan', 'biasanya', 'sebagai'];
+
+        return array_values(array_filter(array_diff($words, $stopwords)));
+    }
+
+    private function fuzzyMatch($token, $vocab)
+    {
+        foreach ($vocab as $v) {
+            similar_text($token, $v, $percent);
+            if ($percent >= 80.0) return $v;
+        }
+        return null;
+    }
+
+    private function fuzzyUnion($tokens1, $tokens2)
+    {
+        $combined = array_merge($tokens1, $tokens2);
+        $result = [];
+
+        foreach ($combined as $token) {
+            if (!$this->fuzzyMatch($token, $result)) {
+                $result[] = $token;
+            }
+        }
+
+        return $result;
+    }
+
+    // Tambahkan fungsi ini untuk menjalankan 3 pengujian langsung
+    public function runTests()
+    {
+        echo "1. 'program' vs 'programmer': " . $this->cosineSimilarity("program", "programmer") . "%\n\n";
+
+        echo "2. kerja vs kurir: " . $this->cosineSimilarity(
+            "Aku bisa coding, biasanya aku program sesuatu",
+            "Kurir Barang Mengantarkan barang dari penjual ke pembeli."
+        ) . "%\n\n";
+
+        echo "3. kerja vs freelance programmer: " . $this->cosineSimilarity(
+            "Aku bisa coding, biasanya aku program sesuatu",
+            "Programmer Lepas Mengembangkan aplikasi atau website secara freelance."
+        ) . "%\n\n";
     }
 
     public function getThe20ies()
     {
         $result = [];
         $all = Pekerjaan::all();
-        if (session()->has('account')){//apabila sudah login
-    
+        $filtered = [];
+        if (session()->has('account')) { //apabila sudah login
+
             foreach ($all as $kerja) {
                 //cek hasil CSP
-                $decimal = $this->cosineSimilarityPercent(
-                    json_encode($kerja),
-                    json_encode(session('account')->preferensi_user)
+                // dd(
+                //     json_decode(session('account')->preferensi_user)->deskripsi,
+                //     json_decode($all[6])->nama . " " . json_decode($all[6])->deskripsi
+                // );
+                // $decimal = $this->cosineSimilarity(
+                //     json_encode(json_decode($kerja)->nama . " " . json_decode($kerja)->deskripsi),
+                //     json_encode(json_decode(session('account')->preferensi_user)->deskripsi)
+                // );
+                $decimal = $this->cosineSimilarity(
+                    json_encode(json_decode($kerja)->nama . " " . json_decode($kerja)->deskripsi),
+                    json_encode(json_decode(session('account')->preferensi_user)->deskripsi . " " . implode(",", json_decode(session('account')->preferensi_user)->kriteria))
                 );
-    
+                // echo "<br> ".json_decode(session('account')->preferensi_user)->deskripsi."n dg <br>".json_decode($kerja)->nama . " <br>" . json_decode($kerja)->deskripsi." Hasilnya: ".$decimal."<br>";
+
+                // echo "<br>".json_decode($kerja)->id." ".json_decode(session('account')->preferensi_user)->deskripsi. json_decode($kerja)->nama." Hasilnya: ".$decimal."<br>";
                 //membatasi jumlah pekerjaan disarankan
-                if (count($result) < 15) {
+                if (count($result) < 20) {
                     $result[$kerja->id] = $decimal;
                 }
                 //jika sudah mencapai jumlah, maka cut yg paling kecil didalam array
@@ -383,23 +418,25 @@ class PekerjaanController extends Controller
                     $minimal_value = min($result);
                     //cari keynya dari angka paling kecil
                     $key_minimal_value = array_search($minimal_value, $result);
-                    
+
                     //cek jika hasil CSP lebih besar dr minimal value maka ganti
                     if ($decimal > $minimal_value) {
-                        unset($result[$key_minimal_value]);// hapus yang terkecil
-                        $result[$kerja->id] = $decimal;//ganti isi array
+                        unset($result[$key_minimal_value]); // hapus yang terkecil
+                        $result[$kerja->id] = $decimal; //ganti isi array
                     }
                 }
             }
-            (arsort($result));//urutkan array dari yg terbesar ke terkecil
-            // dd($result);
-        }
-        else{
+            $filtered = array_filter($result, function ($value) {
+                return $value != 0.0;
+            });
+            (arsort($filtered));
+        } else {
             // $result = $all;
             // dd($result,'belum');
         }
+        // dd($filtered);
 
-        return ($result);
+        return ($filtered);
     }
 
     function hitungJarak($lat1, $lon1, $lat2, $lon2)
@@ -418,5 +455,10 @@ class PekerjaanController extends Controller
         $distance = $earthRadius * $c;
 
         return $distance;
+    }
+
+    function is_own_pelamar($idPelamar){
+        $job = Pekerjaan::findOrFail($idPelamar);
+        return ($job->pembuat==session('account')['id']);
     }
 }

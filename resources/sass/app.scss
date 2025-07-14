@@ -2,7 +2,11 @@
 @use 'variables';
 
 // Bootstrap
-@use 'bootstrap/scss/bootstrap';
+// @use 'bootstrap/scss/bootstrap';
+// @import "../../node_modules/bootstrap/scss/bootstrap";
+// @import 'bootstrap/scss/bootstrap.scss';
+@import 'bootstrap/scss/bootstrap.scss';
+
 
 // Fonts
 @import url('https://fonts.bunny.net/css?family=Nunito');

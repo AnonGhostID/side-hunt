@@ -19,8 +19,3 @@ yarn-error.log
 /.vscode
 package-lock.json
 composer.lock
-/.clinerules/
-CLAUDE.md
-CLAUDE.local.md
-/.claude/*
-.agent.md

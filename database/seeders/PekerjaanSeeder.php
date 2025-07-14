@@ -12,7 +12,6 @@ class PekerjaanSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create 15 fake Indonesian onsite daily jobs
-        \App\Models\Pekerjaan::factory(15)->create();
+        //
     }
 }
