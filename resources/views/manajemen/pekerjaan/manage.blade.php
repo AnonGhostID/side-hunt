@@ -150,6 +150,70 @@
             </div>
         </section>
     @endif
+
+    {{-- Rating Received Section - Only show when job is completed --}}
+    @if($pekerjaan->status == 'Selesai')
+        <section class="bg-white p-6 rounded-lg shadow-lg mt-6">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Rating yang Anda Terima</h3>
+            
+            <div class="bg-gray-50 rounded-lg p-6">
+                @php
+                    $user = session('account');
+                    $acceptedWorker = $pekerjaan->pelamar()->where('status', 'diterima')->with('user')->first();
+                    
+                    // Get rating received from worker
+                    $receivedRating = null;
+                    if ($acceptedWorker && $acceptedWorker->user) {
+                        $receivedRating = App\Models\Rating::where('job_id', $pekerjaan->id)
+                            ->where('rater_id', $acceptedWorker->user->id)
+                            ->where('rated_id', $user->id)
+                            ->where('type', 'worker_to_employer')
+                            ->first();
+                    }
+                @endphp
+                
+                @if($receivedRating)
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <h4 class="text-sm font-medium text-gray-900 mr-2">{{ $acceptedWorker->user->nama }}</h4>
+                                <div class="flex items-center">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        @if($i <= $receivedRating->rating)
+                                            <i class="fas fa-star text-yellow-400"></i>
+                                        @else
+                                            <i class="far fa-star text-yellow-400"></i>
+                                        @endif
+                                    @endfor
+                                    <span class="ml-2 text-sm text-gray-600">({{ $receivedRating->rating }}/5)</span>
+                                </div>
+                            </div>
+                            @if($receivedRating->comment)
+                                <div class="bg-white p-3 rounded-md border border-gray-200">
+                                    <p class="text-sm text-gray-700">{{ $receivedRating->comment }}</p>
+                                </div>
+                            @endif
+                            <p class="text-xs text-gray-500 mt-2">
+                                {{ $receivedRating->created_at->diffForHumans() }}
+                            </p>
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center py-4">
+                        <div class="text-gray-400 mb-2">
+                            <i class="fas fa-star text-3xl"></i>
+                        </div>
+                        <p class="text-gray-500">Pekerja belum memberikan rating untuk pekerjaan ini.</p>
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
     
     {{-- Include the image modal --}}
     @include('manajemen.pekerjaan.partials.image-modal')

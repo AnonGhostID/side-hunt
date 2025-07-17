@@ -191,13 +191,13 @@
 
                                 if ($pelamar->sidejob) {
                                     $jobRating = App\Models\Rating::where('job_id', $pelamar->sidejob->id)
-                                        ->where('worker_id', $pelamar->user_id)
-                                        ->where('type', 'job')
+                                        ->where('rated_id', $pelamar->user_id)
+                                        ->where('type', 'employer_to_worker')
                                         ->first();
 
                                     $workerRating = App\Models\Rating::where('job_id', $pelamar->sidejob->id)
-                                        ->where('worker_id', $pelamar->user_id)
-                                        ->where('type', 'worker')
+                                        ->where('rated_id', $pelamar->sidejob->pembuat)
+                                        ->where('type', 'worker_to_employer')
                                         ->first();
                                 }
                             @endphp
@@ -231,7 +231,7 @@
                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm text-center">
                             <i class="fas fa-eye mr-1"></i>Detail
                         </a>
-                        @if(App\Models\LaporanJobHasil::where('job_id', $pelamar->sidejob->id)->where('pekerja_id', $pelamar->user_id)->exists())
+                        @if(App\Models\Laporan::where('job_id', $pelamar->sidejob->id)->where('user_id', $pelamar->user_id)->exists())
                             <button onclick="showLaporanModal({{ $pelamar->sidejob->id }}, {{ $pelamar->user_id }})" 
                                     class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm">
                                 <i class="fas fa-file-alt mr-1"></i>Lihat Laporan

@@ -117,8 +117,8 @@
                                     </span>
                                 @endif
                             @else
-                                <a href="#" class="text-red-500 hover:text-red-700" title="Report">
-                                    <i class="fas fa-flag"></i> Report
+                                <a href="{{ route('manajemen.laporan.upload') }}" class="text-green-500 hover:text-green-700" title="Report">
+                                    <i class="fas fa-file-upload"></i> Report Hasil
                                 </a>
                             @endif
                         </td>
