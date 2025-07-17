@@ -419,4 +419,109 @@ class PekerjaanController extends Controller
 
         return $distance;
     }
+
+    public function view_pekerjaan($id)
+    {
+        $active_navbar = 'Cari Pekerjaan';
+        $nama_halaman = 'Lihat Pekerjaan';
+        $data_pekerjaan = Pekerjaan::where('id', $id)->get();
+        $kriteria = explode(",", $data_pekerjaan[0]['kriteria']);
+        $data_pekerjaan[0]['kriteria'] = $kriteria;
+        if (session()->has('account')) {
+            $history = Pelamar::where('user_id', session('account')['id'])
+                ->where('job_id', $id)
+                ->get();
+            return view('Dewa.pekerjaan.lihat', compact("active_navbar", 'nama_halaman', 'data_pekerjaan', 'history'));
+        } else {
+            return view('Dewa.pekerjaan.lihat', compact("active_navbar", 'nama_halaman', 'data_pekerjaan'));
+        }
+    }
+
+    public function Daftar_Pelamar($id)
+    {
+        $pekerjaan = Pekerjaan::where('id', $id)
+            ->where('pembuat', session('account')['id'])
+            ->first();
+        $back = null;
+        if($id!='all'&&$pekerjaan==null){
+            return redirect()->back()->with('fail',['Akses Ditolak','Pekerjaan Ini tidak termasuk Milik Anda!']);
+        }
+        $active_navbar = 'Pekerjaan';
+        $nama_halaman = 'Daftar Pelamar Pekerjaan';
+        $pelamars = Pekerjaan::join('pelamars', 'pekerjaans.id', '=', 'pelamars.job_id')
+            ->join('users', 'pelamars.user_id', '=', 'users.id')
+            ->where('pekerjaans.pembuat', session('account')['id'])
+            ->where('pelamars.is_delete', false);
+        if ($id != 'all') {
+            $pelamars->where('pelamars.job_id', $id);
+        }
+
+        $pelamars = $pelamars->select(
+            'pekerjaans.*',
+            'pelamars.created_at as daftar',
+            'users.nama as nama_pelamar',
+            'users.preferensi_user',
+            'pelamars.status as status_job',
+            'pelamars.id as id_pelamars',
+            'pelamars.user_id as id_pelamar',
+            'pelamars.link_Interview as link',
+            'pelamars.jadwal_interview as jadwal',
+            'pelamars.alasan as alasan',
+        )->get();
+
+        foreach($pelamars as $pelamar){
+            $skills = [];
+            if (!empty($pelamar->preferensi_user)) {
+                $preferensi = json_decode($pelamar->preferensi_user);
+                if (!empty($preferensi->kriteria)) {
+                    foreach($preferensi->kriteria as $skill){
+                        if($skill != ""){
+                            $skills[] = $skill;
+                        }
+                    }
+                }
+            }
+            $pelamar->preferensi_user=(implode(", ", $skills));
+        }
+
+        $direction = $id;
+        return view('Dewa.pekerjaan.daftar-pelamar', compact("active_navbar", 'nama_halaman', 'pelamars','pekerjaan','direction'));
+    }
+
+    public function Daftar_Lamaran()
+    {
+        $active_navbar = 'Daftar Lamaran';
+        $nama_halaman = 'Daftar Lamaran';
+        $pekerjaans = Pekerjaan::join('pelamars', 'pekerjaans.id', '=', 'pelamars.job_id')
+            ->where('pelamars.user_id', session('account')['id'])
+            ->select('pekerjaans.*', 'pelamars.*')
+            ->get();
+        return view('Dewa.pekerjaan.dilamar', compact('active_navbar', 'nama_halaman', 'pekerjaans'));
+    }
+
+    public function Daftar_Pekerjaan()
+    {
+        $active_navbar = 'Pekerjaan';
+        $nama_halaman = 'Lowongan Terdaftar';
+
+        $pekerjaans = Pekerjaan::select('pekerjaans.id', 'pekerjaans.nama', 'pekerjaans.alamat', 'pekerjaans.created_at', 'pekerjaans.latitude', 'pekerjaans.longitude', DB::raw('COUNT(pelamars.status) as total_pelamar'))
+            ->join('users', 'pekerjaans.pembuat', '=', 'users.id')
+            ->leftJoin('pelamars', 'pekerjaans.id', '=', 'pelamars.job_id')
+            ->where('pekerjaans.pembuat', session('account')['id'])
+            ->groupBy([
+                'pekerjaans.id',
+                'pekerjaans.nama',
+                'pekerjaans.alamat',
+                'pekerjaans.created_at',
+                'pekerjaans.latitude',
+                'pekerjaans.longitude'
+            ])
+            ->get();
+        return view('Dewa.pekerjaan.dibuat', compact('active_navbar', 'nama_halaman', 'pekerjaans'));
+    }
+
+    function is_own_pelamar($idPelamar){
+        $job = Pekerjaan::findOrFail($idPelamar);
+        return ($job->pembuat==session('account')['id']);
+    }
 }

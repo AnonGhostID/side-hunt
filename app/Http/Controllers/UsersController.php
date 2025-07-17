@@ -440,21 +440,6 @@ class UsersController extends Controller
         }
     }
 
-    function cekExistEmail($emailUntukDicek)
-    {
-        $user = Users::where('email', $emailUntukDicek)->first();
-        // dd($user);
-        return ($user) ? false : true;
-    }
-
-    function cek_password($password)
-    {
-        return strlen($password) >= 8 &&
-            preg_match('/[0-9]/', $password) &&
-            preg_match('/[A-Z]/', $password) &&
-            preg_match('/[a-z]/', $password);
-    }
-
     public function reset_password(Request $request)
     {
         $request->validate([

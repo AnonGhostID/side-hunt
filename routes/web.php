@@ -31,6 +31,7 @@ Route::get('/reset_password/{token}/{email}', [UsersController::class, 'view_Res
 Route::post('/reset-new-password', [UsersController::class, 'reset_password']);
 Route::get('/Register', [HomeController::class, 'Register']);
 Route::get('/Logout', [UsersController::class, 'logout']);
+Route::get('/Pekerjaan/{id}', [PekerjaanController::class, 'view_pekerjaan']);
 Route::get('/NotAllowed', function(){
     $nama_halaman = 'Akses Ditolak';
     $active_navbar = 'none';
@@ -53,6 +54,8 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::post('/kerja/add', action: [PekerjaanController::class, 'store']);
     Route::post('/Profile/Edit', [UsersController::class, 'Profile_Edit']);
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('user.transaksi');
+    Route::post('/Lamar/{idPekerjaan}', [PelamarController::class, 'store']);
+    Route::get('/Chat/Kerja/{idPekerjaan}', [ChatController::class, 'Lamaran']);
     //Kerja
     Route::get('/question-new-user', action: [HomeController::class, 'new_user']);
 
@@ -61,6 +64,20 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
     //Profile
     Route::get('/Profile', [UsersController::class, 'Profile']);
     Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
+    
+    Route::middleware(['role:user|mitra'])->group(function () {
+        Route::get('/daftar-lamaran/', [PekerjaanController::class, 'Daftar_Lamaran']);
+    });
+
+    Route::middleware(['role:mitra'])->group(function () {
+        Route::get('/kerja/create', [PekerjaanController::class, 'create']);
+        Route::post('/lamaran/delete/{id_lamaran}', [PelamarController::class, 'delete']);
+        Route::get('/daftar-Pekerjaan/', [PekerjaanController::class, 'Daftar_Pekerjaan']);
+        Route::get('/daftar-Pelamar/{id}', [PekerjaanController::class, 'Daftar_Pelamar']);
+        Route::get('/Pelamar/Profile/{idPelamar}', [PelamarController::class, 'Profile_Pelamar']);
+        Route::post('/pelamar/tolak', [PelamarController::class, 'tolak']);
+        Route::post('/pelamar/terima', [PelamarController::class, 'terima']);
+        Route::post('/pelamar/interview', [PelamarController::class, 'interview_pelamar']);
     
     // Routes for mitra and user only
     Route::middleware(['role:user|mitra|admin'])->group(function () {
