@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\UsersController;
@@ -21,7 +22,13 @@ Route::get('/', function () {
 //Auth
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/Index', [HomeController::class, 'index'])->name('home');
-Route::get('/Login', [HomeController::class, 'Login']);
+Route::get('/Login', [HomeController::class, 'Login'])->name('Login');
+Route::get('/Verify-Email', [UsersController::class, 'verify_view']);
+Route::post('/verify_email', [UsersController::class, 'submit_verify_email']);
+Route::get('/forget/password', [UsersController::class, 'forget_password']);
+Route::post('/send_change_password', [UsersController::class, 'send_code_change_password']);
+Route::get('/reset_password/{token}/{email}', [UsersController::class, 'view_Reset_Password']);
+Route::post('/reset-new-password', [UsersController::class, 'reset_password']);
 Route::get('/Register', [HomeController::class, 'Register']);
 Route::get('/Logout', [UsersController::class, 'logout']);
 Route::get('/NotAllowed', function(){
@@ -40,6 +47,8 @@ Route::get('/kerja/{id}', [PekerjaanController::class, 'show'])->name('pekerjaan
 Route::post('/kerja/lamar/{id}', [PekerjaanController::class, 'lamarPekerjaan'])->name('pekerjaan.lamar')->middleware(['role:user']);
 
 Route::middleware(['role:user|mitra|admin'])->group(function () {
+    Route::get('/chat/{id_target}', [ChatController::class, 'index']);
+    Route::post('/make_chat', [ChatController::class, 'store']);
     Route::post('/user/preferensi/save', action: [UsersController::class, 'save_preverensi']);
     Route::post('/kerja/add', action: [PekerjaanController::class, 'store']);
     Route::post('/Profile/Edit', [UsersController::class, 'Profile_Edit']);
@@ -51,6 +60,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
 
     //Profile
     Route::get('/Profile', [UsersController::class, 'Profile']);
+    Route::get('/profile/{id}', [UsersController::class, 'show'])->name('user.profile');
     
     // Routes for mitra and user only
     Route::middleware(['role:user|mitra|admin'])->group(function () {
