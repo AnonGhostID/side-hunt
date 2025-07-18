@@ -9,6 +9,11 @@ class TiketBantuan extends Model
 {
     use HasFactory;
 
+    // Status constants
+    const STATUS_OPEN = 'open';
+    const STATUS_DIPROSES = 'diproses';
+    const STATUS_CLOSED = 'closed';
+
     protected $table = 'TiketBantuan';
 
     protected $fillable = [

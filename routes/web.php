@@ -98,6 +98,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             // Conversation routes
             Route::post('/ticket/{ticketId}/message', [ManagementPageController::class, 'sendMessage'])->name('ticket.message.send');
             Route::get('/ticket/{ticketId}/messages', [ManagementPageController::class, 'getTicketMessages'])->name('ticket.messages.get');
+            Route::post('/ticket/{id}/process', [ManagementPageController::class, 'processTicket'])->name('ticket.process');
             Route::post('/ticket/{id}/close', [ManagementPageController::class, 'closeTicket'])->name('ticket.close');
             Route::post('/ticket/{id}/reopen', [ManagementPageController::class, 'reopenTicket'])->name('ticket.reopen');
     

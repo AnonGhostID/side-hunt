@@ -80,8 +80,12 @@
                                 </span>
                                 
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                                    {{ $ticket->status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ ucfirst($ticket->status) }}
+                                    @if($ticket->status === 'open') bg-green-100 text-green-800
+                                    @elseif($ticket->status === 'diproses') bg-yellow-100 text-yellow-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    @if($ticket->status === 'open') Aktif
+                                    @elseif($ticket->status === 'diproses') Diproses
+                                    @else Ditutup @endif
                                 </span>
                             </div>
                             
@@ -125,8 +129,8 @@
                                           :class="getSelectedTicketType(selectedTicket) === 'penipuan' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'"
                                           x-text="getSelectedTicketType(selectedTicket) === 'penipuan' ? 'Laporan Penipuan' : 'Bantuan'"></span>
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-                                          :class="getSelectedTicketStatus(selectedTicket) === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
-                                          x-text="getSelectedTicketStatus(selectedTicket) === 'open' ? 'Aktif' : 'Ditutup'"></span>
+                                          :class="getSelectedTicketStatus(selectedTicket) === 'open' ? 'bg-green-100 text-green-800' : (getSelectedTicketStatus(selectedTicket) === 'diproses' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')"
+                                          x-text="getSelectedTicketStatus(selectedTicket) === 'open' ? 'Aktif' : (getSelectedTicketStatus(selectedTicket) === 'diproses' ? 'Diproses' : 'Ditutup')"></span>
                                 </div>
                                 <p class="text-sm text-gray-600 mt-1">
                                     <i class="fas fa-user mr-1"></i>
@@ -134,8 +138,14 @@
                                 </p>
                             </div>
                             <div class="flex space-x-2">
-                                <button @click="closeTicket(selectedTicket)" 
+                                <button @click="processTicket(selectedTicket)" 
                                         x-show="getSelectedTicketStatus(selectedTicket) === 'open'"
+                                        class="inline-flex items-center px-3 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 transition-colors">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    Proses Tiket
+                                </button>
+                                <button @click="closeTicket(selectedTicket)" 
+                                        x-show="getSelectedTicketStatus(selectedTicket) === 'open' || getSelectedTicketStatus(selectedTicket) === 'diproses'"
                                         class="inline-flex items-center px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 transition-colors">
                                     <i class="fas fa-times mr-2"></i>
                                     Tutup Tiket
@@ -245,7 +255,7 @@
                     </div>
 
                     <!-- Message Input -->
-                    <div class="p-4 bg-white border-t border-gray-200" x-show="getSelectedTicketStatus(selectedTicket) === 'open'">
+                    <div class="p-4 bg-white border-t border-gray-200" x-show="getSelectedTicketStatus(selectedTicket) === 'open' || getSelectedTicketStatus(selectedTicket) === 'diproses'">
                         <div class="flex space-x-3">
                             <div class="flex-1">
                                 <input type="text" 
@@ -391,8 +401,12 @@
                                     </span>
                                     
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                                        {{ $ticket->status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                        {{ ucfirst($ticket->status) }}
+                                        @if($ticket->status === 'open') bg-green-100 text-green-800
+                                        @elseif($ticket->status === 'diproses') bg-yellow-100 text-yellow-800
+                                        @else bg-gray-100 text-gray-800 @endif">
+                                        @if($ticket->status === 'open') Aktif
+                                        @elseif($ticket->status === 'diproses') Diproses
+                                        @else Ditutup @endif
                                     </span>
                                 </div>
                                 
@@ -495,7 +509,7 @@
                         </div>
 
                         <!-- Message Input -->
-                        <div class="p-4 border-t border-gray-200" x-show="getSelectedTicketStatus(selectedTicket) === 'open'">
+                        <div class="p-4 border-t border-gray-200" x-show="getSelectedTicketStatus(selectedTicket) === 'open' || getSelectedTicketStatus(selectedTicket) === 'diproses'">
                             <div class="flex space-x-2">
                                 <input type="text" 
                                        x-model="newMessage" 
@@ -688,6 +702,35 @@ async function closeTicket(selectedTicket) {
     } catch (error) {
         console.error('Error closing ticket:', error);
         alert('Gagal menutup tiket');
+    }
+}
+
+async function processTicket(selectedTicket) {
+    if (!selectedTicket) return;
+    
+    const processingMessage = prompt('Pesan pemrosesan (opsional):');
+    if (processingMessage === null) return; // User cancelled
+    
+    try {
+        const response = await fetch(`/management/ticket/${selectedTicket}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                processing_message: processingMessage
+            })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Gagal memproses tiket');
+        }
+    } catch (error) {
+        console.error('Error processing ticket:', error);
+        alert('Gagal memproses tiket');
     }
 }
 

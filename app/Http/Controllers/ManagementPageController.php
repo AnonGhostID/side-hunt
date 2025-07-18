@@ -57,8 +57,8 @@ class ManagementPageController extends Controller
             // Get total help requests
             $totalHelpRequests = TiketBantuan::where('type', 'bantuan')->count();
             
-            // Get total resolved cases
-            $totalResolved = TiketBantuan::where('status', 'closed')->count();
+            // Get total resolved cases (closed + diproses)
+            $totalResolved = TiketBantuan::whereIn('status', [TiketBantuan::STATUS_CLOSED, TiketBantuan::STATUS_DIPROSES])->count();
             
             // Get recent tickets for admin dashboard
             $recentTickets = TiketBantuan::with('user')
@@ -66,13 +66,102 @@ class ManagementPageController extends Controller
                 ->limit(3)
                 ->get();
         } else {
-            // For regular users, calculate completed projects
+            // For regular users and mitra, calculate completed projects
             $totalCompleted = Pelamar::where('user_id', $user->id)
                 ->where('status', 'diterima')
                 ->whereHas('sidejob', function($query) {
                     $query->where('status', 'Selesai');
                 })
                 ->count();
+        }
+        
+        // Mitra-specific data
+        $pendingApplications = null;
+        $completedJobs = null;
+        $recentApplications = null;
+        $averageRating = null;
+        $completionRate = null;
+        $averageHiringTime = null;
+        $totalHiredWorkers = null;
+        
+        // User-specific data
+        $totalApplications = null;
+        $acceptedJobs = null;
+        $completedWork = null;
+        $recommendedJobs = null;
+        $userRating = null;
+        $acceptanceRate = null;
+        $averageResponseTime = null;
+        $topSkill = null;
+        
+        if ($user->role == 'mitra') {
+            // Get mitra job IDs
+            $mitraJobIds = Pekerjaan::where('pembuat', $user->id)->pluck('id');
+            
+            // Pending applications for mitra's jobs
+            $pendingApplications = Pelamar::whereIn('job_id', $mitraJobIds)
+                ->where('status', 'pending')
+                ->count();
+            
+            // Completed jobs for mitra
+            $completedJobs = Pekerjaan::where('pembuat', $user->id)
+                ->where('status', 'Selesai')
+                ->count();
+            
+            // Recent applications for mitra's jobs
+            $recentApplications = Pelamar::whereIn('job_id', $mitraJobIds)
+                ->with(['user', 'sidejob'])
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+            
+            // Average rating received by mitra
+            $averageRating = Rating::where('rated_id', $user->id)
+                ->where('type', 'worker_to_employer')
+                ->avg('rating') ?? 0;
+            
+            // Completion rate for mitra jobs
+            $totalMitraJobs = Pekerjaan::where('pembuat', $user->id)->count();
+            $completionRate = $totalMitraJobs > 0 ? round(($completedJobs / $totalMitraJobs) * 100) : 0;
+            
+            // Total workers hired
+            $totalHiredWorkers = Pelamar::whereIn('job_id', $mitraJobIds)
+                ->where('status', 'diterima')
+                ->distinct('user_id')
+                ->count();
+                
+        } elseif ($user->role == 'user') {
+            // Total applications sent by user
+            $totalApplications = Pelamar::where('user_id', $user->id)->count();
+            
+            // Accepted jobs for user
+            $acceptedJobs = Pelamar::where('user_id', $user->id)
+                ->where('status', 'diterima')
+                ->count();
+            
+            // Completed work for user
+            $completedWork = Pelamar::where('user_id', $user->id)
+                ->where('status', 'diterima')
+                ->whereHas('sidejob', function($query) {
+                    $query->where('status', 'Selesai');
+                })
+                ->count();
+            
+            // Get recommended jobs (simple version - latest 5 open jobs)
+            $recommendedJobs = Pekerjaan::where('status', 'Open')
+                ->where('is_active', 1)
+                ->where('pembuat', '!=', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+            
+            // User's average rating
+            $userRating = Rating::where('rated_id', $user->id)
+                ->where('type', 'employer_to_worker')
+                ->avg('rating') ?? 0;
+            
+            // Acceptance rate
+            $acceptanceRate = $totalApplications > 0 ? round(($acceptedJobs / $totalApplications) * 100) : 0;
         }
         
         return view('manajemen.dashboard', compact(
@@ -83,7 +172,24 @@ class ManagementPageController extends Controller
             'totalHelpRequests', 
             'totalResolved',
             'totalCompleted',
-            'recentTickets'
+            'recentTickets',
+            // Mitra-specific data
+            'pendingApplications',
+            'completedJobs',
+            'recentApplications',
+            'averageRating',
+            'completionRate',
+            'averageHiringTime',
+            'totalHiredWorkers',
+            // User-specific data
+            'totalApplications',
+            'acceptedJobs',
+            'completedWork',
+            'recommendedJobs',
+            'userRating',
+            'acceptanceRate',
+            'averageResponseTime',
+            'topSkill'
         ));
     }
 
@@ -636,7 +742,7 @@ class ManagementPageController extends Controller
             ]);
         }
         
-        $ticket->update(['status' => 'closed']);
+        $ticket->update(['status' => TiketBantuan::STATUS_CLOSED]);
         
         return response()->json(['success' => true, 'message' => 'Tiket berhasil ditutup']);
     }
@@ -651,9 +757,38 @@ class ManagementPageController extends Controller
             abort(403, 'Unauthorized');
         }
         
-        $ticket->update(['status' => 'open']);
+        $ticket->update(['status' => TiketBantuan::STATUS_OPEN]);
         
         return response()->json(['success' => true, 'message' => 'Tiket berhasil dibuka kembali']);
+    }
+
+    public function processTicket(Request $request, $id)
+    {
+        $user = session('account');
+        $ticket = TiketBantuan::findOrFail($id);
+        
+        // Only admin can process tickets
+        if (!$user->isAdmin()) {
+            abort(403, 'Unauthorized');
+        }
+        
+        $request->validate([
+            'processing_message' => 'nullable|string|max:2000',
+        ]);
+        
+        // Send processing message if provided
+        if ($request->processing_message) {
+            TicketMessage::create([
+                'ticket_id' => $id,
+                'sender_id' => $user->id,
+                'sender_type' => 'admin',
+                'message' => $request->processing_message,
+            ]);
+        }
+        
+        $ticket->update(['status' => TiketBantuan::STATUS_DIPROSES]);
+        
+        return response()->json(['success' => true, 'message' => 'Tiket berhasil diproses']);
     }
 
     // --- Fitur Administrasi Sistem (Contoh) ---

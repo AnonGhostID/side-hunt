@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('type', ['bantuan', 'penipuan'])->default('bantuan');
             $table->string('subject');
             $table->text('description');
-            $table->enum('status', ['open','done','closed'])->default('open');
+            $table->enum('status', ['open','diproses','closed'])->default('open');
             // Fields specific to fraud reports
             $table->string('pihak_terlapor')->nullable();
             $table->date('tanggal_kejadian')->nullable();
