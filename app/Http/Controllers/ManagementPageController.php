@@ -380,6 +380,19 @@ class ManagementPageController extends Controller
         ]);
     }
 
+    public function showFeeGaji($id)
+    {
+        $user = session('account');
+        
+        $feeGaji = FinancialTransaction::where('user_id', $user['id'])
+            ->where('type', 'payment')
+            ->where('id', $id)
+            ->where('external_id', 'LIKE', 'fee_gaji_%')
+            ->firstOrFail();
+
+        return view('manajemen.keuangan.fee_gaji_detail', compact('feeGaji'));
+    }
+
     public function refundDana()
     {
         return view('manajemen.keuangan.refund_dana');

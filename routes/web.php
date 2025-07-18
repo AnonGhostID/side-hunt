@@ -85,6 +85,7 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
             Route::get('/tarik-saldo/history', [\App\Http\Controllers\PayoutController::class, 'history'])->name('payout.history');
             Route::get('/tarik-saldo/balance', [\App\Http\Controllers\PayoutController::class, 'checkBalance'])->name('payout.balance');
             Route::get('/tarik-saldo/detail/{id}', [\App\Http\Controllers\PayoutController::class, 'show'])->name('payout.show');
+            Route::get('/fee-gaji/detail/{id}', [ManagementPageController::class, 'showFeeGaji'])->name('fee.gaji.show');
             Route::get('/riwayat-transaksi', [ManagementPageController::class, 'riwayatTransaksi'])->name('transaksi.riwayat');
             // AJAX endpoint for fetching riwayat transaksi data without page reload
             Route::get('/riwayat-transaksi/data', [ManagementPageController::class, 'riwayatTransaksiData'])->name('transaksi.riwayat.data');

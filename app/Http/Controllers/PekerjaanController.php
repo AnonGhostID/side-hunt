@@ -305,16 +305,48 @@ class PekerjaanController extends Controller
 
         DB::beginTransaction();
         try {
-            // Transfer min_gaji to pelamar's wallet
-            $userPelamar->dompet += $pekerjaan->min_gaji;
+            // Calculate admin fee and net salary
+            $adminFee = 2500;
+            $gajiKotor = $pekerjaan->min_gaji;
+            $gajiBersih = $gajiKotor - $adminFee;
+
+            // Transfer net salary to pelamar's wallet
+            $userPelamar->dompet += $gajiBersih;
             $userPelamar->save();
+
+            // Create financial transaction record for admin fee (for pekerja record)
+            \App\Models\FinancialTransaction::create([
+                'user_id' => $userPelamar->id,
+                'amount' => $gajiBersih,
+                'type' => 'payment',
+                'status' => 'completed',
+                'external_id' => 'fee_gaji_' . \Illuminate\Support\Str::random(8),
+                'description' => 'Pembayaran Gaji ' . $userPelamar->name,
+                'method' => 'admin_transfer',
+                'processed_at' => now(),
+            ]);
+
+            // Create financial transaction record for mitra (for tracking purposes)
+            \App\Models\FinancialTransaction::create([
+                'user_id' => $pekerjaan->pembuat,
+                'amount' => $gajiBersih,
+                'type' => 'payment',
+                'status' => 'completed',
+                'external_id' => 'fee_gaji_' . \Illuminate\Support\Str::random(8),
+                'description' => 'Pembayaran Gaji ' . $userPelamar->name,
+                'method' => 'admin_transfer',
+                'processed_at' => now(),
+            ]);
 
             // Update job status to Selesai
             $pekerjaan->status = 'Selesai';
             $pekerjaan->save();
 
             DB::commit();
-            return redirect()->back()->with('success', 'Hasil pekerjaan berhasil diterima dan dana telah ditransfer.');
+            return redirect()->back()->with('success', 
+                'Hasil pekerjaan berhasil diterima. Dana sebesar Rp ' . number_format($gajiBersih, 0, ',', '.') . 
+                ' telah ditransfer ke pekerja (potongan admin Rp ' . number_format($adminFee, 0, ',', '.') . ').'
+            );
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal menerima hasil pekerjaan: ' . $e->getMessage());
