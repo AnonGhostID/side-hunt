@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Laravel Server Manager Script
-# Port: 8899
+# Laravel Server Manager Script with Zoraxy Proxy Support
+# Laravel Port: 8899
 
 # Colors for better readability
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Server configuration
@@ -22,16 +23,22 @@ show_menu() {
     echo -e "${BLUE}    Laravel Server Manager (${PORT})${NC}"
     echo -e "${BLUE}=====================================${NC}"
     echo
-    echo "1) Start Server"
-    echo "2) Check Server Status"
-    echo "3) Stop Server"
-    echo "4) Restart Server"
-    echo "5) View Server Logs"
-    echo "6) Test Server Connection"
-    echo "7) View Live Logs (follow mode)"
-    echo "8) Exit"
+    echo "1) Start Laravel Server"
+    echo "2) Check Laravel Server Status"
+    echo "3) Stop Laravel Server"
+    echo "4) Restart Laravel Server"
+    echo "5) View Laravel Server Logs"
+    echo "6) Test Laravel Server Connection"
+    echo "7) View Live Laravel Logs (follow mode)"
+    echo -e "${PURPLE}=====================================${NC}"
+    echo -e "${PURPLE}    Zoraxy Proxy Server Management${NC}"
+    echo -e "${PURPLE}=====================================${NC}"
+    echo "8) Check Zoraxy Status"
+    echo "9) Restart Zoraxy"
+    echo -e "${BLUE}=====================================${NC}"
+    echo "0) Exit"
     echo
-    echo -n "Enter your choice [1-8]: "
+    echo -n "Enter your choice [0-9]: "
 }
 
 # Function to start server
@@ -174,6 +181,37 @@ test_connection() {
         echo -e "${RED}Connection failed! Server might not be responding.${NC}"
     fi
 }
+# Function to check Zoraxy status
+check_zoraxy_status() {
+    echo -e "${PURPLE}Checking Zoraxy proxy server status...${NC}"
+    echo
+    
+    sudo systemctl status zoraxy --no-pager
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Zoraxy proxy server is RUNNING${NC}"
+    else
+        echo -e "${RED}Zoraxy proxy server is NOT RUNNING or service not found${NC}"
+    fi
+}
+
+# Function to restart Zoraxy
+restart_zoraxy() {
+    echo -e "${PURPLE}Restarting Zoraxy proxy server...${NC}"
+    
+    sudo systemctl restart zoraxy
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Zoraxy proxy server restarted successfully!${NC}"
+    else
+        echo -e "${RED}Failed to restart Zoraxy proxy server.${NC}"
+        echo -e "${YELLOW}Tips:${NC}"
+        echo "1. Check if Zoraxy service is properly configured"
+        echo "2. Try running 'sudo systemctl status zoraxy' for details"
+    fi
+    
+    sleep 2  # Give time for service to start
+}
 
 # Function to pause and wait for user input
 pause() {
@@ -216,11 +254,19 @@ while true; do
             view_live_logs
             ;;
         8)
+            check_zoraxy_status
+            pause
+            ;;
+        9)
+            restart_zoraxy
+            pause
+            ;;
+        0)
             echo -e "${GREEN}Exiting Laravel Server Manager. Goodbye!${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}Invalid option. Please select 1-8.${NC}"
+            echo -e "${RED}Invalid option. Please select 0-9.${NC}"
             pause
             ;;
     esac

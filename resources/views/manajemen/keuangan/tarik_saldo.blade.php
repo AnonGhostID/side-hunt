@@ -119,6 +119,26 @@
                             <span>Minimum: Rp 50.000</span>
                             <span>Maksimum: Rp {{ number_format($userModel->dompet, 0, ',', '.') }}</span>
                         </div>
+                        
+                        <!-- Admin Fee Calculation -->
+                        <div id="fee-calculation" class="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg hidden">
+                            <div class="text-sm text-orange-800">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span>Jumlah penarikan:</span>
+                                    <span id="withdrawal-amount">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span>Biaya admin:</span>
+                                    <span class="text-red-600">- Rp 2.775</span>
+                                </div>
+                                <hr class="my-2 border-orange-300">
+                                <div class="flex justify-between items-center font-semibold">
+                                    <span>Yang akan diterima:</span>
+                                    <span id="received-amount" class="text-green-600">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                         @error('amount')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -298,11 +318,77 @@
                 </h4>
                 <ul class="text-sm text-blue-800 space-y-1">
                     <li>• Minimum penarikan Rp 50.000</li>
+                    <li>• Biaya admin Rp 2.775 (dipotong otomatis)</li>
                     <li>• Proses Instan (pada jam kerja)</li>
                     <li>• Proses manual 1-2 hari kerja (di luar jam kerja)</li>
                     <li>• Pastikan nomor rekening/akun benar</li>
                     <li>• Mendukung puluhan bank dan e-wallet!</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Popup -->
+<div id="confirmation-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
+        <div class="p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-orange-600 text-2xl"></i>
+                </div>
+            </div>
+            
+            <!-- Title -->
+            <h3 class="text-xl font-semibold text-gray-900 text-center mb-2">
+                Konfirmasi Penarikan
+            </h3>
+            
+            <!-- Message -->
+            <p class="text-gray-600 text-center mb-6">
+                Apakah Anda yakin ingin melanjutkan penarikan?
+            </p>
+            
+            <!-- Details -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Jumlah penarikan:</span>
+                        <span class="font-medium" id="popup-withdrawal-amount">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Biaya admin:</span>
+                        <span class="font-medium text-red-600">- Rp 2.775</span>
+                    </div>
+                    <hr class="my-2 border-gray-300">
+                    <div class="flex justify-between">
+                        <span class="text-gray-900 font-semibold">Yang akan diterima:</span>
+                        <span class="font-bold text-green-600" id="popup-received-amount">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between mt-3 pt-2 border-t border-gray-300">
+                        <span class="text-gray-600">Tujuan:</span>
+                        <span class="font-medium" id="popup-destination">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Rekening:</span>
+                        <span class="font-medium" id="popup-account">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex space-x-3">
+                <button type="button" 
+                        id="cancel-withdrawal" 
+                        class="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                    Batal
+                </button>
+                <button type="button" 
+                        id="confirm-withdrawal" 
+                        class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                    Ya, Proses
+                </button>
             </div>
         </div>
     </div>
@@ -328,6 +414,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const accountNameLabel = document.getElementById('account-name-label');
     const maxAmount = {{ $userModel->dompet }};
     const minAmount = 50000;
+    const adminFee = 2775;
+    
+    // Fee calculation elements
+    const feeCalculation = document.getElementById('fee-calculation');
+    const withdrawalAmountSpan = document.getElementById('withdrawal-amount');
+    const receivedAmountSpan = document.getElementById('received-amount');
+    
+    // Popup elements
+    const confirmationPopup = document.getElementById('confirmation-popup');
+    const popupWithdrawalAmount = document.getElementById('popup-withdrawal-amount');
+    const popupReceivedAmount = document.getElementById('popup-received-amount');
+    const popupDestination = document.getElementById('popup-destination');
+    const popupAccount = document.getElementById('popup-account');
+    const cancelWithdrawal = document.getElementById('cancel-withdrawal');
+    const confirmWithdrawal = document.getElementById('confirm-withdrawal');
 
     // Bank account number limits and examples
     const bankLimits = {
@@ -395,6 +496,27 @@ document.addEventListener('DOMContentLoaded', function() {
         'LINKAJA': { max: 13, min: 10, example: '081234567890' },
         'SHOPEEPAY': { max: 13, min: 10, example: '081234567890' }
     };
+
+    // Fee calculation function
+    function updateFeeCalculation() {
+        const amount = parseInt(amountInput.value) || 0;
+        
+        if (amount >= minAmount) {
+            const receivedAmount = amount - adminFee;
+            
+            withdrawalAmountSpan.textContent = formatCurrency(amount);
+            receivedAmountSpan.textContent = formatCurrency(receivedAmount);
+            
+            feeCalculation.classList.remove('hidden');
+        } else {
+            feeCalculation.classList.add('hidden');
+        }
+    }
+    
+    // Format currency helper
+    function formatCurrency(amount) {
+        return 'Rp ' + amount.toLocaleString('id-ID');
+    }
 
     // Payment type selection handlers
     paymentTypeRadios.forEach(radio => {
@@ -594,6 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const amount = this.dataset.amount;
             amountInput.value = amount;
             validateAmount();
+            updateFeeCalculation();
             
             // Update button states
             quickAmountBtns.forEach(b => b.classList.remove('bg-blue-100', 'border-blue-400'));
@@ -617,7 +740,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
+        // Check if received amount after admin fee is positive
+        if (amount - adminFee <= 0) {
+            amountError.textContent = 'Jumlah penarikan minimal harus lebih dari biaya admin (Rp 2.775)';
+            amountError.classList.remove('hidden');
+            return false;
+        }
+        
         amountError.classList.add('hidden');
+        updateFeeCalculation();
         return true;
     }
 
@@ -660,7 +791,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Real-time validation
-    amountInput.addEventListener('input', validateForm);
+    amountInput.addEventListener('input', function() {
+        validateForm();
+        updateFeeCalculation();
+    });
     bankSelect.addEventListener('change', validateForm);
     ewalletSelect.addEventListener('change', validateForm);
     accountInput.addEventListener('input', validateForm);
@@ -674,13 +808,56 @@ document.addEventListener('DOMContentLoaded', function() {
         validateForm();
     });
 
-    // Form submission
+    // Form submission - show confirmation popup
     form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         if (!validateForm()) {
-            e.preventDefault();
             return false;
         }
         
+        showConfirmationPopup();
+    });
+    
+    // Show confirmation popup
+    function showConfirmationPopup() {
+        const amount = parseInt(amountInput.value) || 0;
+        const receivedAmount = amount - adminFee;
+        const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+        const destination = paymentType === 'bank' ? bankSelect.value : ewalletSelect.value;
+        const accountNumber = accountInput.value;
+        const accountName = document.getElementById('account_name').value;
+        
+        // Update popup content
+        popupWithdrawalAmount.textContent = formatCurrency(amount);
+        popupReceivedAmount.textContent = formatCurrency(receivedAmount);
+        
+        // Get destination name
+        let destinationName = '';
+        if (paymentType === 'bank') {
+            destinationName = bankSelect.options[bankSelect.selectedIndex].text;
+        } else {
+            destinationName = ewalletSelect.options[ewalletSelect.selectedIndex].text;
+        }
+        
+        popupDestination.textContent = destinationName;
+        popupAccount.textContent = `${accountNumber} (${accountName})`;
+        
+        // Show popup
+        confirmationPopup.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Hide confirmation popup
+    function hideConfirmationPopup() {
+        confirmationPopup.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Popup event listeners
+    cancelWithdrawal.addEventListener('click', hideConfirmationPopup);
+    
+    confirmWithdrawal.addEventListener('click', function() {
         // Set the bank_code based on payment type
         const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
         if (paymentType === 'ewallet') {
@@ -695,6 +872,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+        
+        hideConfirmationPopup();
+        
+        // Submit the form
+        form.submit();
+    });
+    
+    // Close popup when clicking outside
+    confirmationPopup.addEventListener('click', function(e) {
+        if (e.target === confirmationPopup) {
+            hideConfirmationPopup();
+        }
     });
 
     // Initialize payment type UI

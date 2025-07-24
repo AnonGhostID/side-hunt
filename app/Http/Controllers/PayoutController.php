@@ -42,7 +42,9 @@ class PayoutController extends Controller
 
         $user = session('account');
         $userId = $user['id'];
-        $amount = $request->amount;
+        $requestedAmount = $request->amount;
+        $adminFee = 2775;
+        $actualPayoutAmount = $requestedAmount - $adminFee;
 
         // Get fresh user data
         $userModel = Users::find($userId);
@@ -52,17 +54,22 @@ class PayoutController extends Controller
         }
 
         // Validate sufficient balance
-        if ($userModel->dompet < $amount) {
+        if ($userModel->dompet < $requestedAmount) {
             return back()->with('error', 'Saldo tidak mencukupi. Saldo Anda: Rp ' . number_format($userModel->dompet, 0, ',', '.'));
+        }
+        
+        // Validate minimum amount after admin fee
+        if ($actualPayoutAmount <= 0) {
+            return back()->with('error', 'Jumlah penarikan minimal harus lebih dari biaya admin (Rp ' . number_format($adminFee, 0, ',', '.') . ')');
         }
 
         try {
-            return DB::transaction(function () use ($request, $userModel, $amount) {
+            return DB::transaction(function () use ($request, $userModel, $requestedAmount, $actualPayoutAmount, $adminFee) {
                 // Create payout record
                 $payout = FinancialTransaction::create([
                     'user_id' => $userModel->id,
                     'type' => 'payout',
-                    'amount' => $amount,
+                    'amount' => $actualPayoutAmount, // Store the actual payout amount (after admin fee)
                     'payment_type' => $request->payment_type,
                     'bank_code' => $request->bank_code,
                     'account_number' => $request->account_number,
@@ -85,13 +92,15 @@ class PayoutController extends Controller
                         'processed_at' => now(),
                     ]);
 
-                    // Deduct from user's wallet
-                    $userModel->decrement('dompet', $amount);
+                    // Deduct from user's wallet (full requested amount including admin fee)
+                    $userModel->decrement('dompet', $requestedAmount);
 
                     Log::info('Payout processed successfully', [
                         'payout_id' => $payout->id,
                         'user_id' => $userModel->id,
-                        'amount' => $amount,
+                        'requested_amount' => $requestedAmount,
+                        'actual_payout_amount' => $actualPayoutAmount,
+                        'admin_fee' => $adminFee,
                         'xendit_id' => $disbursementResult['disbursement_id']
                     ]);
 
@@ -116,7 +125,8 @@ class PayoutController extends Controller
         } catch (\Exception $e) {
             Log::error('Payout transaction failed', [
                 'user_id' => $userModel->id,
-                'amount' => $amount,
+                'requested_amount' => $requestedAmount,
+                'actual_payout_amount' => $actualPayoutAmount,
                 'error' => $e->getMessage()
             ]);
 
