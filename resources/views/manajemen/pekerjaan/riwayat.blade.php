@@ -40,10 +40,10 @@
                     <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
                         <th class="px-5 py-3 border-b-2 border-gray-200">Judul Pekerjaan</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Pemberi Kerja</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200">Pelamar Kerja</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200">Rating Diberikan</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Status Akhir</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Tanggal Selesai/Update</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200">Rating</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200">Rating Didapatkan</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Aksi</th>
                     </tr>
                 </thead>
@@ -66,7 +66,37 @@
                                 Tidak diketahui
                             @endif
                         </td>
-                        <td class="px-5 py-4 border-b border-gray-200 text-sm">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</td>
+                        <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                            @php
+                                $user = session('account');
+                                // Determine which rating to display for given rating
+                                if ($user->isUser()) {
+                                    // User is worker, given rating is to employer
+                                    $givenRating = $pelamar->workerToEmployerRating;
+                                } else {
+                                    // User is employer, given rating is to worker
+                                    $givenRating = $pelamar->employerToWorkerRating;
+                                }
+                            @endphp
+                            
+                            @if($givenRating)
+                                @for($i = 1; $i <= 5; $i++)
+                                    @if($i <= $givenRating->rating)
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                    @else
+                                        <i class="far fa-star text-yellow-400"></i>
+                                    @endif
+                                @endfor
+                                ({{ $givenRating->rating }}.0)
+                                @if($givenRating->comment)
+                                    <div class="text-xs text-gray-500 mt-1" title="{{ $givenRating->comment }}">
+                                        "{{ Str::limit($givenRating->comment, 50) }}"
+                                    </div>
+                                @endif
+                            @else
+                                <span class="text-gray-400">Belum diberi rating</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">
                             <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                 <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
@@ -166,8 +196,35 @@
                         </div>
                     </div>
                     <div>
-                        <span class="text-gray-500">Pelamar:</span>
-                        <div class="font-medium">{{ $pelamar->user->nama ?? 'Tidak diketahui' }}</div>
+                        <span class="text-gray-500">Rating Yang Diberikan:</span>
+                        <div class="font-medium">
+                            @php
+                                $user = session('account');
+                                // Determine given rating
+                                if ($user->isUser()) {
+                                    $givenRating = $pelamar->workerToEmployerRating;
+                                } else {
+                                    $givenRating = $pelamar->employerToWorkerRating;
+                                }
+                            @endphp
+                            @if($givenRating)
+                                <div class="flex items-center">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        @if($i <= $givenRating->rating)
+                                            <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                        @else
+                                            <i class="far fa-star text-yellow-400 text-sm"></i>
+                                        @endif
+                                    @endfor
+                                    <span class="ml-1 text-sm">({{ $givenRating->rating }}/5)</span>
+                                </div>
+                                @if($givenRating->comment)
+                                    <div class="text-xs text-gray-500">"{{ Str::limit($givenRating->comment, 30) }}"</div>
+                                @endif
+                            @else
+                                <span class="text-gray-400">Belum diberi rating</span>
+                            @endif
+                        </div>
                     </div>
                     <div>
                         <span class="text-gray-500">Tanggal Selesai:</span>
@@ -183,40 +240,30 @@
                         </div>
                     </div>
                     <div>
-                        <span class="text-gray-500">Rating:</span>
+                        <span class="text-gray-500">Rating Anda:</span>
                         <div class="font-medium">
                             @php
-                                $jobRating = null;
-                                $workerRating = null;
-
-                                if ($pelamar->sidejob) {
-                                    $jobRating = App\Models\Rating::where('job_id', $pelamar->sidejob->id)
-                                        ->where('rated_id', $pelamar->user_id)
-                                        ->where('type', 'employer_to_worker')
-                                        ->first();
-
-                                    $workerRating = App\Models\Rating::where('job_id', $pelamar->sidejob->id)
-                                        ->where('rated_id', $pelamar->sidejob->pembuat)
-                                        ->where('type', 'worker_to_employer')
-                                        ->first();
+                                // Determine received rating
+                                if ($user->isUser()) {
+                                    $receivedRating = $pelamar->employerToWorkerRating;
+                                } else {
+                                    $receivedRating = $pelamar->workerToEmployerRating;
                                 }
                             @endphp
-
-                            @if($jobRating || $workerRating)
-                                <div class="space-y-1">
-                                    @if($jobRating)
-                                        <div class="flex items-center">
-                                            <span class="text-yellow-500 mr-1">★</span>
-                                            <span>{{ $jobRating->rating }}/5 (Job)</span>
-                                        </div>
-                                    @endif
-                                    @if($workerRating)
-                                        <div class="flex items-center">
-                                            <span class="text-yellow-500 mr-1">★</span>
-                                            <span>{{ $workerRating->rating }}/5 (Worker)</span>
-                                        </div>
-                                    @endif
+                            @if($receivedRating)
+                                <div class="flex items-center">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        @if($i <= $receivedRating->rating)
+                                            <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                        @else
+                                            <i class="far fa-star text-yellow-400 text-sm"></i>
+                                        @endif
+                                    @endfor
+                                    <span class="ml-1 text-sm">({{ $receivedRating->rating }}/5)</span>
                                 </div>
+                                @if($receivedRating->comment)
+                                    <div class="text-xs text-gray-500">"{{ Str::limit($receivedRating->comment, 30) }}"</div>
+                                @endif
                             @else
                                 <span class="text-gray-400">Belum ada rating</span>
                             @endif
