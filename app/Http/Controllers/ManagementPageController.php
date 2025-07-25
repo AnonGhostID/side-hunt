@@ -742,7 +742,7 @@ class ManagementPageController extends Controller
         }
         
         $request->validate([
-            'closing_message' => 'nullable|string|max:2000',
+            'closing_message' => 'required|string|max:2000',
         ]);
         
         // Send closing message if provided
@@ -786,7 +786,7 @@ class ManagementPageController extends Controller
         }
         
         $request->validate([
-            'processing_message' => 'nullable|string|max:2000',
+            'processing_message' => 'required|string|max:2000',
         ]);
         
         // Send processing message if provided

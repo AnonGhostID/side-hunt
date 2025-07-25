@@ -11,7 +11,12 @@
     newMessage: '',
     isLoadingMessages: false,
     refreshInterval: null,
-    lastMessageCount: 0
+    lastMessageCount: 0,
+    // Modal states
+    isProcessModalOpen: false,
+    isCloseModalOpen: false,
+    processMessage: '',
+    closeMessage: ''
 }">
 
     @if(session('success'))
@@ -679,7 +684,10 @@ async function sendMessage(message, selectedTicket, alpineInstance) {
 async function closeTicket(selectedTicket) {
     if (!selectedTicket) return;
     
-    const closingMessage = prompt('Pesan penutupan (opsional):');
+    let closingMessage = prompt('Pesan penutupan: (Wajib diisi)');
+    while (closingMessage !== null && closingMessage.trim() === '') {
+        closingMessage = prompt('Pesan penutupan: (Wajib diisi)');
+    }
     if (closingMessage === null) return; // User cancelled
     
     try {
@@ -708,7 +716,10 @@ async function closeTicket(selectedTicket) {
 async function processTicket(selectedTicket) {
     if (!selectedTicket) return;
     
-    const processingMessage = prompt('Pesan pemrosesan (opsional):');
+    let processingMessage = prompt('Pesan pemrosesan: (Wajib diisi)');
+    while (processingMessage !== null && processingMessage.trim() === '') {
+        processingMessage = prompt('Pesan pemrosesan: (Wajib diisi)');
+    }
     if (processingMessage === null) return; // User cancelled
     
     try {
