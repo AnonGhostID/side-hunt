@@ -143,13 +143,13 @@
                                 </p>
                             </div>
                             <div class="flex space-x-2">
-                                <button @click="processTicket(selectedTicket)" 
+                                <button @click="isProcessModalOpen = true" 
                                         x-show="getSelectedTicketStatus(selectedTicket) === 'open'"
                                         class="inline-flex items-center px-3 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 transition-colors">
                                     <i class="fas fa-cog mr-2"></i>
                                     Proses Tiket
                                 </button>
-                                <button @click="closeTicket(selectedTicket)" 
+                                <button @click="isCloseModalOpen = true" 
                                         x-show="getSelectedTicketStatus(selectedTicket) === 'open' || getSelectedTicketStatus(selectedTicket) === 'diproses'"
                                         class="inline-flex items-center px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 transition-colors">
                                     <i class="fas fa-times mr-2"></i>
@@ -534,6 +534,190 @@
         </div>
     @endif
 
+    <!-- Process Ticket Modal -->
+    <div x-show="isProcessModalOpen" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="isProcessModalOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0"
+                 @click="isProcessModalOpen = false; processMessage = ''"
+                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+            <!-- This element is to trick the browser into centering the modal contents. -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal panel -->
+            <div x-show="isProcessModalOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-cog text-yellow-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                            Proses Tiket
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Pesan Pemrosesan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea x-model="processMessage" 
+                                      rows="4" 
+                                      placeholder="Masukkan pesan pemrosesan untuk user..."
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 resize-none"
+                                      @keydown.escape="isProcessModalOpen = false; processMessage = ''"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Pesan ini akan dikirim kepada user sebagai notifikasi bahwa tiket sedang diproses.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button @click.stop="
+                            if (!selectedTicket || !processMessage.trim()) { 
+                                alert('Silakan pilih tiket dan masukkan pesan pemrosesan.'); 
+                                return; 
+                            }
+                            fetch('/management/ticket/' + selectedTicket + '/process', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                                },
+                                body: JSON.stringify({
+                                    processing_message: processMessage
+                                })
+                            })
+                            .then(response => response.ok ? (isProcessModalOpen = false, processMessage = '', location.reload()) : alert('Gagal memproses tiket'))
+                            .catch(() => alert('Gagal memproses tiket'))
+                            " 
+                            :disabled="!processMessage.trim()"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-500 text-base font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors relative z-10">
+                        <i class="fas fa-cog mr-2"></i>
+                        Proses Tiket
+                    </button>
+                    <button @click.stop="isProcessModalOpen = false; processMessage = ''" 
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm transition-colors relative z-10">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close Ticket Modal -->
+    <div x-show="isCloseModalOpen" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="isCloseModalOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0"
+                 @click="isCloseModalOpen = false; closeMessage = ''"
+                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+            <!-- This element is to trick the browser into centering the modal contents. -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal panel -->
+            <div x-show="isCloseModalOpen" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-times text-red-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                            Tutup Tiket
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Pesan Penutupan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea x-model="closeMessage" 
+                                      rows="4" 
+                                      placeholder="Masukkan pesan penutupan untuk user..."
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                                      @keydown.escape="isCloseModalOpen = false; closeMessage = ''"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Pesan ini akan dikirim kepada user sebagai notifikasi penutupan tiket.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button @click.stop="
+                            if (!selectedTicket || !closeMessage.trim()) { 
+                                alert('Silakan pilih tiket dan masukkan pesan penutupan.'); 
+                                return; 
+                            }
+                            fetch('/management/ticket/' + selectedTicket + '/close', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                                },
+                                body: JSON.stringify({
+                                    closing_message: closeMessage
+                                })
+                            })
+                            .then(response => response.ok ? (isCloseModalOpen = false, closeMessage = '', location.reload()) : alert('Gagal menutup tiket'))
+                            .catch(() => alert('Gagal menutup tiket'))
+                            " 
+                            :disabled="!closeMessage.trim()"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-500 text-base font-medium text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors relative z-10">
+                        <i class="fas fa-times mr-2"></i>
+                        Tutup Tiket
+                    </button>
+                    <button @click.stop="isCloseModalOpen = false; closeMessage = ''" 
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm transition-colors relative z-10">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -559,49 +743,63 @@ function validateFileCount(input, maxFiles, errorElementId) {
     }
 }
 
+// Initialize tickets data immediately
+window.ticketsData = @json($tickets) || [];
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Store ticket data globally
-    window.ticketsData = @json($tickets);
-    
     console.log('Tickets data loaded:', window.ticketsData);
+    
+    // Ensure ticketsData is available
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) {
+        console.error('Tickets data is not properly loaded');
+        window.ticketsData = [];
+    }
 });
 
 function getSelectedTicketSubject(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket ? ticket.subject : '';
 }
 
 function getSelectedTicketUser(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
-    return ticket ? ticket.user.nama : '';
+    return ticket && ticket.user ? ticket.user.nama : '';
 }
 
 function getSelectedTicketStatus(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket ? ticket.status : '';
 }
 
 function getSelectedTicketDocuments(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return [];
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket && ticket.bukti_pendukung ? ticket.bukti_pendukung : [];
 }
 
 function getSelectedTicketDescription(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket ? ticket.description : '';
 }
 
 function getSelectedTicketType(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket ? ticket.type : '';
 }
 
 function getSelectedTicketTerlapor(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket ? ticket.pihak_terlapor : '';
 }
 
 function getSelectedTicketTanggalKejadian(selectedTicket) {
+    if (!window.ticketsData || !Array.isArray(window.ticketsData)) return '';
     const ticket = window.ticketsData.find(t => t.id === selectedTicket);
     return ticket && ticket.tanggal_kejadian ? new Date(ticket.tanggal_kejadian).toLocaleDateString('id-ID') : '';
 }
@@ -681,68 +879,106 @@ async function sendMessage(message, selectedTicket, alpineInstance) {
     }
 }
 
-async function closeTicket(selectedTicket) {
-    if (!selectedTicket) return;
-    
-    let closingMessage = prompt('Pesan penutupan: (Wajib diisi)');
-    while (closingMessage !== null && closingMessage.trim() === '') {
-        closingMessage = prompt('Pesan penutupan: (Wajib diisi)');
-    }
-    if (closingMessage === null) return; // User cancelled
-    
-    try {
-        const response = await fetch(`/management/ticket/${selectedTicket}/close`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                closing_message: closingMessage
+// New modal-based functions - using Alpine's $data magic property
+window.confirmProcessTicket = function() {
+    return {
+        execute() {
+            const alpineData = this.$data || this;
+            
+            console.log('Process ticket - Alpine data:', alpineData);
+            
+            if (!alpineData.selectedTicket || !alpineData.processMessage.trim()) {
+                console.log('Missing data:', { 
+                    selectedTicket: alpineData.selectedTicket, 
+                    processMessage: alpineData.processMessage 
+                });
+                alert('Silakan pilih tiket dan masukkan pesan pemrosesan.');
+                return;
+            }
+            
+            fetch(`/management/ticket/${alpineData.selectedTicket}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    processing_message: alpineData.processMessage
+                })
             })
-        });
-        
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Gagal menutup tiket');
+            .then(response => {
+                if (response.ok) {
+                    // Close modal and reset
+                    alpineData.isProcessModalOpen = false;
+                    alpineData.processMessage = '';
+                    location.reload();
+                } else {
+                    console.error('Server error:', response.status);
+                    alert('Gagal memproses tiket');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing ticket:', error);
+                alert('Gagal memproses tiket');
+            });
         }
-    } catch (error) {
-        console.error('Error closing ticket:', error);
-        alert('Gagal menutup tiket');
-    }
+    };
+};
+
+window.confirmCloseTicket = function() {
+    return {
+        execute() {
+            const alpineData = this.$data || this;
+            
+            console.log('Close ticket - Alpine data:', alpineData);
+            
+            if (!alpineData.selectedTicket || !alpineData.closeMessage.trim()) {
+                console.log('Missing data:', { 
+                    selectedTicket: alpineData.selectedTicket, 
+                    closeMessage: alpineData.closeMessage 
+                });
+                alert('Silakan pilih tiket dan masukkan pesan penutupan.');
+                return;
+            }
+            
+            fetch(`/management/ticket/${alpineData.selectedTicket}/close`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    closing_message: alpineData.closeMessage
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Close modal and reset
+                    alpineData.isCloseModalOpen = false;
+                    alpineData.closeMessage = '';
+                    location.reload();
+                } else {
+                    console.error('Server error:', response.status);
+                    alert('Gagal menutup tiket');
+                }
+            })
+            .catch(error => {
+                console.error('Error closing ticket:', error);
+                alert('Gagal menutup tiket');
+            });
+        }
+    };
+};
+
+// Legacy functions kept for backward compatibility (not used anymore)
+async function closeTicket(selectedTicket) {
+    // This function is deprecated - now using modal-based approach
+    console.warn('closeTicket function is deprecated, using modal instead');
 }
 
 async function processTicket(selectedTicket) {
-    if (!selectedTicket) return;
-    
-    let processingMessage = prompt('Pesan pemrosesan: (Wajib diisi)');
-    while (processingMessage !== null && processingMessage.trim() === '') {
-        processingMessage = prompt('Pesan pemrosesan: (Wajib diisi)');
-    }
-    if (processingMessage === null) return; // User cancelled
-    
-    try {
-        const response = await fetch(`/management/ticket/${selectedTicket}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                processing_message: processingMessage
-            })
-        });
-        
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Gagal memproses tiket');
-        }
-    } catch (error) {
-        console.error('Error processing ticket:', error);
-        alert('Gagal memproses tiket');
-    }
+    // This function is deprecated - now using modal-based approach
+    console.warn('processTicket function is deprecated, using modal instead');
 }
 
 async function reopenTicket(selectedTicket) {
