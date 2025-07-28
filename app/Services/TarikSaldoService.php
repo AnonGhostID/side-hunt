@@ -14,8 +14,8 @@ class TarikSaldoService
 
     public function __construct()
     {
-        // Use the same Xendit key as TopUpController
-        Configuration::setXenditKey('xnd_development_7Qgujm27QHHqpc15olW28d1yBzncI1f1KLHSGNMwGeRug2K6doSB426KYqvgEa');
+        // Use Xendit key from environment variable
+        Configuration::setXenditKey(env('XENDIT_KEY'));
         $this->payoutApi = new PayoutApi();
     }
 

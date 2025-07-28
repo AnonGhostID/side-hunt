@@ -19,7 +19,7 @@ class TopUpController extends Controller
     public function __construct()
     {
         // $this->middleware('auth');
-        Configuration::setXenditKey('xnd_development_7Qgujm27QHHqpc15olW28d1yBzncI1f1KLHSGNMwGeRug2K6doSB426KYqvgEa');
+        Configuration::setXenditKey(env('XENDIT_KEY'));
         $this->apiInstance = new InvoiceApi();
     }
 
