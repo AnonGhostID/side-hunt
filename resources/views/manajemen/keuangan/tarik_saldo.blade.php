@@ -318,7 +318,7 @@
                 </h4>
                 <ul class="text-sm text-blue-800 space-y-1">
                     <li>• Transaksi diproses melalui Xendit!
-                        <i class="fas fa-info-circle mr-2" title="Pembayaran Terpercaya" aria-hidden="true"></i>
+                        <i class="fas fa-info-circle mr-2" title="Penyedia layanan pembayaran terpercaya" aria-hidden="true"></i>
                     </li>
                     <li>• Minimum penarikan Rp 50.000</li>
                     <li>• Biaya admin Rp 2.775 (dipotong otomatis)</li>
