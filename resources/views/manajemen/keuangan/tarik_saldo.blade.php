@@ -317,6 +317,7 @@
                     Informasi Penarikan
                 </h4>
                 <ul class="text-sm text-blue-800 space-y-1">
+                    <li>• Transaksi diproses melalui Xendit — penyedia layanan pembayaran terpercaya</li>
                     <li>• Minimum penarikan Rp 50.000</li>
                     <li>• Biaya admin Rp 2.775 (dipotong otomatis)</li>
                     <li>• Proses Instan (pada jam kerja)</li>
