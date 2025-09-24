@@ -317,9 +317,8 @@
                     Informasi Penarikan
                 </h4>
                 <ul class="text-sm text-blue-800 space-y-1">
-                    <li>
+                    <li>• Transaksi diproses melalui Xendit!
                         <i class="fas fa-info-circle mr-2" title="Pembayaran Terpercaya" aria-hidden="true"></i>
-                        Transaksi diproses melalui Xendit!
                     </li>
                     <li>• Minimum penarikan Rp 50.000</li>
                     <li>• Biaya admin Rp 2.775 (dipotong otomatis)</li>
