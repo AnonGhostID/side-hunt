@@ -257,17 +257,29 @@ class PekerjaanController extends Controller
         }
 
         $user = session('account');
-        
-        // Get jobs created by current user (mitra) with their applicants
-        $jobs = Pekerjaan::where('pembuat', $user['id'])
+        $userRole = $user['role'] ?? null;
+
+        if ($userRole === 'mitra' || $userRole === 'admin') {
+            // Jobs created by the mitra/admin (with all applicants)
+            $jobs = Pekerjaan::where('pembuat', $user['id'])
                 ->with(['pelamar.user'])
                 ->orderBy('created_at', 'desc')
                 ->get();
+            $appliedJobs = collect();
+        } else {
+            // Regular user: show ALL jobs so user can apply directly here.
+            // We still eager load pelamar to keep count usage in the view but we won't render applicant details.
+            $jobs = Pekerjaan::with(['pelamar'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            // Build map of jobs user already applied to: job_id => status
+            $appliedJobs = Pelamar::where('user_id', $user['id'])
+                ->pluck('status', 'job_id');
+        }
 
         $active_navbar = 'Lowongan Terdaftar';
         $nama_halaman = 'Lowongan Terdaftar';
-
-        return view('Dewa.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman'));
+        return view('Dewa.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman', 'userRole', 'appliedJobs'));
     }
 
     public function updateStatus(Request $request, $id)

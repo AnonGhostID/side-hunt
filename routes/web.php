@@ -138,9 +138,13 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
     });
 });
 
-//Only Mitra
-Route::middleware(['role:mitra|admin'])->group(function () {
+// Mitra + Admin (manage) and now User (read/apply) access to lowongan-terdaftar
+Route::middleware(['role:user|mitra|admin'])->group(function () {
     Route::get('/dewa/mitra/lowongan-terdaftar', [PekerjaanController::class, 'lowonganTerdaftar'])->name('dewa.mitra.lowongan.terdaftar');
+});
+
+// Keep applicant status update restricted to mitra & admin only
+Route::middleware(['role:mitra|admin'])->group(function () {
     Route::patch('/dewa/mitra/pelamar/{pelamar}/terima', [PekerjaanController::class, 'terima'])->name('dewa.mitra.pelamar.terima');
     Route::patch('/dewa/mitra/pelamar/{pelamar}/tolak', [PekerjaanController::class, 'tolak'])->name('dewa.mitra.pelamar.tolak');
 });

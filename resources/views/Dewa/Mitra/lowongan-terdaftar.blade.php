@@ -121,9 +121,11 @@
                                             {{ \Carbon\Carbon::parse($job->created_at)->format('d M Y') }}
                                         </small>
                                         <br>
-                                        <span class="badge bg-light text-dark mt-1">
-                                            {{ $job->pelamar->count() }} Pelamar
-                                        </span>
+                                        @if(isset($userRole) && ($userRole === 'mitra' || $userRole === 'admin'))
+                                            <span class="badge bg-light text-dark mt-1">
+                                                {{ $job->pelamar->count() }} Pelamar
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -151,88 +153,105 @@
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" 
-                                            data-bs-target="#collapse{{ $job->id }}" aria-expanded="false" 
-                                            aria-controls="collapse{{ $job->id }}">
-                                        <i class="bi bi-eye me-1"></i>Lihat Pelamar ({{ $job->pelamar->count() }})
-                                    </button>
-                                    <div>
-                                        <a href="/kerja/{{ $job->id }}" class="btn btn-success btn-sm me-2">
+                                    @if(isset($userRole) && ($userRole === 'mitra' || $userRole === 'admin'))
+                                        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#collapse{{ $job->id }}" aria-expanded="false" 
+                                                aria-controls="collapse{{ $job->id }}">
+                                            <i class="bi bi-eye me-1"></i>Lihat Pelamar ({{ $job->pelamar->count() }})
+                                        </button>
+                                    @endif
+                                    <div class="ms-auto d-flex align-items-center gap-2">
+                                        @if(isset($userRole) && $userRole === 'user')
+                                            @php $statusApp = $appliedJobs[$job->id] ?? null; @endphp
+                                            @if($statusApp)
+                                                <span class="badge bg-light text-dark">Status: {{ ucfirst($statusApp) }}</span>
+                                            @else
+                                                <form action="{{ route('pekerjaan.lamar', $job->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-send me-1"></i>Lamar
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                        <a href="/kerja/{{ $job->id }}" class="btn btn-success btn-sm">
                                             <i class="bi bi-eye me-1"></i>Detail
                                         </a>
                                     </div>
                                 </div>
 
-                                <div class="collapse mt-3" id="collapse{{ $job->id }}" data-bs-parent="#jobsAccordion">
-                                    <div class="border-top pt-3">
-                                        <h6 class="mb-3"><i class="bi bi-people-fill me-2"></i>Daftar Pelamar</h6>
-                                        
-                                        @if($job->pelamar->isEmpty())
-                                            <div class="no-applicants">
-                                                <i class="bi bi-person-x" style="font-size: 2rem; color: #dee2e6;"></i>
-                                                <p class="mt-2 mb-0">Belum ada yang melamar pekerjaan ini</p>
-                                            </div>
-                                        @else
-                                            <!-- Tab untuk filter status -->
-                                            <ul class="nav nav-tabs mb-3" id="applicantTab{{ $job->id }}" role="tablist">
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link active" id="all-tab{{ $job->id }}" data-bs-toggle="tab" 
-                                                            data-bs-target="#all{{ $job->id }}" type="button" role="tab">
-                                                        Semua ({{ $job->pelamar->count() }})
-                                                    </button>
-                                                </li>
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link" id="pending-tab{{ $job->id }}" data-bs-toggle="tab" 
-                                                            data-bs-target="#pending{{ $job->id }}" type="button" role="tab">
-                                                        Pending ({{ $job->pelamar->where('status', 'pending')->count() }})
-                                                    </button>
-                                                </li>
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link" id="accepted-tab{{ $job->id }}" data-bs-toggle="tab" 
-                                                            data-bs-target="#accepted{{ $job->id }}" type="button" role="tab">
-                                                        Diterima ({{ $job->pelamar->where('status', 'diterima')->count() }})
-                                                    </button>
-                                                </li>
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link" id="rejected-tab{{ $job->id }}" data-bs-toggle="tab" 
-                                                            data-bs-target="#rejected{{ $job->id }}" type="button" role="tab">
-                                                        Ditolak ({{ $job->pelamar->where('status', 'ditolak')->count() }})
-                                                    </button>
-                                                </li>
-                                            </ul>
-
-                                            <div class="tab-content" id="applicantTabContent{{ $job->id }}">
-                                                <!-- All Applicants -->
-                                                <div class="tab-pane fade show active" id="all{{ $job->id }}" role="tabpanel">
-                                                    @foreach($job->pelamar->sortByDesc('created_at') as $pelamar)
-                                                        @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
-                                                    @endforeach
+                                @if(isset($userRole) && ($userRole === 'mitra' || $userRole === 'admin'))
+                                    <div class="collapse mt-3" id="collapse{{ $job->id }}" data-bs-parent="#jobsAccordion">
+                                        <div class="border-top pt-3">
+                                            <h6 class="mb-3"><i class="bi bi-people-fill me-2"></i>Daftar Pelamar</h6>
+                                            
+                                            @if($job->pelamar->isEmpty())
+                                                <div class="no-applicants">
+                                                    <i class="bi bi-person-x" style="font-size: 2rem; color: #dee2e6;"></i>
+                                                    <p class="mt-2 mb-0">Belum ada yang melamar pekerjaan ini</p>
                                                 </div>
+                                            @else
+                                                <!-- Tab untuk filter status -->
+                                                <ul class="nav nav-tabs mb-3" id="applicantTab{{ $job->id }}" role="tablist">
+                                                    <li class="nav-item" role="presentation">
+                                                        <button class="nav-link active" id="all-tab{{ $job->id }}" data-bs-toggle="tab" 
+                                                                data-bs-target="#all{{ $job->id }}" type="button" role="tab">
+                                                            Semua ({{ $job->pelamar->count() }})
+                                                        </button>
+                                                    </li>
+                                                    <li class="nav-item" role="presentation">
+                                                        <button class="nav-link" id="pending-tab{{ $job->id }}" data-bs-toggle="tab" 
+                                                                data-bs-target="#pending{{ $job->id }}" type="button" role="tab">
+                                                            Pending ({{ $job->pelamar->where('status', 'pending')->count() }})
+                                                        </button>
+                                                    </li>
+                                                    <li class="nav-item" role="presentation">
+                                                        <button class="nav-link" id="accepted-tab{{ $job->id }}" data-bs-toggle="tab" 
+                                                                data-bs-target="#accepted{{ $job->id }}" type="button" role="tab">
+                                                            Diterima ({{ $job->pelamar->where('status', 'diterima')->count() }})
+                                                        </button>
+                                                    </li>
+                                                    <li class="nav-item" role="presentation">
+                                                        <button class="nav-link" id="rejected-tab{{ $job->id }}" data-bs-toggle="tab" 
+                                                                data-bs-target="#rejected{{ $job->id }}" type="button" role="tab">
+                                                            Ditolak ({{ $job->pelamar->where('status', 'ditolak')->count() }})
+                                                        </button>
+                                                    </li>
+                                                </ul>
 
-                                                <!-- Pending Applicants -->
-                                                <div class="tab-pane fade" id="pending{{ $job->id }}" role="tabpanel">
-                                                    @foreach($job->pelamar->where('status', 'pending')->sortByDesc('created_at') as $pelamar)
-                                                        @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
-                                                    @endforeach
-                                                </div>
+                                                <div class="tab-content" id="applicantTabContent{{ $job->id }}">
+                                                    <!-- All Applicants -->
+                                                    <div class="tab-pane fade show active" id="all{{ $job->id }}" role="tabpanel">
+                                                        @foreach($job->pelamar->sortByDesc('created_at') as $pelamar)
+                                                            @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
+                                                        @endforeach
+                                                    </div>
 
-                                                <!-- Accepted Applicants -->
-                                                <div class="tab-pane fade" id="accepted{{ $job->id }}" role="tabpanel">
-                                                    @foreach($job->pelamar->where('status', 'diterima')->sortByDesc('created_at') as $pelamar)
-                                                        @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
-                                                    @endforeach
-                                                </div>
+                                                    <!-- Pending Applicants -->
+                                                    <div class="tab-pane fade" id="pending{{ $job->id }}" role="tabpanel">
+                                                        @foreach($job->pelamar->where('status', 'pending')->sortByDesc('created_at') as $pelamar)
+                                                            @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
+                                                        @endforeach
+                                                    </div>
 
-                                                <!-- Rejected Applicants -->
-                                                <div class="tab-pane fade" id="rejected{{ $job->id }}" role="tabpanel">
-                                                    @foreach($job->pelamar->where('status', 'ditolak')->sortByDesc('created_at') as $pelamar)
-                                                        @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
-                                                    @endforeach
+                                                    <!-- Accepted Applicants -->
+                                                    <div class="tab-pane fade" id="accepted{{ $job->id }}" role="tabpanel">
+                                                        @foreach($job->pelamar->where('status', 'diterima')->sortByDesc('created_at') as $pelamar)
+                                                            @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
+                                                        @endforeach
+                                                    </div>
+
+                                                    <!-- Rejected Applicants -->
+                                                    <div class="tab-pane fade" id="rejected{{ $job->id }}" role="tabpanel">
+                                                        @foreach($job->pelamar->where('status', 'ditolak')->sortByDesc('created_at') as $pelamar)
+                                                            @include('Dewa.Mitra.partials.applicant-card', ['pelamar' => $pelamar])
+                                                        @endforeach
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        @endif
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach
