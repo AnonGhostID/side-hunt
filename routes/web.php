@@ -34,6 +34,11 @@ Route::get('/NotAllowed', function(){
 
 Route::post('/Login_account', [UsersController::class, 'Login_Account']);
 Route::post('/Register_account', action: [UsersController::class, 'create']);
+
+// Test route for flash messages
+Route::get('/test-flash', function () {
+    return redirect('/Login')->with('success', ['Test Success', 'This is a test success message']);
+});
 Route::get('/kerja/', action: [PekerjaanController::class, 'index']);
 Route::get('/kerja/create', [PekerjaanController::class, 'create'])->middleware(['role:mitra|admin']);
 Route::get('/kerja/{id}', [PekerjaanController::class, 'show'])->name('pekerjaan.show');

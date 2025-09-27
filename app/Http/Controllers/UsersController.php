@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Laravel\Ui\Presets\React;
 // use User;
 
@@ -167,14 +168,7 @@ class UsersController extends Controller
                     }
                 },
             ],
-            'password' => [
-                'required',
-                function ($attribute, $value, $fail) {
-                    if (!$this->cek_password($value)) {
-                        $fail('Password tidak memenuhi kriteria keamanan');
-                    }
-                },
-            ],
+            'password' => 'required',
             'password-retype' => 'required|same:password',
         ], [
             'nama-depan.required' => 'Nama wajib diisi.',
@@ -199,8 +193,10 @@ class UsersController extends Controller
         $data['password'] = Hash::make($req->password);
         $data['nama'] = $req['nama-depan'] . ' ' . $req['nama-belakang'];
         if (Users::create($data)) {
-            return redirect()->back()->with('success', ['Registrasi Berhasil', 'Akun anda berhasil didaftarkan, Silahkan Login']);
+            Log::info('User registration successful', ['email' => $data['email'] ?? null]);
+            return redirect('/Login')->with('success', ['Registrasi Berhasil', 'Akun anda berhasil didaftarkan, Silahkan Login']);
         } else {
+            Log::error('User registration failed', ['email' => $data['email'] ?? null]);
             return redirect()->back()->with('fail', ['Registrasi Gagal', 'Maaf Terjadi Kesalahan dalam penyimpanan data']);
         }
     }
@@ -214,13 +210,7 @@ class UsersController extends Controller
     }
 
 
-    function cek_password($password)
-    {
-        return strlen($password) >= 8 &&
-            preg_match('/[0-9]/', $password) &&
-            preg_match('/[A-Z]/', $password) &&
-            preg_match('/[a-z]/', $password);
-    }
+
 
     function Profile()
     {

@@ -136,6 +136,72 @@
         </header>
 
         <main>
+            {{-- Flash Messages --}}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                @if (session('success'))
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md shadow-md" role="alert" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-3 text-lg"></i>
+                            <div class="flex-1">
+                                @if (is_array(session('success')))
+                                    <strong class="text-green-800">{{ session('success')[0] }}</strong>
+                                    @if (isset(session('success')[1]))
+                                        <p class="text-sm mt-1 text-green-600">{{ session('success')[1] }}</p>
+                                    @endif
+                                @else
+                                    <span class="font-medium">{{ session('success') }}</span>
+                                @endif
+                            </div>
+                            <button @click="show = false" class="ml-2 text-green-600 hover:text-green-800 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+                
+                @if (session('fail'))
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md shadow-md" role="alert" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-3 text-lg"></i>
+                            <div class="flex-1">
+                                @if (is_array(session('fail')))
+                                    <strong class="text-red-800">{{ session('fail')[0] }}</strong>
+                                    @if (isset(session('fail')[1]))
+                                        <p class="text-sm mt-1 text-red-600">{{ session('fail')[1] }}</p>
+                                    @endif
+                                @else
+                                    <span class="font-medium">{{ session('fail') }}</span>
+                                @endif
+                            </div>
+                            <button @click="show = false" class="ml-2 text-red-600 hover:text-red-800 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+                
+                @if (session('error'))
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md shadow-md" role="alert" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle mr-3 text-lg"></i>
+                            <div class="flex-1">
+                                @if (is_array(session('error')))
+                                    <strong class="text-red-800">{{ session('error')[0] }}</strong>
+                                    @if (isset(session('error')[1]))
+                                        <p class="text-sm mt-1 text-red-600">{{ session('error')[1] }}</p>
+                                    @endif
+                                @else
+                                    <span class="font-medium">{{ session('error') }}</span>
+                                @endif
+                            </div>
+                            <button @click="show = false" class="ml-2 text-red-600 hover:text-red-800 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
             @yield('content')
         </main>
 
