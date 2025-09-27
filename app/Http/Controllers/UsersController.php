@@ -228,13 +228,13 @@ class UsersController extends Controller
         $peta = Pekerjaan::all();
         $active_navbar = 'Profile';
         $nama_halaman = 'Profile';
-        $kode_Nomor = json_decode(file_get_contents(public_path('Dewa/json/dial_country.json')), TRUE);
+        $kode_Nomor = json_decode(file_get_contents(public_path('portal/json/dial_country.json')), TRUE);
         // dD($kode_Nomor);
 
 
         // return view('pekerjaan.list', compact('Pekerjaan'));
 
-        return view('Dewa/profile', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'kode_Nomor'));
+        return view('portal.profile', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'kode_Nomor'));
     }
 
     function Profile_Edit(Request $req)

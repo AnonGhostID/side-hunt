@@ -37,14 +37,20 @@ class HomeController extends Controller
     //     return view('home', compact('Pekerjaan', 'peta'));
     // }
 
-    //Dewa
+    // Portal
     public function index()
     {
         $jobs = Pekerjaan::latest()->paginate(10);
         $peta = Pekerjaan::all();
+        $all = Pekerjaan::all();
         $active_navbar = 'Beranda';
         $nama_halaman = 'Beranda';
 
+        $match = [];
+        if (session()->has('account') && session('account')->preferensi_user != null) {
+            $pekerjaanController = new PekerjaanController();
+            $match = $pekerjaanController->getThe20ies();
+        }
 
         // return view('pekerjaan.list', compact('sidejob'));
         if (session()->has('account')) {
@@ -53,10 +59,10 @@ class HomeController extends Controller
                 return redirect('/question-new-user')->with('success', ['Isi Data Terlebih Dahulu', 'Izin Mengganggu waktunya sebentar']);
             }
             else{
-                return view('Dewa.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman'));
+                return view('portal.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'all', 'match'));
             }
         } else {
-            return view('Dewa.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman'));
+            return view('portal.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'all', 'match'));
         }
     }
 
@@ -74,7 +80,7 @@ class HomeController extends Controller
         if (session('account') == null) {
             $active_navbar = 'Register';
             $nama_halaman = 'Register';
-            return view('Dewa.register', compact('active_navbar', 'nama_halaman'));
+            return view('portal.register', compact('active_navbar', 'nama_halaman'));
         } else {
             return redirect('/Index')->with('success', ['Anda Sedang Login', 'Logout terlebih dahulu']);
         }
@@ -87,7 +93,7 @@ class HomeController extends Controller
         } else {
             $active_navbar = 'Login';
             $nama_halaman = 'Login';
-            return view('Dewa.login', compact('active_navbar', 'nama_halaman'));
+            return view('portal.login', compact('active_navbar', 'nama_halaman'));
         }
     }
 
@@ -118,6 +124,6 @@ class HomeController extends Controller
         $active_navbar = 'Form New User';
         $kriteria = KriteriaJob::all();
 
-        return view('Dewa.formQuestionUser', compact('active_navbar', 'nama_halaman', 'kriteria'));
+        return view('portal.formQuestionUser', compact('active_navbar', 'nama_halaman', 'kriteria'));
     }
 }

@@ -22,14 +22,14 @@ class PekerjaanController extends Controller
         $nama_halaman = 'Cari Pekerjaan';
 
 
-        return view("Dewa.Mitra.pekerjaan-cari", compact("active_navbar", 'nama_halaman', 'all', 'match'));
+        return view("portal.Mitra.pekerjaan-cari", compact("active_navbar", 'nama_halaman', 'all', 'match'));
     }
     public function create()
     {
         $active_navbar = 'Beri Lowongan Kerja';
         $nama_halaman = 'Tambah Pekerjaan';
         $kriteria = KriteriaJob::all();
-        return view("Dewa.Mitra.pekerjaan-add", compact("active_navbar", 'nama_halaman', 'kriteria'));
+        return view("portal.Mitra.pekerjaan-add", compact("active_navbar", 'nama_halaman', 'kriteria'));
     }
 
     public function store(Request $request)
@@ -204,7 +204,7 @@ class PekerjaanController extends Controller
         $active_navbar = 'Detail Pekerjaan';
         $nama_halaman = 'Detail Pekerjaan';
         
-        return view('Dewa.Mitra.pekerjaan-detail', compact('job', 'active_navbar', 'nama_halaman'));
+        return view('portal.Mitra.pekerjaan-detail', compact('job', 'active_navbar', 'nama_halaman'));
     }
 
     public function lamarPekerjaan($id)
@@ -279,7 +279,7 @@ class PekerjaanController extends Controller
 
         $active_navbar = 'Lowongan Terdaftar';
         $nama_halaman = 'Lowongan Terdaftar';
-        return view('Dewa.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman', 'userRole', 'appliedJobs'));
+        return view('portal.Mitra.lowongan-terdaftar', compact('jobs', 'active_navbar', 'nama_halaman', 'userRole', 'appliedJobs'));
     }
 
     public function updateStatus(Request $request, $id)

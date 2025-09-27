@@ -20,7 +20,7 @@ class Users extends Model implements AuthenticatableContract
      * @var array<int, string>
      */
     protected $fillable = [
-        //dewa
+        // portal
         'nama',
         'email',
         'alamat',

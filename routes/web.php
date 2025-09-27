@@ -27,7 +27,7 @@ Route::get('/Logout', [UsersController::class, 'logout']);
 Route::get('/NotAllowed', function(){
     $nama_halaman = 'Akses Ditolak';
     $active_navbar = 'none';
-    return view('Dewa.NotAllowedPage', compact('nama_halaman','active_navbar'));
+    return view('portal.NotAllowedPage', compact('nama_halaman','active_navbar'));
 });
 
 
@@ -140,16 +140,16 @@ Route::middleware(['role:user|mitra|admin'])->group(function () {
 
 // Mitra + Admin (manage) and now User (read/apply) access to lowongan-terdaftar
 Route::middleware(['role:user|mitra|admin'])->group(function () {
-    Route::get('/dewa/mitra/lowongan-terdaftar', [PekerjaanController::class, 'lowonganTerdaftar'])->name('dewa.mitra.lowongan.terdaftar');
+    Route::get('/portal/mitra/lowongan-terdaftar', [PekerjaanController::class, 'lowonganTerdaftar'])->name('portal.mitra.lowongan.terdaftar');
 });
 
 // Keep applicant status update restricted to mitra & admin only
 Route::middleware(['role:mitra|admin'])->group(function () {
-    Route::patch('/dewa/mitra/pelamar/{pelamar}/terima', [PekerjaanController::class, 'terima'])->name('dewa.mitra.pelamar.terima');
-    Route::patch('/dewa/mitra/pelamar/{pelamar}/tolak', [PekerjaanController::class, 'tolak'])->name('dewa.mitra.pelamar.tolak');
+    Route::patch('/portal/mitra/pelamar/{pelamar}/terima', [PekerjaanController::class, 'terima'])->name('portal.mitra.pelamar.terima');
+    Route::patch('/portal/mitra/pelamar/{pelamar}/tolak', [PekerjaanController::class, 'tolak'])->name('portal.mitra.pelamar.tolak');
 });
 
-//End Dewa
+// End Portal
 
 // Auth::routes();
 
