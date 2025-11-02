@@ -43,7 +43,7 @@ if (!function_exists('portal_distance')) {
 <div class="container mx-auto px-4 py-6 space-y-8">
     <section class="grid gap-6 lg:grid-cols-12">
         <div class="lg:col-span-5">
-            <div class="rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500 p-8 text-white shadow-xl">
+            <div class="rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500 p-10 text-white shadow-xl">
                 <h2 class="text-3xl font-semibold leading-tight">Temukan pekerjaan yang kamu inginkan!</h2>
                 <p class="mt-4 text-sm text-blue-100">
                     Gunakan rekomendasi dan penelusuran untuk menemukan pekerjaan yang cocok dengan lokasi dan minatmu.
@@ -141,22 +141,38 @@ if (!function_exists('portal_distance')) {
                 </div>
             </div>
         </div>
-        <div class="lg:col-span-7">
-            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <header class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Peta Peluang</h3>
-                        <p class="text-sm text-gray-500">Gunakan pencarian lokasi untuk menemukan pekerjaan di sekitar.</p>
-                    </div>
-                    <button id="reset-map" class="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50">
-                        <i class="fas fa-rotate mr-2"></i>Reset View
-                    </button>
-                </header>
-                <div class="px-6 py-6">
-                    <div id="map" class="w-full rounded-xl border border-gray-100"></div>
-                </div>
-            </div>
-        </div>
+        <div class="lg:col-span-7">
+
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+                <header class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+
+                    <div>
+
+                        <h3 class="text-lg font-semibold text-gray-900">Peta Peluang</h3>
+
+                        <p class="text-sm text-gray-500">Gunakan pencarian lokasi untuk menemukan pekerjaan di sekitar.</p>
+
+                    </div>
+
+                    <button id="reset-map" class="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50">
+
+                        <i class="fas fa-rotate mr-2"></i>Reset View
+
+                    </button>
+
+                </header>
+
+                <div class="px-6 py-6">
+
+                    <div id="map" class="w-full rounded-xl border border-gray-100"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </section>
 </div>
 @endsection

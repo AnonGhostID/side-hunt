@@ -55,6 +55,66 @@
                 </p>
             </form>
         </div>
+
+        <!-- Demo Credentials Section -->
+        <div class="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
+            <div class="mb-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-800">Demo Login Credentials</h3>
+                <p class="text-sm text-gray-600">Klik tombol di bawah untuk mengisi otomatis (Portfolio Demo)</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <!-- Mitra Credentials (Left) -->
+                <div class="rounded-xl border border-blue-200 bg-white p-4 shadow-sm">
+                    <div class="mb-3 flex items-center gap-2 border-b border-gray-200 pb-2">
+                        <i class="fas fa-briefcase text-blue-600"></i>
+                        <h4 class="font-semibold text-gray-800">Akun Mitra (Owner)</h4>
+                    </div>
+                    <div class="space-y-2">
+                        <button type="button" onclick="fillLogin('owner1@example.com', 'owner1234')" 
+                                class="w-full rounded-lg border border-blue-300 bg-blue-50 px-4 py-2.5 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-100">
+                            <i class="fas fa-user-tie mr-2"></i>Mitra 1
+                            <div class="mt-1 text-xs text-blue-600">owner1@example.com</div>
+                        </button>
+                        <button type="button" onclick="fillLogin('owner2@example.com', 'owner1234')" 
+                                class="w-full rounded-lg border border-blue-300 bg-blue-50 px-4 py-2.5 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-100">
+                            <i class="fas fa-user-tie mr-2"></i>Mitra 2
+                            <div class="mt-1 text-xs text-blue-600">owner2@example.com</div>
+                        </button>
+                        <button type="button" onclick="fillLogin('owner3@example.com', 'owner1234')" 
+                                class="w-full rounded-lg border border-blue-300 bg-blue-50 px-4 py-2.5 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-100">
+                            <i class="fas fa-user-tie mr-2"></i>Mitra 3
+                            <div class="mt-1 text-xs text-blue-600">owner3@example.com</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Credentials (Right) -->
+                <div class="rounded-xl border border-green-200 bg-white p-4 shadow-sm">
+                    <div class="mb-3 flex items-center gap-2 border-b border-gray-200 pb-2">
+                        <i class="fas fa-users text-green-600"></i>
+                        <h4 class="font-semibold text-gray-800">Akun User</h4>
+                    </div>
+                    <div class="space-y-2">
+                        <button type="button" onclick="fillLogin('user1@example.com', 'user1234')" 
+                                class="w-full rounded-lg border border-green-300 bg-green-50 px-4 py-2.5 text-left text-sm font-medium text-green-700 transition hover:bg-green-100">
+                            <i class="fas fa-user mr-2"></i>User 1
+                            <div class="mt-1 text-xs text-green-600">user1@example.com</div>
+                        </button>
+                        <button type="button" onclick="fillLogin('user2@example.com', 'user1234')" 
+                                class="w-full rounded-lg border border-green-300 bg-green-50 px-4 py-2.5 text-left text-sm font-medium text-green-700 transition hover:bg-green-100">
+                            <i class="fas fa-user mr-2"></i>User 2
+                            <div class="mt-1 text-xs text-green-600">user2@example.com</div>
+                        </button>
+                        <button type="button" onclick="fillLogin('user3@example.com', 'user1234')" 
+                                class="w-full rounded-lg border border-green-300 bg-green-50 px-4 py-2.5 text-left text-sm font-medium text-green-700 transition hover:bg-green-100">
+                            <i class="fas fa-user mr-2"></i>User 3
+                            <div class="mt-1 text-xs text-green-600">user3@example.com</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -65,5 +125,28 @@
             if (!input) return;
             input.setAttribute('type', event.target.checked ? 'text' : 'password');
         });
+
+        function fillLogin(email, password) {
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            
+            emailInput.value = email;
+            passwordInput.value = password;
+            
+            // Scroll to top to show the filled form
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            
+            // Add highlight effect
+            emailInput.classList.add('!border-green-500', '!ring-2', '!ring-green-200');
+            passwordInput.classList.add('!border-green-500', '!ring-2', '!ring-green-200');
+            
+            setTimeout(() => {
+                emailInput.classList.remove('!border-green-500', '!ring-2', '!ring-green-200');
+                passwordInput.classList.remove('!border-green-500', '!ring-2', '!ring-green-200');
+            }, 1500);
+        }
     </script>
 @endsection

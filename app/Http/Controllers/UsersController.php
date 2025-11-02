@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pelamar;
 use App\Models\Users;
 use App\Models\Pekerjaan;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Laravel\Ui\Presets\React;
-// use User;
+use App\Models\SideJob;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class UsersController extends Controller
 {
@@ -61,7 +60,7 @@ class UsersController extends Controller
 
     public function edit(string $id): View
     {
-        $user = Users::findorfail($id);
+        $user = Users::findOrFail($id);
 
         return view('admin.users.edit', compact('user'));
     }
@@ -71,12 +70,12 @@ class UsersController extends Controller
     {
         $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $id],
             'alamat' => ['required', 'string', 'max:255'],
             'telpon' => ['required', 'string', 'numeric'],
             // 'password' => ['string', 'min:8'],
         ]);
-        $user = Users::findorfail($id);
+        $user = Users::findOrFail($id);
         $user->update([
             'nama' => $request['nama'],
             'email' => $request['email'],
@@ -90,7 +89,7 @@ class UsersController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        $user = Users::findorfail($id);
+        $user = Users::findOrFail($id);
         $user->delete();
 
         return redirect()->back()->with(['success' => 'Data berhasil dihapus']);
@@ -115,11 +114,13 @@ class UsersController extends Controller
                     // dd(session('account'));
 
                     // dd('masuk');
-                    if (session('account')->preferensi_user == null) {
-                        return redirect('/question-new-user')->with('success', ['Izin Mengganggu waktunya sebentar', 'Isi Data Terlebih Dahulu']);
-                    } else {
-                        return redirect('/Index')->with('success', ['Sukses', 'Login Berhasil']);
-                    }
+                    // skip the bullshit
+                    // if (session('account')->preferensi_user == null) {
+                    //     return redirect('/question-new-user')->with('success', ['Izin Mengganggu waktunya sebentar', 'Isi Data Terlebih Dahulu']);
+                    // } else {
+                    //     return redirect('/Index')->with('success', ['Sukses', 'Login Berhasil']);
+                    // }
+                    return redirect('/Index')->with('success', ['Sukses', 'Login Berhasil']);
                 }
                 // }
                 // else{

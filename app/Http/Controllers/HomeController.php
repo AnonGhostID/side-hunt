@@ -55,12 +55,14 @@ class HomeController extends Controller
         // return view('pekerjaan.list', compact('sidejob'));
         if (session()->has('account')) {
             // dd(session('account')->preferensi_user);
-            if (session('account')->preferensi_user == null) {
-                return redirect('/question-new-user')->with('success', ['Isi Data Terlebih Dahulu', 'Izin Mengganggu waktunya sebentar']);
-            }
-            else{
-                return view('portal.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'all', 'match'));
-            }
+
+            // if (session('account')->preferensi_user == null) {
+            //     return redirect('/question-new-user')->with('success', ['Isi Data Terlebih Dahulu', 'Izin Mengganggu waktunya sebentar']);
+            // }
+            // else{
+            //     return view('portal.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'all', 'match'));
+            // }
+            return view('portal.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'all', 'match'));
         } else {
             return view('portal.index', compact('jobs', 'peta', 'active_navbar', 'nama_halaman', 'all', 'match'));
         }
